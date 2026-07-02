@@ -4,13 +4,15 @@ Plugin WordPress léger permettant d'afficher des albums Piwigo via l'API offici
 
 ## État du développement
 
-Version actuelle : **0.5.0**
+Version actuelle : **0.6.0**
 
 Fonctionnalités disponibles :
 
 ```text
 [piwigo album="154"]
+[piwigo album="154" type="gallery"]
 [piwigo album="154" max="30"]
+[piwigo album="154" fit="contain" height="220px"]
 ```
 
 À ce stade :
@@ -20,7 +22,8 @@ Fonctionnalités disponibles :
 * l'URL de la galerie Piwigo peut être configurée ;
 * le plugin interroge l'API Piwigo ;
 * les résultats sont mis en cache avec les transients WordPress ;
-* les images sont affichées dans une grille responsive temporaire.
+* les images sont affichées dans une galerie responsive ;
+* le moteur de rendu prépare les futurs modes `slider`, `carousel` et `masonry`.
 
 ## Licence
 

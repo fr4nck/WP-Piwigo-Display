@@ -6,13 +6,27 @@ if (!defined('ABSPATH')) {
 
 final class WPD_Renderer
 {
-    public static function render_grid(array $images): string
+    public static function render(array $images, array $atts): string
+    {
+        $type = isset($atts['type']) ? sanitize_key((string) $atts['type']) : 'gallery';
+
+        if ($type === 'slider') {
+            return self::render_slider_placeholder($images, $atts);
+        }
+
+        return self::render_gallery($images, $atts);
+    }
+
+    private static function render_gallery(array $images, array $atts): string
     {
         wp_enqueue_style('wp-piwigo-display');
 
+        $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
+        $height = self::sanitize_height($atts['height'] ?? '180px');
+
         ob_start();
         ?>
-        <div class="wp-piwigo-display wp-piwigo-display-grid">
+        <div class="wp-piwigo-display wp-piwigo-display-gallery" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
             <?php foreach ($images as $image) : ?>
                 <?php
                 $image_url = self::get_image_url($image);
@@ -36,6 +50,16 @@ final class WPD_Renderer
         <?php
 
         return (string) ob_get_clean();
+    }
+
+    private static function render_slider_placeholder(array $images, array $atts): string
+    {
+        wp_enqueue_style('wp-piwigo-display');
+
+        return '<div class="wp-piwigo-display wp-piwigo-display-notice">' .
+            esc_html__('Le rendu slider sera intégré dans la prochaine version. Utilisez type="gallery" pour l’instant.', 'wp-piwigo-display') .
+            '</div>' .
+            self::render_gallery($images, $atts);
     }
 
     private static function get_image_url(array $image): string
@@ -83,5 +107,21 @@ final class WPD_Renderer
         }
 
         return '';
+    }
+
+    private static function sanitize_fit(string $fit): string
+    {
+        return in_array($fit, ['cover', 'contain'], true) ? $fit : 'cover';
+    }
+
+    private static function sanitize_height(string $height): string
+    {
+        $height = trim($height);
+
+        if (preg_match('/^\d+(px|rem|em|vh|vw|%)$/', $height) === 1) {
+            return $height;
+        }
+
+        return '180px';
     }
 }

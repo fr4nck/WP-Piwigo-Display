@@ -19,18 +19,15 @@ final class WPD_Api
             return new WP_Error('wpd_invalid_album', __('Identifiant d\'album invalide.', 'wp-piwigo-display'));
         }
 
-        $response = wp_remote_post(
-            $this->base_url . '/ws.php?format=json',
-            [
-                'timeout' => 15,
-                'body' => [
-                    'method' => 'pwg.categories.getImages',
-                    'cat_id' => $album_id,
-                    'per_page' => $max > 0 ? $max : 500,
-                    'page' => 0,
-                ],
-            ]
-        );
+        $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
+            'timeout' => 15,
+            'body' => [
+                'method' => 'pwg.categories.getImages',
+                'cat_id' => $album_id,
+                'per_page' => $max > 0 ? $max : 500,
+                'page' => 0,
+            ],
+        ]);
 
         if (is_wp_error($response)) {
             return new WP_Error('wpd_http_error', sprintf(__('Erreur HTTP lors de l\'appel à Piwigo : %s', 'wp-piwigo-display'), $response->get_error_message()));
@@ -51,7 +48,6 @@ final class WPD_Api
         }
 
         $images = $data['result']['images'] ?? [];
-
         return is_array($images) ? $images : [];
     }
 }

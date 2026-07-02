@@ -10,36 +10,20 @@ final class WPD_Settings
 
     public static function register(): void
     {
-        register_setting(
-            'wp_piwigo_display',
-            self::OPTION_NAME,
-            [
-                'type' => 'array',
-                'sanitize_callback' => [self::class, 'sanitize_options'],
-                'default' => self::default_options(),
-            ]
-        );
+        register_setting('wp_piwigo_display', self::OPTION_NAME, [
+            'type' => 'array',
+            'sanitize_callback' => [self::class, 'sanitize_options'],
+            'default' => self::default_options(),
+        ]);
 
-        add_settings_section(
-            'wp_piwigo_display_main',
-            __('Réglages principaux', 'wp-piwigo-display'),
-            '__return_false',
-            'wp-piwigo-display'
-        );
-
+        add_settings_section('wp_piwigo_display_main', __('Réglages principaux', 'wp-piwigo-display'), '__return_false', 'wp-piwigo-display');
         add_settings_field('piwigo_url', __('URL de la galerie Piwigo', 'wp-piwigo-display'), [self::class, 'render_piwigo_url_field'], 'wp-piwigo-display', 'wp_piwigo_display_main');
         add_settings_field('cache_duration', __('Durée du cache', 'wp-piwigo-display'), [self::class, 'render_cache_duration_field'], 'wp-piwigo-display', 'wp_piwigo_display_main');
     }
 
     public static function register_page(): void
     {
-        add_options_page(
-            __('WP Piwigo Display', 'wp-piwigo-display'),
-            __('WP Piwigo Display', 'wp-piwigo-display'),
-            'manage_options',
-            'wp-piwigo-display',
-            [self::class, 'render_page']
-        );
+        add_options_page(__('WP Piwigo Display', 'wp-piwigo-display'), __('WP Piwigo Display', 'wp-piwigo-display'), 'manage_options', 'wp-piwigo-display', [self::class, 'render_page']);
     }
 
     public static function default_options(): array
@@ -53,21 +37,18 @@ final class WPD_Settings
     public static function get_options(): array
     {
         $options = get_option(self::OPTION_NAME, []);
-
         return wp_parse_args(is_array($options) ? $options : [], self::default_options());
     }
 
     public static function get_piwigo_url(): string
     {
         $options = self::get_options();
-
         return untrailingslashit((string) $options['piwigo_url']);
     }
 
     public static function get_cache_duration(): int
     {
         $options = self::get_options();
-
         return max(60, absint($options['cache_duration']));
     }
 

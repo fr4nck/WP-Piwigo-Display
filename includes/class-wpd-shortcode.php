@@ -16,9 +16,11 @@ final class WPD_Shortcode
         $atts = shortcode_atts(
             [
                 'album' => '',
+                'type' => 'gallery',
                 'autoplay' => 'true',
                 'interval' => '5000',
-                'fit' => 'contain',
+                'fit' => 'cover',
+                'height' => '180px',
                 'max' => '0',
             ],
             $atts,
@@ -45,7 +47,7 @@ final class WPD_Shortcode
             return self::render_error(__('WP Piwigo Display : aucune image trouvée dans cet album.', 'wp-piwigo-display'));
         }
 
-        return WPD_Renderer::render_grid($images);
+        return WPD_Renderer::render($images, $atts);
     }
 
     private static function render_error(string $message): string
