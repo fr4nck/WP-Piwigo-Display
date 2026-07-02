@@ -11,7 +11,7 @@ final class WPD_Renderer
         $type = isset($atts['type']) ? sanitize_key((string) $atts['type']) : 'gallery';
 
         if ($type === 'slider') {
-            return self::render_slider_placeholder($images, $atts);
+            return self::render_slider($images, $atts);
         }
 
         return self::render_gallery($images, $atts);
@@ -52,14 +52,47 @@ final class WPD_Renderer
         return (string) ob_get_clean();
     }
 
-    private static function render_slider_placeholder(array $images, array $atts): string
+    private static function render_slider(array $images, array $atts): string
     {
         wp_enqueue_style('wp-piwigo-display');
+        wp_enqueue_style('wpd-splide');
+        wp_enqueue_script('wpd-splide');
+        wp_enqueue_script('wp-piwigo-display');
 
-        return '<div class="wp-piwigo-display wp-piwigo-display-notice">' .
-            esc_html__('Le rendu slider sera intégré dans la prochaine version. Utilisez type="gallery" pour l’instant.', 'wp-piwigo-display') .
-            '</div>' .
-            self::render_gallery($images, $atts);
+        $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
+        $height = self::sanitize_height($atts['height'] ?? '420px');
+        $autoplay = filter_var($atts['autoplay'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
+        $interval = max(1000, absint($atts['interval'] ?? 5000));
+        $slider_id = 'wpd-slider-' . wp_generate_uuid4();
+
+        ob_start();
+        ?>
+        <div id="<?php echo esc_attr($slider_id); ?>"
+             class="wp-piwigo-display wp-piwigo-display-slider splide"
+             style="--wpd-slider-height: <?php echo esc_attr($height); ?>; --wpd-image-fit: <?php echo esc_attr($fit); ?>;"
+             data-autoplay="<?php echo esc_attr($autoplay ? 'true' : 'false'); ?>"
+             data-interval="<?php echo esc_attr((string) $interval); ?>">
+            <div class="splide__track">
+                <ul class="splide__list">
+                    <?php foreach ($images as $image) : ?>
+                        <?php
+                        $image_url = self::get_large_url($image);
+                        $title = self::get_image_title($image);
+
+                        if ($image_url === '') {
+                            continue;
+                        }
+                        ?>
+                        <li class="splide__slide">
+                            <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
     }
 
     private static function get_image_url(array $image): string
@@ -87,6 +120,10 @@ final class WPD_Renderer
     {
         if (isset($image['derivatives']['large']['url'])) {
             return (string) $image['derivatives']['large']['url'];
+        }
+
+        if (isset($image['derivatives']['medium']['url'])) {
+            return (string) $image['derivatives']['medium']['url'];
         }
 
         if (isset($image['element_url'])) {
@@ -122,6 +159,6 @@ final class WPD_Renderer
             return $height;
         }
 
-        return '180px';
+        return '420px';
     }
 }

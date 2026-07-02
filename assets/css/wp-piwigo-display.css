@@ -30,8 +30,25 @@
     line-height: 1.3;
 }
 
-.wp-piwigo-display-error,
-.wp-piwigo-display-notice {
+.wp-piwigo-display-slider {
+    --wpd-slider-height: 420px;
+    --wpd-image-fit: cover;
+    margin: 1.5rem 0;
+}
+
+.wp-piwigo-display-slider .splide__slide {
+    height: var(--wpd-slider-height);
+}
+
+.wp-piwigo-display-slider .splide__slide img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: var(--wpd-image-fit);
+    border-radius: 6px;
+}
+
+.wp-piwigo-display-error {
     padding: 0.75rem 1rem;
     border-left: 4px solid currentColor;
     background: rgba(0, 0, 0, 0.05);

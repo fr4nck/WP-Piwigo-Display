@@ -48,6 +48,29 @@ final class WPD_Plugin
             [],
             WPD_VERSION
         );
+
+        wp_register_style(
+            'wpd-splide',
+            'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css',
+            [],
+            '4.1.4'
+        );
+
+        wp_register_script(
+            'wpd-splide',
+            'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js',
+            [],
+            '4.1.4',
+            true
+        );
+
+        wp_register_script(
+            'wp-piwigo-display',
+            WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js',
+            ['wpd-splide'],
+            WPD_VERSION,
+            true
+        );
     }
 
     public function register_settings(): void
