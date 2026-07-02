@@ -20,7 +20,7 @@ final class WPD_Shortcode
                 'autoplay' => 'true',
                 'interval' => '5000',
                 'fit' => 'cover',
-                'height' => '180px',
+                'height' => '',
                 'max' => '0',
             ],
             $atts,

@@ -4,7 +4,7 @@ Plugin WordPress léger permettant d'afficher des albums Piwigo via l'API offici
 
 ## État du développement
 
-Version actuelle : **0.7.0**
+Version actuelle : **0.7.1**
 
 Fonctionnalités disponibles :
 
@@ -12,7 +12,7 @@ Fonctionnalités disponibles :
 [piwigo album="154"]
 [piwigo album="154" type="gallery"]
 [piwigo album="154" type="slider"]
-[piwigo album="154" type="slider" autoplay="true" interval="5000" height="420px" fit="cover"]
+[piwigo album="154" type="slider" autoplay="true" interval="5000" height="520px" fit="cover"]
 [piwigo album="154" type="gallery" max="30" fit="contain" height="220px"]
 ```
 
@@ -28,3 +28,9 @@ Fonctionnalités disponibles :
 ## Licence
 
 Ce projet est distribué sous licence **GNU General Public License v3.0 (GPL-3.0)**.
+
+
+## Correctif 0.7.1
+
+* Correction de la hauteur par défaut du diaporama.
+* Séparation des hauteurs par défaut entre galerie et slider.

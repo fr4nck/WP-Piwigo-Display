@@ -22,7 +22,7 @@ final class WPD_Renderer
         wp_enqueue_style('wp-piwigo-display');
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
-        $height = self::sanitize_height($atts['height'] ?? '180px');
+        $height = self::sanitize_height((string) ($atts['height'] ?? ''), '180px');
 
         ob_start();
         ?>
@@ -60,7 +60,7 @@ final class WPD_Renderer
         wp_enqueue_script('wp-piwigo-display');
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
-        $height = self::sanitize_height($atts['height'] ?? '420px');
+        $height = self::sanitize_height((string) ($atts['height'] ?? ''), '420px');
         $autoplay = filter_var($atts['autoplay'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
         $interval = max(1000, absint($atts['interval'] ?? 5000));
         $slider_id = 'wpd-slider-' . wp_generate_uuid4();

@@ -31,8 +31,10 @@
 }
 
 .wp-piwigo-display-slider {
-    --wpd-slider-height: 420px;
+    --wpd-slider-height: 520px;
     --wpd-image-fit: cover;
+    width: 100%;
+    max-width: 100%;
     margin: 1.5rem 0;
 }
 
