@@ -10,7 +10,8 @@ Plugin WordPress léger permettant d'afficher des albums Piwigo via l'API offici
 [piwigo album="154" type="slider"]
 [piwigo album="154" type="slider" thumbnails="true"]
 [piwigo album="154" type="slider" thumbnails="false"]
-[piwigo album="154" type="slider" autoplay="true" interval="5000" ratio="16/9" fit="auto"]
+[piwigo album="154" type="slider" autoplay="true" interval="5000" ratio="16/9" fit="raw"]
+[piwigo album="154" type="slider" fit="raw"]
 [piwigo album="154" type="slider" height="520px" fit="contain"]
 [piwigo album="154" type="gallery" max="30" fit="contain" height="220px"]
 [piwigo album="154" random="12"]
@@ -30,7 +31,8 @@ Plugin WordPress léger permettant d'afficher des albums Piwigo via l'API offici
 * Miniatures optionnelles dans le diaporama.
 * Lightbox maison sans dépendance externe.
 * Options `max`, `latest`, `random`, `fit`, `height`, `ratio`, `rounded`, `lightbox`, `thumbnails`.
-* Mode `fit="auto"` par défaut : les portraits ne sont pas coupés.
+* Mode `fit="raw"` par défaut : les photos sont affichées sans recadrage imposé.
+* Mode `fit="auto"` disponible : portraits en `contain`, paysages en `cover`.
 * Images non importées dans la médiathèque WordPress.
 
 ## Licence

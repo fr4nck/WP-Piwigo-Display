@@ -26,11 +26,13 @@ final class WPD_Renderer
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
         $height = self::sanitize_height((string) ($atts['height'] ?? ''), '180px');
         $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
+        $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
+        $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
 
         ob_start();
         ?>
-        <div class="wp-piwigo-display wp-piwigo-display-gallery<?php echo esc_attr($rounded_class . $lightbox_class); ?>" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
+        <div class="wp-piwigo-display wp-piwigo-display-gallery<?php echo esc_attr($rounded_class . $raw_class . $lightbox_class); ?>" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
             <?php foreach ($images as $image) : ?>
                 <?php
                 $image_url = self::get_image_url($image);
@@ -76,7 +78,7 @@ final class WPD_Renderer
         ob_start();
         ?>
         <div id="<?php echo esc_attr($slider_id); ?>"
-             class="wp-piwigo-display wp-piwigo-display-slider<?php echo esc_attr($rounded_class . $lightbox_class); ?>"
+             class="wp-piwigo-display wp-piwigo-display-slider<?php echo esc_attr($rounded_class . $raw_class . $lightbox_class); ?>"
              style="--wpd-slider-height: <?php echo esc_attr($height); ?>; --wpd-slider-ratio: <?php echo esc_attr($ratio); ?>; --wpd-image-fit: <?php echo esc_attr($fit); ?>;"
              data-autoplay="<?php echo esc_attr($autoplay ? 'true' : 'false'); ?>"
              data-interval="<?php echo esc_attr((string) $interval); ?>"
@@ -203,6 +205,10 @@ final class WPD_Renderer
 
     private static function get_image_fit(array $image, string $fit): string
     {
+        if ($fit === 'raw') {
+            return 'contain';
+        }
+
         if ($fit !== 'auto') {
             return $fit;
         }
@@ -241,7 +247,7 @@ final class WPD_Renderer
 
     private static function sanitize_fit(string $fit): string
     {
-        return in_array($fit, ['cover', 'contain', 'auto'], true) ? $fit : 'auto';
+        return in_array($fit, ['cover', 'contain', 'auto', 'raw'], true) ? $fit : 'raw';
     }
 
     private static function is_enabled($value): bool

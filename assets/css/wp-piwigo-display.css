@@ -292,3 +292,42 @@
         height: 38px;
     }
 }
+
+
+.wp-piwigo-display-gallery.wp-piwigo-display-raw {
+    align-items: start;
+}
+
+.wp-piwigo-display-gallery.wp-piwigo-display-raw .wp-piwigo-display-item img {
+    height: auto;
+    object-fit: contain;
+}
+
+.wp-piwigo-display-slider.wp-piwigo-display-raw .wp-piwigo-display-slider-track {
+    aspect-ratio: auto;
+    height: auto;
+    min-height: 0;
+    background: transparent;
+}
+
+.wp-piwigo-display-slider.wp-piwigo-display-raw .wp-piwigo-display-slide {
+    position: relative;
+    display: none;
+    opacity: 1;
+    pointer-events: none;
+}
+
+.wp-piwigo-display-slider.wp-piwigo-display-raw .wp-piwigo-display-slide.is-active {
+    display: block;
+    pointer-events: auto;
+}
+
+.wp-piwigo-display-slider.wp-piwigo-display-raw .wp-piwigo-display-slide-link {
+    height: auto;
+}
+
+.wp-piwigo-display-slider.wp-piwigo-display-raw .wp-piwigo-display-slide img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}

@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.0.2
+
+* Ajout du mode `fit="raw"`.
+* Passage du cadrage par défaut en mode brut, sans recadrage imposé.
+* La galerie respecte la hauteur naturelle des images en mode brut.
+* Le diaporama respecte les proportions originales en mode brut.
+
 ## 1.0.1
 
 * Ajout du mode `fit="auto"` par défaut.
