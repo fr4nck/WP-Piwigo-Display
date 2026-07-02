@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.0.4
+
+* Correction du rendu slider par défaut.
+* Suppression du comportement brut variable dans le diaporama.
+* Le diaporama affiche les images en entier, sans recadrage ni déformation.
+* Passage de la transition par défaut à zéro pour éviter les effets fantômes.
+
 ## 1.0.3
 
 * Stabilisation du diaporama en mode brut.

@@ -66,6 +66,9 @@ final class WPD_Renderer
         wp_enqueue_script('wp-piwigo-display');
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
+        if ($fit === 'raw') {
+            $fit = 'contain';
+        }
         $height = self::sanitize_height((string) ($atts['height'] ?? ''), '');
         $ratio = self::sanitize_ratio((string) ($atts['ratio'] ?? '16/9'));
         $autoplay = self::is_enabled($atts['autoplay'] ?? 'true');
