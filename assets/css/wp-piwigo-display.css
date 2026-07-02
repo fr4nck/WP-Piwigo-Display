@@ -237,3 +237,58 @@
     border-left: 4px solid currentColor;
     background: rgba(0, 0, 0, 0.05);
 }
+
+
+.wp-piwigo-display-slider-thumbnails {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
+.wp-piwigo-display-slider-thumbnail {
+    flex: 0 0 auto;
+    width: 72px;
+    height: 48px;
+    padding: 0;
+    border: 2px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    opacity: 0.62;
+}
+
+.wp-piwigo-display-slider-thumbnail.is-active {
+    border-color: currentColor;
+    opacity: 1;
+}
+
+.wp-piwigo-display-slider-thumbnail img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wp-piwigo-display-rounded .wp-piwigo-display-slider-thumbnail,
+.wp-piwigo-display-rounded .wp-piwigo-display-slider-thumbnail img {
+    border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+    .wp-piwigo-display-gallery {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.65rem;
+    }
+
+    .wp-piwigo-display-slider-arrow {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1.5rem;
+    }
+
+    .wp-piwigo-display-slider-thumbnail {
+        width: 56px;
+        height: 38px;
+    }
+}
