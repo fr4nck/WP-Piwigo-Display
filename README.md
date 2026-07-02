@@ -1,34 +1,40 @@
-<?php
+# WP Piwigo Display
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+Plugin WordPress léger permettant d'afficher des albums Piwigo via l'API officielle.
 
-final class WPD_Cache
-{
-    public static function get_album_images(int $album_id, int $max = 0)
-    {
-        $cache_key = self::get_album_cache_key($album_id, $max);
-        $cached = get_transient($cache_key);
+## Utilisation
 
-        if (is_array($cached)) {
-            return $cached;
-        }
+```text
+[piwigo album="154"]
+[piwigo album="154" type="gallery"]
+[piwigo album="154" type="slider"]
+[piwigo album="154" type="slider" thumbnails="true"]
+[piwigo album="154" type="slider" thumbnails="false"]
+[piwigo album="154" type="slider" autoplay="true" interval="5000" ratio="16/9" fit="raw"]
+[piwigo album="154" type="slider" fit="raw"]
+[piwigo album="154" type="slider" height="520px" fit="contain"]
+[piwigo album="154" type="gallery" max="30" fit="contain" height="220px"]
+[piwigo album="154" random="12"]
+[piwigo album="154" latest="20"]
+[piwigo album="154" lightbox="false"]
+[piwigo album="154" rounded="true"]
+```
 
-        $api = new WPD_Api(WPD_Settings::get_piwigo_url());
-        $images = $api->get_images_from_album($album_id, $max);
+## Fonctionnalités
 
-        if (is_wp_error($images)) {
-            return $images;
-        }
+* Shortcode unique.
+* Page de réglages dans **Réglages > WP Piwigo Display**.
+* Connexion à l'API Piwigo.
+* Cache avec les transients WordPress.
+* Galerie responsive.
+* Diaporama local sans CDN.
+* Miniatures optionnelles dans le diaporama.
+* Lightbox maison sans dépendance externe.
+* Options `max`, `latest`, `random`, `fit`, `height`, `ratio`, `rounded`, `lightbox`, `thumbnails`.
+* Mode `fit="raw"` par défaut : les photos sont affichées sans recadrage imposé.
+* Mode `fit="auto"` disponible : portraits en `contain`, paysages en `cover`.
+* Images non importées dans la médiathèque WordPress.
 
-        set_transient($cache_key, $images, WPD_Settings::get_cache_duration());
+## Licence
 
-        return $images;
-    }
-
-    private static function get_album_cache_key(int $album_id, int $max): string
-    {
-        return 'wpd_album_' . md5(WPD_Settings::get_piwigo_url() . '|' . $album_id . '|' . $max);
-    }
-}
+Ce projet est distribué sous licence **GNU General Public License v3.0 (GPL-3.0)**.
