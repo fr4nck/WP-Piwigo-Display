@@ -8,6 +8,7 @@ final class WPD_Renderer
 {
     public static function render(array $images, array $atts): string
     {
+        $images = self::prepare_images($images, $atts);
         $type = isset($atts['type']) ? sanitize_key((string) $atts['type']) : 'gallery';
 
         if ($type === 'slider') {
@@ -20,13 +21,16 @@ final class WPD_Renderer
     private static function render_gallery(array $images, array $atts): string
     {
         wp_enqueue_style('wp-piwigo-display');
+        wp_enqueue_script('wp-piwigo-display');
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
         $height = self::sanitize_height((string) ($atts['height'] ?? ''), '180px');
+        $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
+        $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
 
         ob_start();
         ?>
-        <div class="wp-piwigo-display wp-piwigo-display-gallery" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
+        <div class="wp-piwigo-display wp-piwigo-display-gallery<?php echo esc_attr($rounded_class . $lightbox_class); ?>" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
             <?php foreach ($images as $image) : ?>
                 <?php
                 $image_url = self::get_image_url($image);
@@ -38,7 +42,7 @@ final class WPD_Renderer
                 }
                 ?>
                 <figure class="wp-piwigo-display-item">
-                    <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>">
+                    <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
                         <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
                     </a>
                     <?php if ($title !== '') : ?>
@@ -55,44 +59,71 @@ final class WPD_Renderer
     private static function render_slider(array $images, array $atts): string
     {
         wp_enqueue_style('wp-piwigo-display');
-        wp_enqueue_style('wpd-splide');
-        wp_enqueue_script('wpd-splide');
         wp_enqueue_script('wp-piwigo-display');
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
-        $height = self::sanitize_height((string) ($atts['height'] ?? ''), '420px');
-        $autoplay = filter_var($atts['autoplay'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
+        $height = self::sanitize_height((string) ($atts['height'] ?? ''), '');
+        $ratio = self::sanitize_ratio((string) ($atts['ratio'] ?? '16/9'));
+        $autoplay = self::is_enabled($atts['autoplay'] ?? 'true');
         $interval = max(1000, absint($atts['interval'] ?? 5000));
+        $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
+        $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
         $slider_id = 'wpd-slider-' . wp_generate_uuid4();
 
         ob_start();
         ?>
         <div id="<?php echo esc_attr($slider_id); ?>"
-             class="wp-piwigo-display wp-piwigo-display-slider splide"
-             style="--wpd-slider-height: <?php echo esc_attr($height); ?>; --wpd-image-fit: <?php echo esc_attr($fit); ?>;"
+             class="wp-piwigo-display wp-piwigo-display-slider<?php echo esc_attr($rounded_class . $lightbox_class); ?>"
+             style="--wpd-slider-height: <?php echo esc_attr($height); ?>; --wpd-slider-ratio: <?php echo esc_attr($ratio); ?>; --wpd-image-fit: <?php echo esc_attr($fit); ?>;"
              data-autoplay="<?php echo esc_attr($autoplay ? 'true' : 'false'); ?>"
-             data-interval="<?php echo esc_attr((string) $interval); ?>">
-            <div class="splide__track">
-                <ul class="splide__list">
-                    <?php foreach ($images as $image) : ?>
-                        <?php
-                        $image_url = self::get_large_url($image);
-                        $title = self::get_image_title($image);
+             data-interval="<?php echo esc_attr((string) $interval); ?>"
+             aria-label="<?php esc_attr_e('Diaporama Piwigo', 'wp-piwigo-display'); ?>">
+            <div class="wp-piwigo-display-slider-track">
+                <?php foreach ($images as $index => $image) : ?>
+                    <?php
+                    $image_url = self::get_large_url($image);
+                    $title = self::get_image_title($image);
 
-                        if ($image_url === '') {
-                            continue;
-                        }
-                        ?>
-                        <li class="splide__slide">
-                            <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                    if ($image_url === '') {
+                        continue;
+                    }
+                    ?>
+                    <div class="wp-piwigo-display-slide<?php echo $index === 0 ? ' is-active' : ''; ?>">
+                        <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
+                            <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>" decoding="async" />
+                        </a>
+                        <?php if ($title !== '') : ?>
+                            <div class="wp-piwigo-display-slide-caption"><?php echo esc_html($title); ?></div>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
             </div>
+
+            <button class="wp-piwigo-display-slider-arrow wp-piwigo-display-slider-prev" type="button" aria-label="<?php esc_attr_e('Image précédente', 'wp-piwigo-display'); ?>">‹</button>
+            <button class="wp-piwigo-display-slider-arrow wp-piwigo-display-slider-next" type="button" aria-label="<?php esc_attr_e('Image suivante', 'wp-piwigo-display'); ?>">›</button>
+
+            <div class="wp-piwigo-display-slider-pagination" aria-hidden="true"></div>
         </div>
         <?php
 
         return (string) ob_get_clean();
+    }
+
+    private static function prepare_images(array $images, array $atts): array
+    {
+        $latest = absint($atts['latest'] ?? 0);
+        $random = absint($atts['random'] ?? 0);
+
+        if ($latest > 0) {
+            $images = array_slice($images, 0, $latest);
+        }
+
+        if ($random > 0) {
+            shuffle($images);
+            $images = array_slice($images, 0, $random);
+        }
+
+        return $images;
     }
 
     private static function get_image_url(array $image): string
@@ -151,7 +182,12 @@ final class WPD_Renderer
         return in_array($fit, ['cover', 'contain'], true) ? $fit : 'cover';
     }
 
-    private static function sanitize_height(string $height): string
+    private static function is_enabled($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    private static function sanitize_height(string $height, string $default): string
     {
         $height = trim($height);
 
@@ -159,6 +195,17 @@ final class WPD_Renderer
             return $height;
         }
 
-        return '420px';
+        return $default;
+    }
+
+    private static function sanitize_ratio(string $ratio): string
+    {
+        $ratio = trim($ratio);
+
+        if (preg_match('/^\d+\/\d+$/', $ratio) === 1) {
+            return $ratio;
+        }
+
+        return '16/9';
     }
 }
