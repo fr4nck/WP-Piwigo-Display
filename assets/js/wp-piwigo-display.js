@@ -1,131 +1,48 @@
 document.addEventListener('DOMContentLoaded', function () {
-    initSliders();
+    initSplideSliders();
     initLightbox();
 });
 
-function initSliders() {
-    document.querySelectorAll('.wp-piwigo-display-slider').forEach(function (slider) {
-        var slides = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slide'));
-        var previous = slider.querySelector('.wp-piwigo-display-slider-prev');
-        var next = slider.querySelector('.wp-piwigo-display-slider-next');
-        var pagination = slider.querySelector('.wp-piwigo-display-slider-pagination');
-        var thumbnails = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slider-thumbnail'));
+function initSplideSliders() {
+    if (typeof Splide === 'undefined') {
+        return;
+    }
+
+    document.querySelectorAll('.wp-piwigo-display-slider.splide').forEach(function (slider) {
         var autoplay = slider.dataset.autoplay === 'true';
         var interval = parseInt(slider.dataset.interval || '5000', 10);
         var speed = parseInt(slider.dataset.speed || '500', 10);
-        slider.style.setProperty('--wpd-slider-speed', speed + 'ms');
-        var current = 0;
-        var timer = null;
+        var thumbnails = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slider-thumbnail'));
 
-        if (!slides.length) {
-            return;
-        }
+        var splide = new Splide(slider, {
+            type: 'loop',
+            perPage: 1,
+            autoplay: autoplay,
+            interval: interval,
+            speed: speed,
+            pauseOnHover: true,
+            pauseOnFocus: true,
+            arrows: true,
+            pagination: true,
+            keyboard: true,
+            drag: true,
+            rewind: false
+        });
 
-        function renderPagination() {
-            if (!pagination) {
-                return;
-            }
-
-            pagination.innerHTML = '';
-
-            slides.forEach(function (_, index) {
-                var button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'wp-piwigo-display-slider-dot';
-                button.setAttribute('aria-label', 'Afficher l’image ' + (index + 1));
-                button.addEventListener('click', function () {
-                    goTo(index);
-                    restart();
-                });
-                pagination.appendChild(button);
-            });
-        }
-
-        function update() {
-            slides.forEach(function (slide, index) {
-                slide.classList.toggle('is-active', index === current);
-            });
-
-            if (pagination) {
-                Array.prototype.slice.call(pagination.children).forEach(function (dot, index) {
-                    dot.classList.toggle('is-active', index === current);
-                });
-            }
-
+        splide.on('move', function (newIndex) {
             thumbnails.forEach(function (thumbnail, index) {
-                thumbnail.classList.toggle('is-active', index === current);
+                thumbnail.classList.toggle('is-active', index === newIndex);
             });
-        }
-
-        function goTo(index) {
-            current = (index + slides.length) % slides.length;
-            update();
-        }
-
-        function start() {
-            if (!autoplay || slides.length < 2) {
-                return;
-            }
-
-            timer = window.setInterval(function () {
-                goTo(current + 1);
-            }, interval);
-        }
-
-        function stop() {
-            if (timer) {
-                window.clearInterval(timer);
-                timer = null;
-            }
-        }
-
-        function restart() {
-            stop();
-            start();
-        }
+        });
 
         thumbnails.forEach(function (thumbnail) {
             thumbnail.addEventListener('click', function () {
                 var index = parseInt(thumbnail.dataset.slideIndex || '0', 10);
-                goTo(index);
-                restart();
+                splide.go(index);
             });
         });
 
-        if (previous) {
-            previous.addEventListener('click', function () {
-                goTo(current - 1);
-                restart();
-            });
-        }
-
-        if (next) {
-            next.addEventListener('click', function () {
-                goTo(current + 1);
-                restart();
-            });
-        }
-
-        slider.addEventListener('mouseenter', stop);
-        slider.addEventListener('mouseleave', start);
-        slider.addEventListener('focusin', stop);
-        slider.addEventListener('focusout', start);
-
-        slider.addEventListener('keydown', function (event) {
-            if (event.key === 'ArrowLeft') {
-                goTo(current - 1);
-                restart();
-            }
-
-            if (event.key === 'ArrowRight') {
-                goTo(current + 1);
-                restart();
-            }
-        });
-
-        renderPagination();
-        update();
-        start();
+        splide.mount();
     });
 }
 

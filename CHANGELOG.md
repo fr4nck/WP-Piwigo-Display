@@ -1,5 +1,18 @@
 # Journal des modifications
 
+## 1.0.6
+
+* Retour au moteur Splide pour le diaporama.
+* Correction fiable de `interval` et `speed`.
+* Conservation des miniatures optionnelles.
+* Conservation de la lightbox.
+
+## 1.0.5
+
+* Correction du tempo automatique du diaporama.
+* Remplacement de l’intervalle par une minuterie relancée proprement après chaque image.
+* Meilleure stabilité après pause, survol, focus ou clic manuel.
+
 ## 1.0.4
 
 * Correction du rendu slider par défaut.
