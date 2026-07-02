@@ -8,6 +8,18 @@ WP Piwigo Display permet d'intégrer facilement une galerie Piwigo dans un site 
 
 Le plugin interroge directement l'API de Piwigo, met les résultats en cache grâce aux transients WordPress et génère automatiquement l'affichage.
 
+## État du développement
+
+Version actuelle : **0.2.0**
+
+Fonctionnalité disponible :
+
+```text
+[piwigo album="154"]
+```
+
+À ce stade, le shortcode est reconnu par WordPress et affiche un rendu de test. La connexion réelle à l'API Piwigo sera ajoutée dans une prochaine étape.
+
 ## Philosophie
 
 Le projet privilégie :

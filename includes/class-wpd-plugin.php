@@ -20,6 +20,7 @@ final class WPD_Plugin
     private function __construct()
     {
         add_action('init', [$this, 'load_textdomain']);
+        add_action('init', [$this, 'register_shortcodes']);
     }
 
     public function load_textdomain(): void
@@ -29,5 +30,10 @@ final class WPD_Plugin
             false,
             dirname(plugin_basename(WPD_PLUGIN_FILE)) . '/languages'
         );
+    }
+
+    public function register_shortcodes(): void
+    {
+        WPD_Shortcode::register();
     }
 }
