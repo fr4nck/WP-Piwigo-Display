@@ -27,21 +27,8 @@ final class WPD_Settings
             'wp-piwigo-display'
         );
 
-        add_settings_field(
-            'piwigo_url',
-            __('URL de la galerie Piwigo', 'wp-piwigo-display'),
-            [self::class, 'render_piwigo_url_field'],
-            'wp-piwigo-display',
-            'wp_piwigo_display_main'
-        );
-
-        add_settings_field(
-            'cache_duration',
-            __('Durée du cache', 'wp-piwigo-display'),
-            [self::class, 'render_cache_duration_field'],
-            'wp-piwigo-display',
-            'wp_piwigo_display_main'
-        );
+        add_settings_field('piwigo_url', __('URL de la galerie Piwigo', 'wp-piwigo-display'), [self::class, 'render_piwigo_url_field'], 'wp-piwigo-display', 'wp_piwigo_display_main');
+        add_settings_field('cache_duration', __('Durée du cache', 'wp-piwigo-display'), [self::class, 'render_cache_duration_field'], 'wp-piwigo-display', 'wp_piwigo_display_main');
     }
 
     public static function register_page(): void
@@ -67,10 +54,7 @@ final class WPD_Settings
     {
         $options = get_option(self::OPTION_NAME, []);
 
-        return wp_parse_args(
-            is_array($options) ? $options : [],
-            self::default_options()
-        );
+        return wp_parse_args(is_array($options) ? $options : [], self::default_options());
     }
 
     public static function get_piwigo_url(): string
@@ -107,16 +91,8 @@ final class WPD_Settings
     {
         $options = self::get_options();
         ?>
-        <input
-            type="url"
-            name="<?php echo esc_attr(self::OPTION_NAME); ?>[piwigo_url]"
-            value="<?php echo esc_attr((string) $options['piwigo_url']); ?>"
-            class="regular-text"
-            placeholder="https://phototheque.example.org/"
-        />
-        <p class="description">
-            <?php esc_html_e('Adresse publique de votre galerie Piwigo.', 'wp-piwigo-display'); ?>
-        </p>
+        <input type="url" name="<?php echo esc_attr(self::OPTION_NAME); ?>[piwigo_url]" value="<?php echo esc_attr((string) $options['piwigo_url']); ?>" class="regular-text" placeholder="https://phototheque.example.org/" />
+        <p class="description"><?php esc_html_e('Adresse publique de votre galerie Piwigo.', 'wp-piwigo-display'); ?></p>
         <?php
     }
 
@@ -124,18 +100,9 @@ final class WPD_Settings
     {
         $options = self::get_options();
         ?>
-        <input
-            type="number"
-            min="60"
-            step="60"
-            name="<?php echo esc_attr(self::OPTION_NAME); ?>[cache_duration]"
-            value="<?php echo esc_attr((string) $options['cache_duration']); ?>"
-            class="small-text"
-        />
+        <input type="number" min="60" step="60" name="<?php echo esc_attr(self::OPTION_NAME); ?>[cache_duration]" value="<?php echo esc_attr((string) $options['cache_duration']); ?>" class="small-text" />
         <span><?php esc_html_e('secondes', 'wp-piwigo-display'); ?></span>
-        <p class="description">
-            <?php esc_html_e('Durée minimale : 60 secondes. Valeur conseillée : 3600 secondes.', 'wp-piwigo-display'); ?>
-        </p>
+        <p class="description"><?php esc_html_e('Durée minimale : 60 secondes. Valeur conseillée : 3600 secondes.', 'wp-piwigo-display'); ?></p>
         <?php
     }
 
@@ -147,11 +114,7 @@ final class WPD_Settings
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('WP Piwigo Display', 'wp-piwigo-display'); ?></h1>
-
-            <p>
-                <?php esc_html_e('Configurez ici l’adresse de votre galerie Piwigo et la durée du cache.', 'wp-piwigo-display'); ?>
-            </p>
-
+            <p><?php esc_html_e('Configurez ici l’adresse de votre galerie Piwigo et la durée du cache.', 'wp-piwigo-display'); ?></p>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('wp_piwigo_display');
