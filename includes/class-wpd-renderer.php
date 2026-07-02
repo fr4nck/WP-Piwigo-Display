@@ -36,12 +36,14 @@ final class WPD_Renderer
                 $image_url = self::get_image_url($image);
                 $large_url = self::get_large_url($image);
                 $title = self::get_image_title($image);
+                $orientation = self::get_orientation_class($image);
+                $image_fit = self::get_image_fit($image, $fit);
 
                 if ($image_url === '') {
                     continue;
                 }
                 ?>
-                <figure class="wp-piwigo-display-item">
+                <figure class="wp-piwigo-display-item <?php echo esc_attr($orientation); ?>" style="--wpd-current-image-fit: <?php echo esc_attr($image_fit); ?>;">
                     <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
                         <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
                     </a>
@@ -68,6 +70,7 @@ final class WPD_Renderer
         $interval = max(1000, absint($atts['interval'] ?? 5000));
         $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
+        $thumbnails = self::is_enabled($atts['thumbnails'] ?? 'true');
         $slider_id = 'wpd-slider-' . wp_generate_uuid4();
 
         ob_start();
@@ -83,12 +86,14 @@ final class WPD_Renderer
                     <?php
                     $image_url = self::get_large_url($image);
                     $title = self::get_image_title($image);
+                    $orientation = self::get_orientation_class($image);
+                    $image_fit = self::get_image_fit($image, $fit);
 
                     if ($image_url === '') {
                         continue;
                     }
                     ?>
-                    <div class="wp-piwigo-display-slide<?php echo $index === 0 ? ' is-active' : ''; ?>">
+                    <div class="wp-piwigo-display-slide <?php echo esc_attr($orientation); ?><?php echo $index === 0 ? ' is-active' : ''; ?>" style="--wpd-current-image-fit: <?php echo esc_attr($image_fit); ?>;">
                         <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
                             <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>" decoding="async" />
                         </a>
@@ -103,6 +108,24 @@ final class WPD_Renderer
             <button class="wp-piwigo-display-slider-arrow wp-piwigo-display-slider-next" type="button" aria-label="<?php esc_attr_e('Image suivante', 'wp-piwigo-display'); ?>">›</button>
 
             <div class="wp-piwigo-display-slider-pagination" aria-hidden="true"></div>
+
+            <?php if ($thumbnails) : ?>
+                <div class="wp-piwigo-display-slider-thumbnails" aria-label="<?php esc_attr_e('Miniatures du diaporama', 'wp-piwigo-display'); ?>">
+                    <?php foreach ($images as $index => $image) : ?>
+                        <?php
+                        $thumb_url = self::get_image_url($image);
+                        $title = self::get_image_title($image);
+
+                        if ($thumb_url === '') {
+                            continue;
+                        }
+                        ?>
+                        <button type="button" class="wp-piwigo-display-slider-thumbnail<?php echo $index === 0 ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr((string) $index); ?>" aria-label="<?php echo esc_attr(sprintf(__('Afficher l’image %d', 'wp-piwigo-display'), $index + 1)); ?>">
+                            <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
         <?php
 
@@ -177,9 +200,48 @@ final class WPD_Renderer
         return '';
     }
 
+
+    private static function get_image_fit(array $image, string $fit): string
+    {
+        if ($fit !== 'auto') {
+            return $fit;
+        }
+
+        return self::is_portrait($image) ? 'contain' : 'cover';
+    }
+
+    private static function get_orientation_class(array $image): string
+    {
+        if (self::is_portrait($image)) {
+            return 'wp-piwigo-display-portrait';
+        }
+
+        if (self::is_landscape($image)) {
+            return 'wp-piwigo-display-landscape';
+        }
+
+        return 'wp-piwigo-display-orientation-unknown';
+    }
+
+    private static function is_portrait(array $image): bool
+    {
+        $width = absint($image['width'] ?? 0);
+        $height = absint($image['height'] ?? 0);
+
+        return $width > 0 && $height > 0 && $height > $width;
+    }
+
+    private static function is_landscape(array $image): bool
+    {
+        $width = absint($image['width'] ?? 0);
+        $height = absint($image['height'] ?? 0);
+
+        return $width > 0 && $height > 0 && $width >= $height;
+    }
+
     private static function sanitize_fit(string $fit): string
     {
-        return in_array($fit, ['cover', 'contain'], true) ? $fit : 'cover';
+        return in_array($fit, ['cover', 'contain', 'auto'], true) ? $fit : 'auto';
     }
 
     private static function is_enabled($value): bool
