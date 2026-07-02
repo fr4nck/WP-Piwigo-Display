@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.0.3
+
+* Stabilisation du diaporama en mode brut.
+* Limitation propre des photos portrait.
+* Ajout du paramètre `speed` pour la durée de transition.
+* Correction du défilement irrégulier.
+
 ## 1.0.2
 
 * Ajout du mode `fit="raw"`.

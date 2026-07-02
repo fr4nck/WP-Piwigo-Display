@@ -12,6 +12,8 @@ function initSliders() {
         var thumbnails = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slider-thumbnail'));
         var autoplay = slider.dataset.autoplay === 'true';
         var interval = parseInt(slider.dataset.interval || '5000', 10);
+        var speed = parseInt(slider.dataset.speed || '500', 10);
+        slider.style.setProperty('--wpd-slider-speed', speed + 'ms');
         var current = 0;
         var timer = null;
 

@@ -19,6 +19,7 @@ final class WPD_Shortcode
                 'type' => 'gallery',
                 'autoplay' => 'true',
                 'interval' => '5000',
+                'speed' => '500',
                 'fit' => 'raw',
                 'height' => '',
                 'ratio' => '16/9',

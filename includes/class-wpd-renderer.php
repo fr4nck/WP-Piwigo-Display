@@ -70,6 +70,7 @@ final class WPD_Renderer
         $ratio = self::sanitize_ratio((string) ($atts['ratio'] ?? '16/9'));
         $autoplay = self::is_enabled($atts['autoplay'] ?? 'true');
         $interval = max(1000, absint($atts['interval'] ?? 5000));
+        $speed = max(0, absint($atts['speed'] ?? 500));
         $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
         $thumbnails = self::is_enabled($atts['thumbnails'] ?? 'true');
@@ -82,6 +83,7 @@ final class WPD_Renderer
              style="--wpd-slider-height: <?php echo esc_attr($height); ?>; --wpd-slider-ratio: <?php echo esc_attr($ratio); ?>; --wpd-image-fit: <?php echo esc_attr($fit); ?>;"
              data-autoplay="<?php echo esc_attr($autoplay ? 'true' : 'false'); ?>"
              data-interval="<?php echo esc_attr((string) $interval); ?>"
+             data-speed="<?php echo esc_attr((string) $speed); ?>"
              aria-label="<?php esc_attr_e('Diaporama Piwigo', 'wp-piwigo-display'); ?>">
             <div class="wp-piwigo-display-slider-track">
                 <?php foreach ($images as $index => $image) : ?>
