@@ -10,15 +10,21 @@ Le plugin interroge directement l'API de Piwigo, met les résultats en cache gr�
 
 ## État du développement
 
-Version actuelle : **0.2.0**
+Version actuelle : **0.4.0**
 
-Fonctionnalité disponible :
+Fonctionnalités disponibles :
 
 ```text
 [piwigo album="154"]
 ```
 
-À ce stade, le shortcode est reconnu par WordPress et affiche un rendu de test. La connexion réelle à l'API Piwigo sera ajoutée dans une prochaine étape.
+À ce stade :
+
+* le shortcode est reconnu par WordPress ;
+* une page de réglages est disponible dans **Réglages > WP Piwigo Display** ;
+* l'URL de la galerie Piwigo peut être configurée ;
+* le plugin interroge l'API Piwigo ;
+* le rendu affiche temporairement le nombre d'images et leur nom.
 
 ## Philosophie
 

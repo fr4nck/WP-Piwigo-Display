@@ -21,6 +21,8 @@ final class WPD_Plugin
     {
         add_action('init', [$this, 'load_textdomain']);
         add_action('init', [$this, 'register_shortcodes']);
+        add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_menu', [$this, 'register_settings_page']);
     }
 
     public function load_textdomain(): void
@@ -35,5 +37,15 @@ final class WPD_Plugin
     public function register_shortcodes(): void
     {
         WPD_Shortcode::register();
+    }
+
+    public function register_settings(): void
+    {
+        WPD_Settings::register();
+    }
+
+    public function register_settings_page(): void
+    {
+        WPD_Settings::register_page();
     }
 }
