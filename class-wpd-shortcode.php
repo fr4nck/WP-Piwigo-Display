@@ -164,32 +164,8 @@ final class WPD_Settings
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('WP Piwigo Display', 'wp-piwigo-display'); ?></h1>
-
-            <?php if (isset($_GET['wpd_cache_cleared'])) : ?>
-                <div class="notice notice-success is-dismissible">
-                    <p>
-                        <?php
-                        printf(
-                            esc_html__('Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display'),
-                            absint($_GET['wpd_cache_cleared'])
-                        );
-                        ?>
-                    </p>
-                </div>
-            <?php endif; ?>
-
             <form method="post" action="options.php">
                 <?php settings_fields('wp_piwigo_display'); do_settings_sections('wp-piwigo-display'); submit_button(__('Enregistrer les réglages', 'wp-piwigo-display')); ?>
-            </form>
-
-            <hr />
-
-            <h2><?php esc_html_e('Cache', 'wp-piwigo-display'); ?></h2>
-            <p><?php esc_html_e('Vous pouvez vider le cache si vous venez de modifier des albums ou d’ajouter des photos dans Piwigo.', 'wp-piwigo-display'); ?></p>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action" value="wpd_clear_cache" />
-                <?php wp_nonce_field('wpd_clear_cache'); ?>
-                <?php submit_button(__('Vider le cache', 'wp-piwigo-display'), 'secondary'); ?>
             </form>
         </div>
         <?php
