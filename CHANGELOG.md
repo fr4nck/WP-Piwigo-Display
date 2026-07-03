@@ -1,3 +1,10 @@
+## 1.4.0
+
+* Amélioration de la page de réglages.
+* Ajout d’un mode debug pour les administrateurs.
+* Affichage d’un résumé technique sous les galeries en mode debug.
+* Documentation du mode debug.
+
 ## 1.3.1
 
 * Ajout des réglages globaux de tri.

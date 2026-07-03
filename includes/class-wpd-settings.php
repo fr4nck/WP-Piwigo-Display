@@ -34,6 +34,9 @@ final class WPD_Settings
         add_settings_field('default_sort', __('Tri des images', 'wp-piwigo-display'), [self::class, 'render_default_sort_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_order', __('Ordre du tri', 'wp-piwigo-display'), [self::class, 'render_default_order_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_limit', __('Limite d’images', 'wp-piwigo-display'), [self::class, 'render_default_limit_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
+
+        add_settings_section('wp_piwigo_display_advanced', __('Avancé', 'wp-piwigo-display'), [self::class, 'render_advanced_section'], 'wp-piwigo-display');
+        add_settings_field('debug_mode', __('Mode debug', 'wp-piwigo-display'), [self::class, 'render_debug_mode_field'], 'wp-piwigo-display', 'wp_piwigo_display_advanced');
     }
 
     public static function register_page(): void
@@ -59,6 +62,7 @@ final class WPD_Settings
             'default_sort' => 'manual',
             'default_order' => 'desc',
             'default_limit' => 0,
+            'debug_mode' => 'false',
         ];
     }
 
@@ -101,6 +105,12 @@ final class WPD_Settings
         return max(60, absint($options['cache_duration']));
     }
 
+    public static function get_debug_mode(): bool
+    {
+        $options = self::get_options();
+        return filter_var($options['debug_mode'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
+    }
+
     public static function sanitize_options(array $options): array
     {
         $sanitized = self::default_options();
@@ -124,12 +134,18 @@ final class WPD_Settings
         $sanitized['default_sort'] = self::sanitize_choice($options['default_sort'] ?? 'manual', ['manual', 'date', 'name', 'id', 'random'], 'manual');
         $sanitized['default_order'] = self::sanitize_choice($options['default_order'] ?? 'desc', ['asc', 'desc'], 'desc');
         $sanitized['default_limit'] = absint($options['default_limit'] ?? 0);
+        $sanitized['debug_mode'] = self::sanitize_bool($options['debug_mode'] ?? 'false');
         return $sanitized;
     }
 
     public static function render_defaults_section(): void
     {
         echo '<p>' . esc_html__('Ces valeurs sont utilisées par défaut. Un shortcode peut les remplacer.', 'wp-piwigo-display') . '</p>';
+    }
+
+    public static function render_advanced_section(): void
+    {
+        echo '<p>' . esc_html__('Options utiles pour tester ou diagnostiquer le plugin.', 'wp-piwigo-display') . '</p>';
     }
 
     public static function render_piwigo_url_field(): void
@@ -156,6 +172,7 @@ final class WPD_Settings
     public static function render_default_sort_field(): void { self::select('default_sort', ['manual' => 'Ordre Piwigo', 'date' => 'Date', 'name' => 'Nom', 'id' => 'Identifiant', 'random' => 'Aléatoire']); }
     public static function render_default_order_field(): void { self::select('default_order', ['asc' => 'Croissant', 'desc' => 'Décroissant']); }
     public static function render_default_limit_field(): void { $o = self::get_options(); self::input('number', 'default_limit', (string) $o['default_limit'], 'small-text', '', ['min' => '0', 'step' => '1']); echo ' <span>' . esc_html__('0 = aucune limite', 'wp-piwigo-display') . '</span>'; }
+    public static function render_debug_mode_field(): void { self::select_bool('debug_mode'); echo '<p class="description">' . esc_html__('Affiche un résumé technique sous les galeries pour les administrateurs connectés.', 'wp-piwigo-display') . '</p>'; }
 
     public static function render_default_interval_field(): void
     {
@@ -179,6 +196,7 @@ final class WPD_Settings
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('WP Piwigo Display', 'wp-piwigo-display'); ?></h1>
+            <p><?php esc_html_e('Réglages de connexion, d’affichage, de diaporama, de cache et de diagnostic.', 'wp-piwigo-display'); ?></p>
 
             <?php if (isset($_GET['wpd_cache_cleared'])) : ?>
                 <div class="notice notice-success is-dismissible">

@@ -60,11 +60,35 @@ final class WPD_Shortcode
             return self::render_error(__('WP Piwigo Display : aucune image trouvée dans cet album.', 'wp-piwigo-display'));
         }
 
-        return WPD_Renderer::render($images, $atts);
+        $html = WPD_Renderer::render($images, $atts);
+
+        if (WPD_Settings::get_debug_mode() && current_user_can('manage_options')) {
+            $html .= self::render_debug($album_id, $piwigo_url, $atts, is_array($images) ? count($images) : 0);
+        }
+
+        return $html;
     }
 
     private static function render_error(string $message): string
     {
         return '<div class="wp-piwigo-display-error">' . esc_html($message) . '</div>';
+    }
+
+    private static function render_debug(int $album_id, string $piwigo_url, array $atts, int $count): string
+    {
+        ob_start();
+        ?>
+        <details class="wp-piwigo-display-debug">
+            <summary><?php esc_html_e('Debug WP Piwigo Display', 'wp-piwigo-display'); ?></summary>
+            <ul>
+                <li><?php echo esc_html(sprintf(__('Album : %d', 'wp-piwigo-display'), $album_id)); ?></li>
+                <li><?php echo esc_html(sprintf(__('URL Piwigo : %s', 'wp-piwigo-display'), $piwigo_url)); ?></li>
+                <li><?php echo esc_html(sprintf(__('Images affichées : %d', 'wp-piwigo-display'), $count)); ?></li>
+                <li><?php echo esc_html(sprintf(__('Type : %s', 'wp-piwigo-display'), (string) ($atts['type'] ?? ''))); ?></li>
+                <li><?php echo esc_html(sprintf(__('Tri : %s / %s', 'wp-piwigo-display'), (string) ($atts['sort'] ?? ''), (string) ($atts['order'] ?? ''))); ?></li>
+            </ul>
+        </details>
+        <?php
+        return (string) ob_get_clean();
     }
 }

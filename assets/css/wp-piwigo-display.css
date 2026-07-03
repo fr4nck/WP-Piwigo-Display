@@ -525,3 +525,17 @@
 .wp-piwigo-display-rounded.wp-piwigo-display-slider.splide .splide__track {
     border-radius: 8px;
 }
+
+
+.wp-piwigo-display-debug {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid currentColor;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+.wp-piwigo-display-debug summary {
+    cursor: pointer;
+    font-weight: 600;
+}
