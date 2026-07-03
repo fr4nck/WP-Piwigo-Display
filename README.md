@@ -1,101 +1,34 @@
-# WP Piwigo Display
+<?php
 
-Plugin WordPress permettant d'afficher simplement une galerie Piwigo grâce à l'API officielle.
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-WP Piwigo Display permet d'intégrer facilement une photothèque Piwigo dans un site WordPress, sans importer les images dans la médiathèque.
+final class WPD_Cache
+{
+    public static function get_album_images(int $album_id, int $max = 0)
+    {
+        $cache_key = self::get_album_cache_key($album_id, $max);
+        $cached = get_transient($cache_key);
 
-Le plugin interroge directement l'API de Piwigo, met les résultats en cache grâce aux transients WordPress et génère automatiquement l'affichage.
+        if (is_array($cached)) {
+            return $cached;
+        }
 
----
+        $api = new WPD_Api(WPD_Settings::get_piwigo_url());
+        $images = $api->get_images_from_album($album_id, $max);
 
-## Objectifs
+        if (is_wp_error($images)) {
+            return $images;
+        }
 
-Le projet privilégie :
+        set_transient($cache_key, $images, WPD_Settings::get_cache_duration());
 
-- la simplicité ;
-- les performances ;
-- une architecture modulaire ;
-- le respect des standards WordPress ;
-- le respect des photographies ;
-- un minimum de configuration.
+        return $images;
+    }
 
-Le développement est réalisé progressivement afin de conserver un code lisible et facilement maintenable.
-
----
-
-## Fonctionnalités actuelles
-
-- Connexion à l'API officielle de Piwigo.
-- Affichage d'un album via un shortcode.
-- Galerie responsive.
-- Diaporama.
-- Lightbox.
-- Mise en cache avec les transients WordPress.
-- Chargement différé des images.
-- Interface de configuration simple.
-
----
-
-## Exemple
-
-Afficher un album :
-
-```text
-[piwigo album="154"]
-```
-
-Afficher une galerie :
-
-```text
-[piwigo album="154" type="gallery"]
-```
-
-Afficher un diaporama :
-
-```text
-[piwigo album="154" type="slider"]
-```
-
----
-
-## Philosophie
-
-WP Piwigo Display ne cherche pas à remplacer Piwigo.
-
-Piwigo reste le gestionnaire de photothèque.
-
-WordPress devient simplement un moyen élégant de présenter son contenu.
-
-Une attention particulière est portée au respect des photographies. Le plugin ne doit jamais modifier ou dénaturer une image sans que le webmaster l'ait explicitement demandé.
-
----
-
-## Documentation
-
-La documentation complète est disponible dans le dossier **docs**.
-
-- Installation
-- Configuration
-- Utilisation des shortcodes
-- Architecture du plugin
-- Philosophie du projet
-- Feuille de route
-
----
-
-## Feuille de route
-
-Les prochaines évolutions prévues sont notamment :
-
-- intégration complète de Splide ;
-- affichage récursif des sous-albums ;
-- affichage par tags ;
-- mode Masonry ;
-- optimisation du cache ;
-- bloc Gutenberg.
-
----
-
-## Licence
-
-Ce projet est distribué sous licence **GNU General Public License v3.0 (GPL-3.0)**.
+    private static function get_album_cache_key(int $album_id, int $max): string
+    {
+        return 'wpd_album_' . md5(WPD_Settings::get_piwigo_url() . '|' . $album_id . '|' . $max);
+    }
+}

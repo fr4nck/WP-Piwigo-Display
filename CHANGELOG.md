@@ -1,66 +1,53 @@
-# Journal des modifications
+<?php
 
-## 1.0.6
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-* Retour au moteur Splide pour le diaporama.
-* Correction fiable de `interval` et `speed`.
-* Conservation des miniatures optionnelles.
-* Conservation de la lightbox.
+final class WPD_Api
+{
+    private string $base_url;
 
-## 1.0.5
+    public function __construct(string $base_url)
+    {
+        $this->base_url = untrailingslashit($base_url);
+    }
 
-* Correction du tempo automatique du diaporama.
-* Remplacement de l’intervalle par une minuterie relancée proprement après chaque image.
-* Meilleure stabilité après pause, survol, focus ou clic manuel.
+    public function get_images_from_album(int $album_id, int $max = 0)
+    {
+        if ($album_id <= 0) {
+            return new WP_Error('wpd_invalid_album', __('Identifiant d\'album invalide.', 'wp-piwigo-display'));
+        }
 
-## 1.0.4
+        $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
+            'timeout' => 15,
+            'body' => [
+                'method' => 'pwg.categories.getImages',
+                'cat_id' => $album_id,
+                'per_page' => $max > 0 ? $max : 500,
+                'page' => 0,
+            ],
+        ]);
 
-* Correction du rendu slider par défaut.
-* Suppression du comportement brut variable dans le diaporama.
-* Le diaporama affiche les images en entier, sans recadrage ni déformation.
-* Passage de la transition par défaut à zéro pour éviter les effets fantômes.
+        if (is_wp_error($response)) {
+            return new WP_Error('wpd_http_error', sprintf(__('Erreur HTTP lors de l\'appel à Piwigo : %s', 'wp-piwigo-display'), $response->get_error_message()));
+        }
 
-## 1.0.3
+        $status_code = wp_remote_retrieve_response_code($response);
+        if ($status_code < 200 || $status_code >= 300) {
+            return new WP_Error('wpd_http_status', sprintf(__('Piwigo a répondu avec le code HTTP %d.', 'wp-piwigo-display'), $status_code));
+        }
 
-* Stabilisation du diaporama en mode brut.
-* Limitation propre des photos portrait.
-* Ajout du paramètre `speed` pour la durée de transition.
-* Correction du défilement irrégulier.
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (!is_array($data)) {
+            return new WP_Error('wpd_invalid_json', __('Réponse JSON invalide renvoyée par Piwigo.', 'wp-piwigo-display'));
+        }
 
-## 1.0.2
+        if (($data['stat'] ?? '') !== 'ok') {
+            return new WP_Error('wpd_api_error', sprintf(__('Erreur API Piwigo : %s', 'wp-piwigo-display'), isset($data['message']) ? (string) $data['message'] : __('erreur inconnue', 'wp-piwigo-display')));
+        }
 
-* Ajout du mode `fit="raw"`.
-* Passage du cadrage par défaut en mode brut, sans recadrage imposé.
-* La galerie respecte la hauteur naturelle des images en mode brut.
-* Le diaporama respecte les proportions originales en mode brut.
-
-## 1.0.1
-
-* Ajout du mode `fit="auto"` par défaut.
-* Détection automatique portrait / paysage.
-* Les photos en portrait utilisent `contain` automatiquement.
-* Les photos en paysage utilisent `cover` automatiquement.
-
-## 1.0.0
-
-* Stabilisation du rendu galerie.
-* Stabilisation du rendu diaporama.
-* Ajout des miniatures optionnelles dans le diaporama.
-* Conservation de la lightbox locale.
-* Conservation des options `latest` et `random`.
-* Nettoyage de la documentation.
-
-## 0.9.0
-
-* Ajout d'une lightbox locale.
-* Suppression de la dépendance au CDN.
-* Ajout des options `latest` et `random`.
-
-## 0.8.1
-
-* Ajout de l'option `rounded`.
-* Suppression des angles arrondis par défaut.
-
-## 0.7.1
-
-* Correction de la hauteur par défaut du diaporama.
+        $images = $data['result']['images'] ?? [];
+        return is_array($images) ? $images : [];
+    }
+}
