@@ -1,101 +1,49 @@
-<?php
+# WP Piwigo Display
 
-if (!defined('ABSPATH')) {
-    exit;
-    public static function clear_all(): int
-    {
-        global $wpdb;
+Plugin WordPress léger permettant d'afficher des albums Piwigo via l'API officielle.
 
-        $deleted = 0;
-        $prefix = '_transient_wpd_album_';
-        $timeout_prefix = '_transient_timeout_wpd_album_';
+## Utilisation
 
-        $names = $wpdb->get_col(
-            $wpdb->prepare(
-                "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-                $wpdb->esc_like($prefix) . '%',
-                $wpdb->esc_like($timeout_prefix) . '%'
-            )
-        );
+```text
+[piwigo album="154"]
+[piwigo album="154" type="gallery"]
+[piwigo album="154" type="slider"]
+[piwigo album="154" type="slider" thumbnails="true"]
+[piwigo album="154" type="slider" thumbnails="false"]
+[piwigo album="154" type="slider" autoplay="true" interval="5000" ratio="16/9" fit="raw"]
+[piwigo album="154" type="slider" fit="raw"]
+[piwigo album="154" type="slider" height="520px" fit="contain"]
+[piwigo album="154" type="gallery" max="30" fit="contain" height="220px"]
+[piwigo album="154" random="12"]
+[piwigo album="154" latest="20"]
+[piwigo album="154" lightbox="false"]
+[piwigo album="154" rounded="true"]
+```
 
-        foreach ($names as $name) {
-            if (str_starts_with($name, '_transient_timeout_')) {
-                $transient = substr($name, strlen('_transient_timeout_'));
-            } elseif (str_starts_with($name, '_transient_')) {
-                $transient = substr($name, strlen('_transient_'));
-            } else {
-                continue;
-            }
+## Fonctionnalités
 
-            if (delete_transient($transient)) {
-                $deleted++;
-            }
-        }
+* Shortcode unique.
+* Page de réglages dans **Réglages > WP Piwigo Display**.
+* Connexion à l'API Piwigo.
+* Cache avec les transients WordPress.
+* Galerie responsive.
+* Diaporama local sans CDN.
+* Miniatures optionnelles dans le diaporama.
+* Lightbox maison sans dépendance externe.
+* Options `max`, `latest`, `random`, `fit`, `height`, `ratio`, `rounded`, `lightbox`, `thumbnails`.
+* Mode `fit="raw"` par défaut : les photos sont affichées sans recadrage imposé.
+* Mode `fit="auto"` disponible : portraits en `contain`, paysages en `cover`.
+* Images non importées dans la médiathèque WordPress.
 
-        return $deleted;
-    }
+## Licence
 
-}
+Ce projet est distribué sous licence **GNU General Public License v3.0 (GPL-3.0)**.
 
-final class WPD_Cache
-{
-    public static function get_album_images(int $album_id, int $max = 0, string $piwigo_url = '', bool $recursive = false, int $depth = 10)
-    {
-        $piwigo_url = $piwigo_url !== '' ? untrailingslashit($piwigo_url) : WPD_Settings::get_piwigo_url();
-        $cache_key = self::get_album_cache_key($album_id, $max, $piwigo_url, $recursive, $depth);
-        $cached = get_transient($cache_key);
 
-        if (is_array($cached)) {
-            return $cached;
-        }
+## URL ponctuelle
 
-        $api = new WPD_Api($piwigo_url);
-        $images = $recursive ? $api->get_images_from_album_recursive($album_id, $max, $depth) : $api->get_images_from_album($album_id, $max);
+Il est possible d'utiliser ponctuellement une autre galerie Piwigo que celle configurée dans les réglages :
 
-        if (is_wp_error($images)) {
-            return $images;
-        }
-
-        set_transient($cache_key, $images, WPD_Settings::get_cache_duration());
-
-        return $images;
-    }
-
-    private static function get_album_cache_key(int $album_id, int $max, string $piwigo_url, bool $recursive, int $depth): string
-    {
-        return 'wpd_album_' . md5($piwigo_url . '|' . $album_id . '|' . $max . '|' . ($recursive ? '1' : '0') . '|' . $depth);
-    }
-    public static function clear_all(): int
-    {
-        global $wpdb;
-
-        $deleted = 0;
-        $prefix = '_transient_wpd_album_';
-        $timeout_prefix = '_transient_timeout_wpd_album_';
-
-        $names = $wpdb->get_col(
-            $wpdb->prepare(
-                "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-                $wpdb->esc_like($prefix) . '%',
-                $wpdb->esc_like($timeout_prefix) . '%'
-            )
-        );
-
-        foreach ($names as $name) {
-            if (str_starts_with($name, '_transient_timeout_')) {
-                $transient = substr($name, strlen('_transient_timeout_'));
-            } elseif (str_starts_with($name, '_transient_')) {
-                $transient = substr($name, strlen('_transient_'));
-            } else {
-                continue;
-            }
-
-            if (delete_transient($transient)) {
-                $deleted++;
-            }
-        }
-
-        return $deleted;
-    }
-
-}
+```text
+[piwigo url="https://autre-galerie.example.org" album="154"]
+```

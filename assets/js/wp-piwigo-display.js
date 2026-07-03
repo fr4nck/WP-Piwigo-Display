@@ -12,6 +12,7 @@ function initSplideSliders() {
         var autoplay = slider.dataset.autoplay === 'true';
         var interval = parseInt(slider.dataset.interval || '5000', 10);
         var speed = parseInt(slider.dataset.speed || '500', 10);
+        var navigation = slider.dataset.navigation || 'thumbnails';
         var thumbnails = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slider-thumbnail'));
 
         var splide = new Splide(slider, {
@@ -23,7 +24,7 @@ function initSplideSliders() {
             pauseOnHover: true,
             pauseOnFocus: true,
             arrows: true,
-            pagination: true,
+            pagination: navigation === 'dots',
             keyboard: true,
             drag: true,
             rewind: false
