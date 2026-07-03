@@ -24,6 +24,7 @@ final class WPD_Plugin
         add_action('wp_enqueue_scripts', [$this, 'register_assets']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_menu', [$this, 'register_settings_page']);
+        add_action('admin_post_wpd_clear_cache', [$this, 'clear_cache']);
     }
 
     public function load_textdomain(): void
@@ -81,5 +82,27 @@ final class WPD_Plugin
     public function register_settings_page(): void
     {
         WPD_Settings::register_page();
+    }
+
+    public function clear_cache(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Accès refusé.', 'wp-piwigo-display'));
+        }
+
+        check_admin_referer('wpd_clear_cache');
+
+        $deleted = WPD_Cache::clear_all();
+
+        wp_safe_redirect(
+            add_query_arg(
+                [
+                    'page' => 'wp-piwigo-display',
+                    'wpd_cache_cleared' => (string) $deleted,
+                ],
+                admin_url('options-general.php')
+            )
+        );
+        exit;
     }
 }
