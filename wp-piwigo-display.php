@@ -148,19 +148,75 @@ final class WPD_Renderer
 
     private static function prepare_images(array $images, array $atts): array
     {
+        $sort = self::sanitize_sort((string) ($atts['sort'] ?? 'manual'));
+        $order = self::sanitize_order((string) ($atts['order'] ?? 'desc'));
+        $limit = absint($atts['limit'] ?? 0);
         $latest = absint($atts['latest'] ?? 0);
         $random = absint($atts['random'] ?? 0);
-
-        if ($latest > 0) {
-            $images = array_slice($images, 0, $latest);
-        }
+        $max = absint($atts['max'] ?? 0);
 
         if ($random > 0) {
-            shuffle($images);
-            $images = array_slice($images, 0, $random);
+            $sort = 'random';
+            $limit = $random;
+        }
+
+        if ($latest > 0) {
+            $sort = 'date';
+            $order = 'desc';
+            $limit = $latest;
+        }
+
+        if ($limit <= 0 && $max > 0) {
+            $limit = $max;
+        }
+
+        switch ($sort) {
+            case 'random':
+                shuffle($images);
+                break;
+
+            case 'name':
+                usort($images, static function (array $a, array $b): int {
+                    return strnatcasecmp((string) ($a['name'] ?? $a['file'] ?? ''), (string) ($b['name'] ?? $b['file'] ?? ''));
+                });
+                break;
+
+            case 'date':
+                usort($images, static function (array $a, array $b): int {
+                    return strcmp((string) ($a['date_available'] ?? $a['date_creation'] ?? ''), (string) ($b['date_available'] ?? $b['date_creation'] ?? ''));
+                });
+                break;
+
+            case 'id':
+                usort($images, static function (array $a, array $b): int {
+                    return absint($a['id'] ?? 0) <=> absint($b['id'] ?? 0);
+                });
+                break;
+
+            case 'manual':
+            default:
+                break;
+        }
+
+        if ($sort !== 'random' && $order === 'desc') {
+            $images = array_reverse($images);
+        }
+
+        if ($limit > 0) {
+            $images = array_slice($images, 0, $limit);
         }
 
         return $images;
+    }
+
+    private static function sanitize_sort(string $sort): string
+    {
+        return in_array($sort, ['manual', 'date', 'name', 'random', 'id'], true) ? $sort : 'manual';
+    }
+
+    private static function sanitize_order(string $order): string
+    {
+        return in_array($order, ['asc', 'desc'], true) ? $order : 'desc';
     }
 
     private static function get_image_url(array $image): string
