@@ -1,3 +1,12 @@
+## 1.5.0
+
+* Ajout des presets `galerie`, `slider` et `actualites`.
+* Possibilité d’utiliser un album par identifiant, nom ou chemin.
+* Amélioration des messages d’erreur destinés aux utilisateurs.
+* Ajout du test de connexion Piwigo.
+* Nettoyage de fichiers PHP corrompus par les versions intermédiaires.
+* Ajout d’un `readme.txt` compatible WordPress.org.
+
 ## 1.4.0
 
 * Amélioration de la page de réglages.

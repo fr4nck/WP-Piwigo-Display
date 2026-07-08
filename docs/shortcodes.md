@@ -210,3 +210,42 @@ Exemple :
 ```text
 [piwigo album="154" max="30"]
 ```
+
+
+---
+
+# preset
+
+Applique un ensemble de paramètres prédéfinis.
+
+| Valeur | Description |
+|--------|-------------|
+| galerie | Galerie simple avec lightbox. |
+| slider | Diaporama avec miniatures. |
+| actualites | Diaporama des dernières images. |
+
+Exemple :
+
+```text
+[piwigo album="154" preset="slider"]
+```
+
+Un preset peut être complété ou remplacé par des paramètres du shortcode.
+
+```text
+[piwigo album="154" preset="actualites" limit="20"]
+```
+
+---
+
+# album par nom ou chemin
+
+Le paramètre `album` peut recevoir un identifiant numérique, un nom d'album ou un chemin.
+
+```text
+[piwigo album="154"]
+[piwigo album="Séjour voile"]
+[piwigo album="/ALSH/Été 2026/Séjour voile"]
+```
+
+L'identifiant numérique reste le moyen le plus fiable.

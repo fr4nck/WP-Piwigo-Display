@@ -73,3 +73,10 @@ Le cache sera automatiquement recréé lors du prochain affichage d'un album.
 Pour une galerie publique qui évolue peu, une durée de cache de plusieurs heures est généralement suffisante.
 
 Pour une galerie fréquemment mise à jour, il est conseillé de réduire cette durée ou de vider le cache après les mises à jour importantes.
+
+
+---
+
+# Tester la connexion
+
+Le bouton **Tester la connexion Piwigo** vérifie que WordPress peut joindre l’API de la galerie configurée.

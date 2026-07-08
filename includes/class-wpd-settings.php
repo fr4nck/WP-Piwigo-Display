@@ -211,8 +211,35 @@ final class WPD_Settings
                 </div>
             <?php endif; ?>
 
+            <?php if (isset($_GET['wpd_connection_test'])) : ?>
+                <?php $connection_result = sanitize_key((string) $_GET['wpd_connection_test']); ?>
+                <div class="notice <?php echo $connection_result === 'success' ? 'notice-success' : 'notice-error'; ?> is-dismissible">
+                    <p>
+                        <?php
+                        if ($connection_result === 'success') {
+                            esc_html_e('Connexion Piwigo réussie.', 'wp-piwigo-display');
+                        } elseif ($connection_result === 'missing_url') {
+                            esc_html_e('Impossible de tester la connexion : URL Piwigo manquante.', 'wp-piwigo-display');
+                        } else {
+                            esc_html_e('L’API Piwigo n’a pas répondu correctement.', 'wp-piwigo-display');
+                        }
+                        ?>
+                    </p>
+                </div>
+            <?php endif; ?>
+
             <form method="post" action="options.php">
                 <?php settings_fields('wp_piwigo_display'); do_settings_sections('wp-piwigo-display'); submit_button(__('Enregistrer les réglages', 'wp-piwigo-display')); ?>
+            </form>
+
+            <hr />
+
+            <h2><?php esc_html_e('Diagnostic', 'wp-piwigo-display'); ?></h2>
+            <p><?php esc_html_e('Vérifiez rapidement que WordPress peut joindre l’API de votre galerie Piwigo.', 'wp-piwigo-display'); ?></p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="wpd_test_connection" />
+                <?php wp_nonce_field('wpd_test_connection'); ?>
+                <?php submit_button(__('Tester la connexion Piwigo', 'wp-piwigo-display'), 'secondary'); ?>
             </form>
 
             <hr />
