@@ -1,3 +1,10 @@
+## 1.5.2
+
+* Correction du bouton de test de connexion Piwigo.
+* Interception des erreurs internes afin de ne jamais interrompre l’administration WordPress.
+* Utilisation d’une requête GET simple vers `pwg.session.getStatus`.
+* Messages de diagnostic plus précis.
+
 ## 1.5.1
 
 * Durcissement de la validation des paramètres de shortcode.

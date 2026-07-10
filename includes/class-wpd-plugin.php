@@ -81,16 +81,64 @@ final class WPD_Plugin
 
         check_admin_referer('wpd_test_connection');
 
+        $result = 'unknown_error';
         $url = WPD_Settings::get_piwigo_url();
-        $result = 'missing_url';
 
-        if ($url !== '') {
-            $api = new WPD_Api($url);
-            $response = $api->test_connection();
-            $result = is_wp_error($response) ? 'api_error' : 'success';
+        if ($url === '') {
+            $result = 'missing_url';
+        } else {
+            try {
+                $endpoint = add_query_arg(
+                    [
+                        'format' => 'json',
+                        'method' => 'pwg.session.getStatus',
+                    ],
+                    untrailingslashit($url) . '/ws.php'
+                );
+
+                $response = wp_remote_get(
+                    $endpoint,
+                    [
+                        'timeout' => 10,
+                        'redirection' => 3,
+                        'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
+                    ]
+                );
+
+                if (is_wp_error($response)) {
+                    $result = 'http_error';
+                } else {
+                    $status_code = wp_remote_retrieve_response_code($response);
+                    $data = json_decode(wp_remote_retrieve_body($response), true);
+
+                    if ($status_code < 200 || $status_code >= 300) {
+                        $result = 'http_status';
+                    } elseif (!is_array($data)) {
+                        $result = 'invalid_response';
+                    } elseif (($data['stat'] ?? '') !== 'ok') {
+                        $result = 'api_error';
+                    } else {
+                        $result = 'success';
+                    }
+                }
+            } catch (Throwable $exception) {
+                $result = 'internal_error';
+
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('WP Piwigo Display connection test: ' . $exception->getMessage());
+                }
+            }
         }
 
-        wp_safe_redirect(add_query_arg(['page' => 'wp-piwigo-display', 'wpd_connection_test' => $result], admin_url('options-general.php')));
+        $redirect_url = add_query_arg(
+            [
+                'page' => 'wp-piwigo-display',
+                'wpd_connection_test' => $result,
+            ],
+            admin_url('options-general.php')
+        );
+
+        wp_safe_redirect($redirect_url);
         exit;
     }
 }
