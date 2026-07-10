@@ -56,20 +56,39 @@ function initLightbox() {
 
     var overlay = document.createElement('div');
     overlay.className = 'wp-piwigo-display-lightbox';
-    overlay.innerHTML = '' +
-        '<button type="button" class="wp-piwigo-display-lightbox-close" aria-label="Fermer">×</button>' +
-        '<button type="button" class="wp-piwigo-display-lightbox-prev" aria-label="Image précédente">‹</button>' +
-        '<img class="wp-piwigo-display-lightbox-image" alt="">' +
-        '<button type="button" class="wp-piwigo-display-lightbox-next" aria-label="Image suivante">›</button>' +
-        '<div class="wp-piwigo-display-lightbox-caption"></div>';
+
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'wp-piwigo-display-lightbox-close';
+    close.setAttribute('aria-label', 'Fermer');
+    close.textContent = '×';
+
+    var previous = document.createElement('button');
+    previous.type = 'button';
+    previous.className = 'wp-piwigo-display-lightbox-prev';
+    previous.setAttribute('aria-label', 'Image précédente');
+    previous.textContent = '‹';
+
+    var image = document.createElement('img');
+    image.className = 'wp-piwigo-display-lightbox-image';
+    image.alt = '';
+
+    var next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'wp-piwigo-display-lightbox-next';
+    next.setAttribute('aria-label', 'Image suivante');
+    next.textContent = '›';
+
+    var caption = document.createElement('div');
+    caption.className = 'wp-piwigo-display-lightbox-caption';
+
+    overlay.appendChild(close);
+    overlay.appendChild(previous);
+    overlay.appendChild(image);
+    overlay.appendChild(next);
+    overlay.appendChild(caption);
 
     document.body.appendChild(overlay);
-
-    var image = overlay.querySelector('.wp-piwigo-display-lightbox-image');
-    var caption = overlay.querySelector('.wp-piwigo-display-lightbox-caption');
-    var close = overlay.querySelector('.wp-piwigo-display-lightbox-close');
-    var previous = overlay.querySelector('.wp-piwigo-display-lightbox-prev');
-    var next = overlay.querySelector('.wp-piwigo-display-lightbox-next');
     var current = 0;
 
     function open(index) {

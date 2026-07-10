@@ -1,3 +1,13 @@
+## 1.5.1
+
+* Durcissement de la validation des paramètres de shortcode.
+* Validation plus stricte des URL Piwigo.
+* Sécurisation des réglages d'administration.
+* Amélioration de l'échappement des titres issus de Piwigo.
+* Suppression de l'utilisation de `innerHTML` dans la lightbox.
+* Durcissement des appels HTTP vers l'API Piwigo.
+* Ajout d'un fichier `SECURITY.md`.
+
 ## 1.5.0
 
 * Ajout des presets `galerie`, `slider` et `actualites`.

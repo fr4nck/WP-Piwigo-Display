@@ -111,12 +111,14 @@ final class WPD_Settings
         return filter_var($options['debug_mode'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
     }
 
-    public static function sanitize_options(array $options): array
+    public static function sanitize_options($options): array
     {
+        $options = is_array($options) ? $options : [];
         $sanitized = self::default_options();
         if (isset($options['piwigo_url'])) {
             $url = esc_url_raw(trim((string) $options['piwigo_url']));
-            $sanitized['piwigo_url'] = $url !== '' ? trailingslashit($url) : '';
+            $scheme = $url !== '' ? wp_parse_url($url, PHP_URL_SCHEME) : '';
+            $sanitized['piwigo_url'] = in_array($scheme, ['http', 'https'], true) ? trailingslashit($url) : '';
         }
         if (isset($options['cache_duration'])) {
             $sanitized['cache_duration'] = max(60, absint($options['cache_duration']));
@@ -204,7 +206,7 @@ final class WPD_Settings
                         <?php
                         printf(
                             esc_html__('Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display'),
-                            absint($_GET['wpd_cache_cleared'])
+                            absint(wp_unslash($_GET['wpd_cache_cleared']))
                         );
                         ?>
                     </p>
@@ -212,7 +214,7 @@ final class WPD_Settings
             <?php endif; ?>
 
             <?php if (isset($_GET['wpd_connection_test'])) : ?>
-                <?php $connection_result = sanitize_key((string) $_GET['wpd_connection_test']); ?>
+                <?php $connection_result = sanitize_key((string) wp_unslash($_GET['wpd_connection_test'])); ?>
                 <div class="notice <?php echo $connection_result === 'success' ? 'notice-success' : 'notice-error'; ?> is-dismissible">
                     <p>
                         <?php

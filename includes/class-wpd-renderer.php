@@ -51,7 +51,7 @@ final class WPD_Renderer
                 }
                 ?>
                 <figure class="wp-piwigo-display-item <?php echo esc_attr($orientation); ?>" style="--wpd-current-image-fit: <?php echo esc_attr($image_fit); ?>;">
-                    <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
+                    <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
                         <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
                     </a>
                     <?php if ($title !== '') : ?>
@@ -112,7 +112,7 @@ final class WPD_Renderer
                         }
                         ?>
                         <li class="splide__slide">
-                            <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
+                            <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
                                 <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
                             </a>
                             <?php if ($title !== '') : ?>
@@ -260,11 +260,11 @@ final class WPD_Renderer
     private static function get_image_title(array $image): string
     {
         if (isset($image['name']) && (string) $image['name'] !== '') {
-            return (string) $image['name'];
+            return wp_strip_all_tags((string) $image['name']);
         }
 
         if (isset($image['file']) && (string) $image['file'] !== '') {
-            return (string) $image['file'];
+            return wp_strip_all_tags((string) $image['file']);
         }
 
         return '';

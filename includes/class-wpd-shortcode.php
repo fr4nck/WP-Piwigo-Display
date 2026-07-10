@@ -33,6 +33,7 @@ final class WPD_Shortcode
         $defaults = apply_filters('wp_piwigo_display_shortcode_defaults', $defaults);
         $atts = shortcode_atts($defaults, $atts, 'piwigo');
         $atts = self::apply_preset($atts);
+        $atts = self::sanitize_atts($atts);
 
         $album_value = trim((string) $atts['album']);
 
@@ -41,7 +42,7 @@ final class WPD_Shortcode
         }
 
         $piwigo_url = isset($atts['url']) && $atts['url'] !== ''
-            ? esc_url_raw((string) $atts['url'])
+            ? (string) $atts['url']
             : WPD_Settings::get_piwigo_url();
 
         if ($piwigo_url === '') {
@@ -74,6 +75,52 @@ final class WPD_Shortcode
         }
 
         return $html;
+    }
+
+
+    private static function sanitize_atts(array $atts): array
+    {
+        $atts['album'] = isset($atts['album']) ? sanitize_text_field((string) $atts['album']) : '';
+        $atts['preset'] = isset($atts['preset']) ? sanitize_key((string) $atts['preset']) : '';
+        $atts['type'] = self::sanitize_choice((string) ($atts['type'] ?? 'gallery'), ['gallery', 'slider'], 'gallery');
+        $atts['sort'] = self::sanitize_choice((string) ($atts['sort'] ?? 'manual'), ['manual', 'date', 'name', 'id', 'random'], 'manual');
+        $atts['order'] = self::sanitize_choice((string) ($atts['order'] ?? 'desc'), ['asc', 'desc'], 'desc');
+        $atts['fit'] = self::sanitize_choice((string) ($atts['fit'] ?? 'contain'), ['cover', 'contain', 'auto', 'raw'], 'contain');
+        $atts['navigation'] = self::sanitize_choice((string) ($atts['navigation'] ?? 'thumbnails'), ['thumbnails', 'dots', 'none'], 'thumbnails');
+        $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';
+        $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', (string) ($atts['height'] ?? '')) === 1 ? (string) $atts['height'] : '';
+        $atts['autoplay'] = self::sanitize_bool_string($atts['autoplay'] ?? 'true');
+        $atts['rounded'] = self::sanitize_bool_string($atts['rounded'] ?? 'false');
+        $atts['lightbox'] = self::sanitize_bool_string($atts['lightbox'] ?? 'true');
+        $atts['thumbnails'] = self::sanitize_bool_string($atts['thumbnails'] ?? 'true');
+        $atts['recursive'] = self::sanitize_bool_string($atts['recursive'] ?? 'false');
+        $atts['interval'] = (string) max(1000, absint($atts['interval'] ?? 5000));
+        $atts['speed'] = (string) max(0, absint($atts['speed'] ?? 500));
+        $atts['limit'] = (string) absint($atts['limit'] ?? 0);
+        $atts['max'] = (string) absint($atts['max'] ?? 0);
+        $atts['latest'] = (string) absint($atts['latest'] ?? 0);
+        $atts['random'] = (string) absint($atts['random'] ?? 0);
+        $atts['depth'] = (string) min(10, absint($atts['depth'] ?? 10));
+
+        if (isset($atts['url']) && (string) $atts['url'] !== '') {
+            $url = esc_url_raw((string) $atts['url']);
+            $scheme = $url !== '' ? wp_parse_url($url, PHP_URL_SCHEME) : '';
+            $atts['url'] = in_array($scheme, ['http', 'https'], true) ? untrailingslashit($url) : '';
+        } else {
+            $atts['url'] = '';
+        }
+
+        return $atts;
+    }
+
+    private static function sanitize_choice(string $value, array $allowed, string $default): string
+    {
+        return in_array($value, $allowed, true) ? $value : $default;
+    }
+
+    private static function sanitize_bool_string($value): string
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
     }
 
     private static function apply_preset(array $atts): array

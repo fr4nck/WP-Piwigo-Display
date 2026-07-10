@@ -10,7 +10,7 @@ final class WPD_Api
 
     public function __construct(string $base_url)
     {
-        $this->base_url = untrailingslashit($base_url);
+        $this->base_url = self::sanitize_base_url($base_url);
     }
 
     public function get_images_from_album(int $album_id, int $max = 0)
@@ -115,7 +115,7 @@ final class WPD_Api
 
     public function resolve_album_id(string $album)
     {
-        $album = trim($album);
+        $album = sanitize_text_field($album);
 
         if ($album === '') {
             return new WP_Error('wpd_empty_album', __('Album non renseigné.', 'wp-piwigo-display'));
@@ -135,7 +135,7 @@ final class WPD_Api
 
         foreach ($categories as $category) {
             $id = absint($category['id'] ?? 0);
-            $name = trim((string) ($category['name'] ?? ''));
+            $name = sanitize_text_field((string) ($category['name'] ?? ''));
 
             if ($id <= 0) {
                 continue;
@@ -146,7 +146,7 @@ final class WPD_Api
             }
 
             foreach (['uppercats', 'global_rank', 'permalink'] as $key) {
-                if (isset($category[$key]) && strcasecmp(trim((string) $category[$key], '/'), $wanted_path) === 0) {
+                if (isset($category[$key]) && strcasecmp(trim(sanitize_text_field((string) $category[$key]), '/'), $wanted_path) === 0) {
                     return $id;
                 }
             }
@@ -170,8 +170,14 @@ final class WPD_Api
 
     private function request(array $body)
     {
+        if ($this->base_url === '') {
+            return new WP_Error('wpd_invalid_url', __('URL Piwigo invalide ou non configurée.', 'wp-piwigo-display'));
+        }
+
         $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
-            'timeout' => 15,
+            'timeout' => 10,
+            'redirection' => 3,
+            'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
             'body' => $body,
         ]);
 
@@ -200,7 +206,7 @@ final class WPD_Api
         if (($data['stat'] ?? '') !== 'ok') {
             return new WP_Error(
                 'wpd_api_error',
-                sprintf(__('Erreur renvoyée par Piwigo : %s', 'wp-piwigo-display'), isset($data['message']) ? (string) $data['message'] : __('erreur inconnue', 'wp-piwigo-display'))
+                sprintf(__('Erreur renvoyée par Piwigo : %s', 'wp-piwigo-display'), isset($data['message']) ? sanitize_text_field((string) $data['message']) : __('erreur inconnue', 'wp-piwigo-display'))
             );
         }
 
