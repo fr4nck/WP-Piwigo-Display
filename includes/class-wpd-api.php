@@ -13,67 +13,125 @@ final class WPD_Api
         $this->base_url = self::sanitize_base_url($base_url);
     }
 
-    public function get_images_from_album(int $album_id, int $max = 0)
+    public function get_images_from_album(int $album_id, int $max = 0, bool $recursive = false)
     {
         if ($album_id <= 0) {
             return new WP_Error('wpd_invalid_album', __('Identifiant d\'album invalide.', 'wp-piwigo-display'));
         }
 
-        $response = $this->request([
-            'method' => 'pwg.categories.getImages',
-            'cat_id' => $album_id,
-            'per_page' => $max > 0 ? $max : 500,
-            'page' => 0,
-        ]);
+        $images = [];
+        $page = 0;
+        $per_page = 500;
 
-        if (is_wp_error($response)) {
-            return $response;
-        }
+        do {
+            $response = $this->request([
+                'method' => 'pwg.categories.getImages',
+                'cat_id' => $album_id,
+                'recursive' => $recursive ? 'true' : 'false',
+                'per_page' => $per_page,
+                'page' => $page,
+            ]);
 
-        $images = $response['result']['images'] ?? [];
+            if (is_wp_error($response)) {
+                return $response;
+            }
 
-        return is_array($images) ? $images : [];
+            $page_images = $response['result']['images'] ?? [];
+
+            if (!is_array($page_images)) {
+                $page_images = [];
+            }
+
+            foreach ($page_images as $image) {
+                $image_id = absint($image['id'] ?? 0);
+                $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
+                $images[$key] = $image;
+
+                if ($max > 0 && count($images) >= $max) {
+                    return array_slice(array_values($images), 0, $max);
+                }
+            }
+
+            $page++;
+        } while (count($page_images) === $per_page && $page < 1000);
+
+        return array_values($images);
     }
 
     public function get_images_from_album_recursive(int $album_id, int $max = 0, int $depth = 10)
     {
-        $images = $this->get_images_from_album($album_id, 0);
-
-        if (is_wp_error($images)) {
-            return $images;
-        }
-
         if ($depth <= 0) {
-            return $max > 0 ? array_slice($images, 0, $max) : $images;
+            return $this->get_images_from_album($album_id, $max, false);
         }
 
-        $children = $this->get_child_categories($album_id);
-
-        if (is_wp_error($children)) {
-            return $children;
+        // À la profondeur maximale, l'API Piwigo sait récupérer toute la descendance
+        // en une seule série de requêtes paginées.
+        if ($depth >= 10) {
+            return $this->get_images_from_album($album_id, $max, true);
         }
 
-        foreach ($children as $child) {
-            $child_id = absint($child['id'] ?? 0);
+        $album_ids = $this->get_descendant_album_ids($album_id, $depth);
 
-            if ($child_id <= 0) {
+        if (is_wp_error($album_ids)) {
+            return $album_ids;
+        }
+
+        $images = [];
+
+        foreach ($album_ids as $current_album_id) {
+            $album_images = $this->get_images_from_album($current_album_id, 0, false);
+
+            if (is_wp_error($album_images)) {
+                return $album_images;
+            }
+
+            foreach ($album_images as $image) {
+                $image_id = absint($image['id'] ?? 0);
+                $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
+                $images[$key] = $image;
+
+                if ($max > 0 && count($images) >= $max) {
+                    return array_slice(array_values($images), 0, $max);
+                }
+            }
+        }
+
+        return array_values($images);
+    }
+
+    private function get_descendant_album_ids(int $album_id, int $depth)
+    {
+        $categories = $this->get_all_categories();
+
+        if (is_wp_error($categories)) {
+            return $categories;
+        }
+
+        $album_ids = [$album_id];
+
+        foreach ($categories as $category) {
+            $category_id = absint($category['id'] ?? 0);
+            $uppercats = trim((string) ($category['uppercats'] ?? ''));
+
+            if ($category_id <= 0 || $uppercats === '') {
                 continue;
             }
 
-            $child_images = $this->get_images_from_album_recursive($child_id, 0, $depth - 1);
+            $path = array_values(array_filter(array_map('absint', explode(',', $uppercats))));
+            $root_position = array_search($album_id, $path, true);
 
-            if (is_wp_error($child_images)) {
-                return $child_images;
+            if ($root_position === false) {
+                continue;
             }
 
-            $images = array_merge($images, $child_images);
+            $relative_depth = count($path) - $root_position - 1;
 
-            if ($max > 0 && count($images) >= $max) {
-                return array_slice($images, 0, $max);
+            if ($relative_depth >= 1 && $relative_depth <= $depth) {
+                $album_ids[] = $category_id;
             }
         }
 
-        return $max > 0 ? array_slice($images, 0, $max) : $images;
+        return array_values(array_unique(array_map('absint', $album_ids)));
     }
 
     public function get_child_categories(int $album_id)

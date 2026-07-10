@@ -249,3 +249,31 @@ Le paramètre `album` peut recevoir un identifiant numérique, un nom d'album ou
 ```
 
 L'identifiant numérique reste le moyen le plus fiable.
+
+
+---
+
+# recursive
+
+Inclut les photos des sous-albums.
+
+```text
+[piwigo album="154" recursive="true"]
+```
+
+Par défaut, toute la descendance est incluse.
+
+# depth
+
+Limite le nombre de niveaux de sous-albums parcourus.
+
+```text
+[piwigo album="154" recursive="true" depth="1"]
+```
+
+- `depth="0"` : album indiqué uniquement ;
+- `depth="1"` : album et enfants directs ;
+- `depth="2"` : album, enfants et petits-enfants ;
+- `depth="10"` : toute la descendance.
+
+Les doublons sont supprimés lorsqu'une même photo appartient à plusieurs albums.

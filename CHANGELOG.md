@@ -1,3 +1,11 @@
+## 1.6.0
+
+* Affichage d'un album avec l'ensemble de ses sous-albums.
+* Ajout de la profondeur configurable avec `depth`.
+* Pagination automatique au-delà de 500 images.
+* Suppression des doublons entre albums.
+* Cache distinct selon l'album, le mode récursif et la profondeur.
+
 ## 1.5.5
 
 * Correction d’une erreur fatale lors de l’appel à l’API Piwigo.
