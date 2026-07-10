@@ -1,3 +1,24 @@
+## 1.5.5
+
+* Correction d’une erreur fatale lors de l’appel à l’API Piwigo.
+* Ajout de la méthode manquante de validation de l’URL de base.
+* Vérification des appels internes aux méthodes de classe.
+* Aucun changement fonctionnel en dehors de ce correctif.
+
+## 1.5.4
+
+* Fourniture d’une archive complète et directement installable.
+* Intégration du correctif du test de connexion Piwigo.
+* Intégration du correctif de l’erreur fatale du diaporama.
+* Vérification de la présence de toutes les classes requises.
+* Aucun dossier de patch incomplet dans l’archive.
+
+## 1.5.3
+
+* Correction d’une erreur fatale lors de l’affichage du diaporama.
+* Ajout de la méthode manquante de validation du mode de navigation.
+* Aucun changement fonctionnel en dehors de ce correctif.
+
 ## 1.5.2
 
 * Correction du bouton de test de connexion Piwigo.

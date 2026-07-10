@@ -212,4 +212,27 @@ final class WPD_Api
 
         return $data;
     }
+    private static function sanitize_base_url(string $base_url): string
+    {
+        $base_url = trim($base_url);
+
+        if ($base_url === '') {
+            return '';
+        }
+
+        $url = esc_url_raw($base_url);
+
+        if ($url === '') {
+            return '';
+        }
+
+        $scheme = wp_parse_url($url, PHP_URL_SCHEME);
+
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return '';
+        }
+
+        return untrailingslashit($url);
+    }
+
 }

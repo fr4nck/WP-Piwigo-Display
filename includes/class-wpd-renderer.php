@@ -313,6 +313,13 @@ final class WPD_Renderer
         return $width > 0 && $height > 0 && $width >= $height;
     }
 
+    private static function sanitize_navigation(string $navigation): string
+    {
+        return in_array($navigation, ['thumbnails', 'dots', 'none'], true)
+            ? $navigation
+            : 'thumbnails';
+    }
+
     private static function sanitize_fit(string $fit): string
     {
         return in_array($fit, ['cover', 'contain', 'auto', 'raw'], true) ? $fit : 'raw';
