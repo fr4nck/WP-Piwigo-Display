@@ -29,6 +29,7 @@ final class WPD_Settings
         add_settings_field('default_interval', __('Tempo', 'wp-piwigo-display'), [self::class, 'render_default_interval_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_speed', __('Vitesse de transition', 'wp-piwigo-display'), [self::class, 'render_default_speed_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_lightbox', __('Lightbox', 'wp-piwigo-display'), [self::class, 'render_default_lightbox_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
+        add_settings_field('default_caption', __('Légendes', 'wp-piwigo-display'), [self::class, 'render_default_caption_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_navigation', __('Navigation du diaporama', 'wp-piwigo-display'), [self::class, 'render_default_navigation_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_rounded', __('Coins arrondis', 'wp-piwigo-display'), [self::class, 'render_default_rounded_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
         add_settings_field('default_sort', __('Tri des images', 'wp-piwigo-display'), [self::class, 'render_default_sort_field'], 'wp-piwigo-display', 'wp_piwigo_display_defaults');
@@ -57,6 +58,7 @@ final class WPD_Settings
             'default_interval' => 5000,
             'default_speed' => 500,
             'default_lightbox' => 'true',
+            'default_caption' => 'title',
             'default_navigation' => 'thumbnails',
             'default_rounded' => 'false',
             'default_sort' => 'manual',
@@ -85,6 +87,7 @@ final class WPD_Settings
             'ratio' => (string) $options['default_ratio'],
             'rounded' => (string) $options['default_rounded'],
             'lightbox' => (string) $options['default_lightbox'],
+            'caption' => (string) $options['default_caption'],
             'navigation' => (string) $options['default_navigation'],
             'thumbnails' => ((string) $options['default_navigation'] === 'thumbnails') ? 'true' : 'false',
             'sort' => (string) $options['default_sort'],
@@ -103,6 +106,16 @@ final class WPD_Settings
     {
         $options = self::get_options();
         return max(60, absint($options['cache_duration']));
+    }
+
+    public static function get_default_caption(): string
+    {
+        $options = self::get_options();
+        return self::sanitize_choice(
+            (string) ($options['default_caption'] ?? 'title'),
+            ['none', 'title', 'description', 'title-description'],
+            'title'
+        );
     }
 
     public static function get_debug_mode(): bool
@@ -131,6 +144,11 @@ final class WPD_Settings
         $sanitized['default_interval'] = max(1000, absint($options['default_interval'] ?? 5000));
         $sanitized['default_speed'] = max(0, absint($options['default_speed'] ?? 500));
         $sanitized['default_lightbox'] = self::sanitize_bool($options['default_lightbox'] ?? 'true');
+        $sanitized['default_caption'] = self::sanitize_choice(
+            (string) ($options['default_caption'] ?? 'title'),
+            ['none', 'title', 'description', 'title-description'],
+            'title'
+        );
         $sanitized['default_navigation'] = self::sanitize_choice($options['default_navigation'] ?? 'thumbnails', ['thumbnails', 'dots', 'none'], 'thumbnails');
         $sanitized['default_rounded'] = self::sanitize_bool($options['default_rounded'] ?? 'false');
         $sanitized['default_sort'] = self::sanitize_choice($options['default_sort'] ?? 'manual', ['manual', 'date', 'name', 'id', 'random'], 'manual');
@@ -169,6 +187,16 @@ final class WPD_Settings
     public static function render_default_height_field(): void { $o = self::get_options(); self::input('text', 'default_height', (string) $o['default_height'], 'small-text', 'ex : 520px'); }
     public static function render_default_autoplay_field(): void { self::select_bool('default_autoplay'); }
     public static function render_default_lightbox_field(): void { self::select_bool('default_lightbox'); }
+    public static function render_default_caption_field(): void
+    {
+        self::select('default_caption', [
+            'none' => 'Aucune',
+            'title' => 'Titre',
+            'description' => 'Description',
+            'title-description' => 'Titre et description',
+        ]);
+        echo '<p class="description">' . esc_html__('Ce choix peut être remplacé dans chaque shortcode avec le paramètre caption.', 'wp-piwigo-display') . '</p>';
+    }
     public static function render_default_navigation_field(): void { self::select('default_navigation', ['thumbnails' => 'Miniatures', 'dots' => 'Points', 'none' => 'Aucune']); }
     public static function render_default_rounded_field(): void { self::select_bool('default_rounded'); }
     public static function render_default_sort_field(): void { self::select('default_sort', ['manual' => 'Ordre Piwigo', 'date' => 'Date', 'name' => 'Nom', 'id' => 'Identifiant', 'random' => 'Aléatoire']); }

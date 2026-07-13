@@ -187,3 +187,20 @@ Diaporama récursif avec miniatures :
 ```text
 [piwigo album="154" recursive="true" type="slider" navigation="thumbnails"]
 ```
+
+
+### `caption`
+
+Contrôle l'affichage des légendes :
+
+- `default` : réglage global ;
+- `none` : aucune légende ;
+- `title` : titre Piwigo ;
+- `description` : description Piwigo ;
+- `title-description` : titre et description.
+
+```text
+[piwigo album="154" caption="none"]
+[piwigo album="154" type="slider" caption="title"]
+[piwigo album="154" caption="title-description"]
+```

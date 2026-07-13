@@ -43,6 +43,9 @@ final class WPD_Renderer
                 $image_url = self::get_image_url($image);
                 $large_url = self::get_large_url($image);
                 $title = self::get_image_title($image);
+                $description = self::get_image_description($image);
+                $caption_mode = self::resolve_caption_mode((string) ($atts['caption'] ?? 'default'));
+                $lightbox_caption = self::get_caption_text($title, $description, $caption_mode);
                 $orientation = self::get_orientation_class($image);
                 $image_fit = self::get_image_fit($image, $fit);
 
@@ -51,12 +54,10 @@ final class WPD_Renderer
                 }
                 ?>
                 <figure class="wp-piwigo-display-item <?php echo esc_attr($orientation); ?>" style="--wpd-current-image-fit: <?php echo esc_attr($image_fit); ?>;">
-                    <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
+                    <a href="<?php echo esc_url($large_url !== '' ? $large_url : $image_url); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($lightbox_caption); ?>">
                         <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
                     </a>
-                    <?php if ($title !== '') : ?>
-                        <figcaption><?php echo esc_html($title); ?></figcaption>
-                    <?php endif; ?>
+                    <?php echo self::render_caption($title, $description, $caption_mode, 'figcaption'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 </figure>
             <?php endforeach; ?>
         </div>
@@ -106,18 +107,19 @@ final class WPD_Renderer
                         <?php
                         $image_url = self::get_large_url($image);
                         $title = self::get_image_title($image);
+                        $description = self::get_image_description($image);
+                        $caption_mode = self::resolve_caption_mode((string) ($atts['caption'] ?? 'default'));
+                        $lightbox_caption = self::get_caption_text($title, $description, $caption_mode);
 
                         if ($image_url === '') {
                             continue;
                         }
                         ?>
                         <li class="splide__slide">
-                            <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($title); ?>">
+                            <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($lightbox_caption); ?>">
                                 <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" decoding="async" />
                             </a>
-                            <?php if ($title !== '') : ?>
-                                <div class="wp-piwigo-display-slide-caption"><?php echo esc_html($title); ?></div>
-                            <?php endif; ?>
+                            <?php echo self::render_caption($title, $description, $caption_mode, 'div'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -268,6 +270,83 @@ final class WPD_Renderer
         }
 
         return '';
+    }
+
+
+    private static function get_image_description(array $image): string
+    {
+        foreach (['comment', 'description'] as $key) {
+            if (!isset($image[$key]) || (string) $image[$key] === '') {
+                continue;
+            }
+
+            $description = html_entity_decode(
+                wp_strip_all_tags((string) $image[$key]),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            );
+
+            return trim($description);
+        }
+
+        return '';
+    }
+
+    private static function resolve_caption_mode(string $caption): string
+    {
+        if ($caption === 'default') {
+            return WPD_Settings::get_default_caption();
+        }
+
+        return in_array($caption, ['none', 'title', 'description', 'title-description'], true)
+            ? $caption
+            : WPD_Settings::get_default_caption();
+    }
+
+    private static function get_caption_text(string $title, string $description, string $mode): string
+    {
+        if ($mode === 'title') {
+            return $title;
+        }
+
+        if ($mode === 'description') {
+            return $description;
+        }
+
+        if ($mode === 'title-description') {
+            return trim(implode(' — ', array_filter([$title, $description], static fn(string $value): bool => $value !== '')));
+        }
+
+        return '';
+    }
+
+    private static function render_caption(string $title, string $description, string $mode, string $element): string
+    {
+        $show_title = in_array($mode, ['title', 'title-description'], true) && $title !== '';
+        $show_description = in_array($mode, ['description', 'title-description'], true) && $description !== '';
+
+        if (!$show_title && !$show_description) {
+            return '';
+        }
+
+        $tag = $element === 'figcaption' ? 'figcaption' : 'div';
+        $class = $tag === 'figcaption'
+            ? 'wp-piwigo-display-caption'
+            : 'wp-piwigo-display-slide-caption wp-piwigo-display-caption';
+
+        $html = '<' . $tag . ' class="' . esc_attr($class) . '">';
+
+        if ($show_title) {
+            $html .= '<span class="wp-piwigo-display-caption-title">' . esc_html($title) . '</span>';
+        }
+
+        if ($show_description) {
+            $html .= '<span class="wp-piwigo-display-caption-description">' . esc_html($description) . '</span>';
+        }
+
+        $html .= '</' . $tag . '>';
+
+        return $html;
     }
 
 

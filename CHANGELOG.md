@@ -1,3 +1,13 @@
+## 1.7.0
+
+* Ajout du paramètre `caption`.
+* Modes disponibles : `default`, `none`, `title`, `description` et `title-description`.
+* Ajout d'un réglage global des légendes dans l'administration WordPress.
+* Prise en charge cohérente des légendes dans les galeries, diaporamas et lightbox.
+* Ajout de classes CSS dédiées au titre et à la description.
+* Mise à jour du README, du readme.txt et de la documentation.
+* Aucun changement dans le moteur récursif.
+
 ## 1.6.1
 
 * Documentation complète de l'affichage récursif.

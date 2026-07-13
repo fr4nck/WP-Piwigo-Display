@@ -19,3 +19,10 @@ Cette feuille de route est indicative. Les évolutions sont priorisées selon le
 ## Principe
 
 WP Piwigo Display doit rester un plugin léger : Piwigo gère les photos, WordPress les affiche.
+
+
+## Intégration graphique
+
+- meilleure adoption des variables CSS du thème WordPress ;
+- espacements et effets sobres ;
+- styles optionnels uniquement s'ils répondent à un besoin réel.

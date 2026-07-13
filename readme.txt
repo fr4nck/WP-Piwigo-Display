@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.0
-Stable tag: 1.6.1
+Stable tag: 1.7.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -76,6 +76,13 @@ Non. Les images restent dans Piwigo et sont affichées via l'API officielle.
 Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre de niveaux parcourus.
 
 == Changelog ==
+
+= 1.7.0 =
+* Ajout du paramètre `caption`.
+* Choix entre aucune légende, titre, description ou titre et description.
+* Ajout d'un réglage global des légendes.
+* Prise en charge des légendes dans la galerie, le diaporama et la lightbox.
+
 
 = 1.6.1 =
 * Documentation complète de l'affichage récursif.

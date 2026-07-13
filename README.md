@@ -90,3 +90,23 @@ La documentation complète se trouve dans le dossier [`docs`](docs/).
 ## Licence
 
 GNU GPL v3 ou version ultérieure.
+
+
+## Gestion des légendes
+
+Le paramètre `caption` contrôle les informations affichées sous les images ou sur le diaporama :
+
+```text
+[piwigo album="154" caption="none"]
+[piwigo album="154" caption="title"]
+[piwigo album="154" caption="description"]
+[piwigo album="154" caption="title-description"]
+```
+
+La valeur `default` utilise le choix enregistré dans les réglages WordPress :
+
+```text
+[piwigo album="154" caption="default"]
+```
+
+Le réglage s'applique aux galeries, aux diaporamas et aux légendes de la lightbox.

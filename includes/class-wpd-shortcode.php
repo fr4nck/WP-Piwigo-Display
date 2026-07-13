@@ -26,6 +26,7 @@ final class WPD_Shortcode
                 'url' => '',
                 'recursive' => 'false',
                 'depth' => '10',
+                'caption' => 'default',
             ],
             WPD_Settings::get_shortcode_defaults()
         );
@@ -87,6 +88,11 @@ final class WPD_Shortcode
         $atts['order'] = self::sanitize_choice((string) ($atts['order'] ?? 'desc'), ['asc', 'desc'], 'desc');
         $atts['fit'] = self::sanitize_choice((string) ($atts['fit'] ?? 'contain'), ['cover', 'contain', 'auto', 'raw'], 'contain');
         $atts['navigation'] = self::sanitize_choice((string) ($atts['navigation'] ?? 'thumbnails'), ['thumbnails', 'dots', 'none'], 'thumbnails');
+        $atts['caption'] = self::sanitize_choice(
+            (string) ($atts['caption'] ?? 'default'),
+            ['default', 'none', 'title', 'description', 'title-description'],
+            'default'
+        );
         $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';
         $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', (string) ($atts['height'] ?? '')) === 1 ? (string) $atts['height'] : '';
         $atts['autoplay'] = self::sanitize_bool_string($atts['autoplay'] ?? 'true');

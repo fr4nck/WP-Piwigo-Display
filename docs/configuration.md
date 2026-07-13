@@ -80,3 +80,17 @@ Pour une galerie fréquemment mise à jour, il est conseillé de réduire cette 
 # Tester la connexion
 
 Le bouton **Tester la connexion Piwigo** vérifie que WordPress peut joindre l’API de la galerie configurée.
+
+
+---
+
+# Légendes par défaut
+
+Le réglage **Légendes** détermine les informations affichées par défaut :
+
+- aucune ;
+- titre ;
+- description ;
+- titre et description.
+
+Chaque shortcode peut remplacer ce choix avec le paramètre `caption`.
