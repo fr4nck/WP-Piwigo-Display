@@ -570,3 +570,76 @@
 .wp-piwigo-display-slide-caption .wp-piwigo-display-caption-description {
     opacity: 0.9;
 }
+
+
+/* Intégration graphique */
+.wp-piwigo-display {
+    --wpd-theme-color: var(--wp--preset--color--contrast, currentColor);
+    --wpd-theme-surface: var(--wp--preset--color--base, transparent);
+    --wpd-theme-border: color-mix(in srgb, var(--wpd-theme-color) 18%, transparent);
+    --wpd-theme-radius: var(--wp--custom--border-radius, 8px);
+    --wpd-theme-gap: var(--wp--preset--spacing--30, 1rem);
+    --wpd-theme-shadow: 0 0.35rem 1.2rem rgba(0, 0, 0, 0.08);
+}
+
+.wp-piwigo-display-style-theme.wp-piwigo-display-gallery {
+    gap: var(--wpd-theme-gap);
+}
+
+.wp-piwigo-display-style-theme .wp-piwigo-display-item {
+    color: var(--wpd-theme-color);
+}
+
+.wp-piwigo-display-style-theme .wp-piwigo-display-item > a,
+.wp-piwigo-display-style-theme .splide__track {
+    border-radius: var(--wpd-theme-radius);
+    background: var(--wpd-theme-surface);
+}
+
+.wp-piwigo-display-style-theme .wp-piwigo-display-caption {
+    color: var(--wpd-theme-color);
+    font-family: inherit;
+}
+
+.wp-piwigo-display-style-theme .wp-piwigo-display-slider-thumbnail {
+    border-radius: calc(var(--wpd-theme-radius) / 2);
+}
+
+.wp-piwigo-display-style-theme .wp-piwigo-display-slider-thumbnail.is-active {
+    border-color: var(--wpd-theme-color);
+}
+
+.wp-piwigo-display-style-minimal.wp-piwigo-display-gallery {
+    gap: 0.5rem;
+}
+
+.wp-piwigo-display-style-minimal .wp-piwigo-display-item > a,
+.wp-piwigo-display-style-minimal .splide__track {
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.wp-piwigo-display-style-minimal .wp-piwigo-display-caption {
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+}
+
+.wp-piwigo-display-style-none,
+.wp-piwigo-display-style-none .wp-piwigo-display-item,
+.wp-piwigo-display-style-none .wp-piwigo-display-item > a,
+.wp-piwigo-display-style-none .splide__track,
+.wp-piwigo-display-style-none .wp-piwigo-display-caption {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.wp-piwigo-display-style-none.wp-piwigo-display-gallery {
+    gap: 0;
+    margin: 0;
+}
+
+.wp-piwigo-display-style-none .wp-piwigo-display-caption {
+    font: inherit;
+    color: inherit;
+}

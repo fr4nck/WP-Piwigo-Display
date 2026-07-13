@@ -27,6 +27,7 @@ final class WPD_Shortcode
                 'recursive' => 'false',
                 'depth' => '10',
                 'caption' => 'default',
+                'style' => 'default',
             ],
             WPD_Settings::get_shortcode_defaults()
         );
@@ -91,6 +92,11 @@ final class WPD_Shortcode
         $atts['caption'] = self::sanitize_choice(
             (string) ($atts['caption'] ?? 'default'),
             ['default', 'none', 'title', 'description', 'title-description'],
+            'default'
+        );
+        $atts['style'] = self::sanitize_choice(
+            (string) ($atts['style'] ?? 'default'),
+            ['default', 'theme', 'minimal', 'none'],
             'default'
         );
         $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';

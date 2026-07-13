@@ -34,10 +34,12 @@ final class WPD_Renderer
         $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
         $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
+        $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
+        $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
 
         ob_start();
         ?>
-        <div class="wp-piwigo-display wp-piwigo-display-gallery<?php echo esc_attr($rounded_class . $raw_class . $lightbox_class); ?>" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
+        <div class="wp-piwigo-display wp-piwigo-display-gallery<?php echo esc_attr($rounded_class . $raw_class . $lightbox_class . $style_class); ?>" style="--wpd-image-fit: <?php echo esc_attr($fit); ?>; --wpd-image-height: <?php echo esc_attr($height); ?>;">
             <?php foreach ($images as $image) : ?>
                 <?php
                 $image_url = self::get_image_url($image);
@@ -86,6 +88,7 @@ final class WPD_Renderer
         $speed = max(0, absint($atts['speed'] ?? 500));
         $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
+        $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
         $navigation = self::sanitize_navigation((string) ($atts['navigation'] ?? 'thumbnails'));
         $thumbnails = $navigation === 'thumbnails';
         $dots = $navigation === 'dots';
@@ -94,7 +97,7 @@ final class WPD_Renderer
         ob_start();
         ?>
         <div id="<?php echo esc_attr($slider_id); ?>"
-             class="wp-piwigo-display wp-piwigo-display-slider splide<?php echo esc_attr($rounded_class . $lightbox_class); ?>"
+             class="wp-piwigo-display wp-piwigo-display-slider splide<?php echo esc_attr($rounded_class . $lightbox_class . $style_class); ?>"
              style="--wpd-slider-height: <?php echo esc_attr($height); ?>; --wpd-slider-ratio: <?php echo esc_attr($ratio); ?>; --wpd-image-fit: <?php echo esc_attr($fit); ?>;"
              data-autoplay="<?php echo esc_attr($autoplay ? 'true' : 'false'); ?>"
              data-interval="<?php echo esc_attr((string) $interval); ?>"
@@ -209,6 +212,13 @@ final class WPD_Renderer
         }
 
         return $images;
+    }
+
+    private static function sanitize_style(string $style): string
+    {
+        return in_array($style, ['default', 'theme', 'minimal', 'none'], true)
+            ? $style
+            : 'default';
     }
 
     private static function sanitize_sort(string $sort): string

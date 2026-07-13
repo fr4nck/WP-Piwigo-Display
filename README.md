@@ -110,3 +110,22 @@ La valeur `default` utilise le choix enregistré dans les réglages WordPress :
 ```
 
 Le réglage s'applique aux galeries, aux diaporamas et aux légendes de la lightbox.
+
+
+## Intégration graphique
+
+Le paramètre `style` contrôle l'habillage visuel :
+
+```text
+[piwigo album="154" style="theme"]
+[piwigo album="154" style="default"]
+[piwigo album="154" style="minimal"]
+[piwigo album="154" style="none"]
+```
+
+- `theme` : reprend les variables CSS du thème WordPress lorsqu'elles existent ;
+- `default` : style standard du plugin ;
+- `minimal` : présentation plus discrète ;
+- `none` : retrait de l'habillage graphique afin de laisser le thème ou un CSS personnalisé prendre la main.
+
+Le réglage global **Intégration graphique** peut être remplacé dans chaque shortcode.

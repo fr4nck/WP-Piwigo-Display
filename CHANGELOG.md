@@ -1,3 +1,12 @@
+## 1.8.0
+
+* Ajout du paramètre `style`.
+* Ajout du mode `theme` utilisant les variables CSS du thème WordPress.
+* Ajout des modes `default`, `minimal` et `none`.
+* Ajout d'un réglage global d'intégration graphique.
+* Mise à jour du README, du readme.txt et de la documentation.
+* Aucun changement dans le moteur récursif ou l'API Piwigo.
+
 ## 1.7.0
 
 * Ajout du paramètre `caption`.

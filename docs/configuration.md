@@ -94,3 +94,17 @@ Le réglage **Légendes** détermine les informations affichées par défaut :
 - titre et description.
 
 Chaque shortcode peut remplacer ce choix avec le paramètre `caption`.
+
+
+---
+
+# Intégration graphique
+
+Le réglage **Intégration graphique** propose quatre modes :
+
+- **Thème WordPress** : utilise les variables CSS du thème lorsqu'elles sont disponibles ;
+- **Style standard du plugin** ;
+- **Minimal** ;
+- **Sans habillage graphique**.
+
+Chaque shortcode peut remplacer ce réglage avec le paramètre `style`.

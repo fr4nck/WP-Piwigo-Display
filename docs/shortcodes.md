@@ -204,3 +204,18 @@ Contrôle l'affichage des légendes :
 [piwigo album="154" type="slider" caption="title"]
 [piwigo album="154" caption="title-description"]
 ```
+
+
+### `style`
+
+Contrôle l'intégration visuelle :
+
+- `default` : réglage global ;
+- `theme` : variables CSS du thème WordPress ;
+- `minimal` : style léger ;
+- `none` : sans habillage graphique.
+
+```text
+[piwigo album="154" style="theme"]
+[piwigo album="154" style="none"]
+```
