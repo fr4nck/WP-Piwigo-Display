@@ -1,8 +1,3 @@
 # Feuille de route
 
-- Stabilisation
-- Splide
-- Albums récursifs
-- Tags
-- Masonry
-- Gutenberg
+La feuille de route principale est disponible dans [`ROADMAP.md`](../ROADMAP.md).

@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.0
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,7 +12,7 @@ Affiche des albums Piwigo dans WordPress via l'API officielle, sans importer les
 
 == Description ==
 
-WP Piwigo Display permet d'afficher des albums Piwigo dans WordPress avec un shortcode simple.
+WP Piwigo Display est un plugin WordPress. Il s'installe dans WordPress et utilise l'API officielle de Piwigo.
 
 Les images restent dans Piwigo. WordPress interroge l'API, met les résultats en cache et génère l'affichage.
 
@@ -24,34 +24,71 @@ Fonctionnalités principales :
 * cache WordPress ;
 * réglages d'affichage par défaut ;
 * tri et limitation des images ;
-* affichage récursif des sous-albums ;
+* affichage d'un album et de ses sous-albums ;
+* profondeur récursive configurable ;
+* pagination des résultats Piwigo ;
+* suppression des doublons ;
 * presets ;
 * URL Piwigo ponctuelle ;
 * album par identifiant, nom ou chemin.
 
 == Installation ==
 
-1. Envoyer le plugin dans `wp-content/plugins`.
-2. Activer le plugin dans WordPress.
+1. Téléverser le fichier ZIP depuis Extensions > Ajouter une extension.
+2. Activer WP Piwigo Display.
 3. Configurer l'URL de la galerie dans Réglages > WP Piwigo Display.
 4. Utiliser un shortcode comme `[piwigo album="154"]`.
 
 == Shortcodes ==
 
-Exemples :
+Album simple :
 
 `[piwigo album="154"]`
 
+Diaporama :
+
 `[piwigo album="154" type="slider"]`
 
-`[piwigo album="154" preset="actualites"]`
+Album et tous ses sous-albums :
 
 `[piwigo album="154" recursive="true"]`
 
+Profondeur limitée :
+
+`[piwigo album="154" recursive="true" depth="2"]`
+
+Dernières images d'une arborescence :
+
+`[piwigo album="154" recursive="true" sort="date" order="desc" limit="20"]`
+
+== Frequently Asked Questions ==
+
+= Où le plugin doit-il être installé ? =
+
+WP Piwigo Display est un plugin WordPress. Il ne s'installe pas dans Piwigo.
+
+= Les images sont-elles copiées dans WordPress ? =
+
+Non. Les images restent dans Piwigo et sont affichées via l'API officielle.
+
+= Comment inclure les sous-albums ? =
+
+Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre de niveaux parcourus.
+
 == Changelog ==
 
-= 1.5.0 =
-* Ajout des presets.
-* Ajout des albums par nom ou chemin.
-* Amélioration des messages d'erreur.
-* Ajout du readme.txt WordPress.
+= 1.6.1 =
+* Documentation complète de l'affichage récursif.
+* Ajout d'exemples avec `recursive` et `depth`.
+* Mise à jour du README et du readme.txt.
+* Ajout d'une documentation dédiée et d'une feuille de route.
+
+= 1.6.0 =
+* Affichage d'un album avec l'ensemble de ses sous-albums.
+* Profondeur configurable avec `depth`.
+* Pagination automatique au-delà de 500 images.
+* Suppression des doublons.
+* Cache distinct pour les galeries récursives.
+
+= 1.5.5 =
+* Correction d'une erreur fatale lors de l'appel à l'API Piwigo.

@@ -1,3 +1,13 @@
+## 1.6.1
+
+* Documentation complète de l'affichage récursif.
+* Ajout d'exemples pour `recursive` et `depth`.
+* Mise à jour du README et du `readme.txt`.
+* Ajout d'une page dédiée aux albums récursifs.
+* Mise à jour de la documentation des shortcodes.
+* Ajout de `ROADMAP.md`.
+* Aucun changement fonctionnel dans le moteur d'affichage.
+
 ## 1.6.0
 
 * Affichage d'un album avec l'ensemble de ses sous-albums.
