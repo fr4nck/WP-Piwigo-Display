@@ -26,6 +26,7 @@ final class WPD_Plugin
         add_action('admin_menu', [$this, 'register_settings_page']);
         add_action('admin_post_wpd_clear_cache', [$this, 'clear_cache']);
         add_action('admin_post_wpd_test_connection', [$this, 'test_connection']);
+        add_action('admin_post_wpd_export_diagnostic', [WPD_Diagnostic::class, 'export']);
     }
 
     public function load_textdomain(): void
@@ -59,6 +60,7 @@ final class WPD_Plugin
     public function register_settings_page(): void
     {
         WPD_Settings::register_page();
+        WPD_Diagnostic::register_page();
     }
 
     public function clear_cache(): void

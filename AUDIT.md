@@ -176,3 +176,13 @@ La documentation utilisateur est déjà présente et cohérente : installation, 
 ## Conclusion
 
 Le dépôt est sain pour une consolidation 1.9.x : le cœur fonctionnel est court, les responsabilités sont séparées et les risques sont principalement liés à la duplication, au cache incomplet et au chargement d'assets plus large que nécessaire. Les prochaines interventions doivent rester incrémentales, testées et strictement sans changement utilisateur tant que l'audit n'a pas été validé.
+
+## Ajout 1.9.x — page de diagnostic support
+
+Une page d'administration dédiée au diagnostic est ajoutée sous `Réglages > Diagnostic Piwigo`. Elle est réservée aux utilisateurs disposant de la capacité `manage_options` et n'expose aucune information côté public.
+
+Le diagnostic regroupe les informations utiles au support : versions du plugin, de WordPress, de PHP et de Piwigo détectée, URL publique de l'API `ws.php`, état et temps de réponse de l'API, état du cache mémoire, transients applicatifs, configuration SSL et présence des extensions PHP attendues.
+
+Le bouton `Exporter le diagnostic (.txt)` produit un rapport texte lisible par un humain. Le contenu est volontairement limité à des données non sensibles : aucun mot de passe, jeton, clé API, cookie ou valeur d'authentification n'est collecté ni exporté.
+
+Cette évolution conserve une responsabilité isolée dans une classe dédiée `WPD_Diagnostic`, afin de ne pas mélanger la collecte de support avec le rendu public des shortcodes ou la gestion des réglages.

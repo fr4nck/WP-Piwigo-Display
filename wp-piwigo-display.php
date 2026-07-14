@@ -22,6 +22,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-api.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-cache.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-diagnostic.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-renderer.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shortcode.php';
 
