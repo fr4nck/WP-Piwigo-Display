@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.0
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -77,7 +77,7 @@ Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre
 
 == Changelog ==
 
-= 1.8.0 =
+= 1.9.0 =
 * Ajout du paramètre `style`.
 * Nouveau mode d'intégration avec les variables CSS du thème WordPress.
 * Ajout des styles `theme`, `default`, `minimal` et `none`.

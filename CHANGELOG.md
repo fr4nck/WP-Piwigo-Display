@@ -1,4 +1,4 @@
-## 1.8.0
+## 1.9.0
 
 * Ajout du paramètre `style`.
 * Ajout du mode `theme` utilisant les variables CSS du thème WordPress.
