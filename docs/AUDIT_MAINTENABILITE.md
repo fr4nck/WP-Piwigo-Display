@@ -26,8 +26,8 @@ Fichiers examinés :
 | P0 | Sécuriser la base de vérification avant 1.9.0 | dépôt / outillage | Moyen |
 | P1 | Mutualiser la validation des dimensions, ratios, booléens et choix | `includes/class-wpd-settings.php`, `includes/class-wpd-shortcode.php`, `includes/class-wpd-renderer.php` | Moyen |
 | P1 | Réduire la duplication de préparation des images rendues | `includes/class-wpd-renderer.php` | Moyen |
-| P1 | Réutiliser l'abstraction API pour le test de connexion admin | `includes/class-wpd-plugin.php`, `includes/class-wpd-api.php` | Faible |
-| P2 | Extraire la déduplication d'images API | `includes/class-wpd-api.php` | Faible |
+| P1 | Réutiliser l'abstraction API pour le test de connexion admin | `includes/class-wpd-plugin.php`, `includes/class-wpd-api.php` | Traité |
+| P2 | Extraire la déduplication d'images API | `includes/class-wpd-api.php` | Traité |
 | P2 | Clarifier la stratégie de cache autour de `max`, `limit`, `latest` et `random` | `includes/class-wpd-cache.php`, `includes/class-wpd-shortcode.php`, `includes/class-wpd-renderer.php` | Moyen |
 | P2 | Fiabiliser le nettoyage des transients en environnement avec cache objet | `includes/class-wpd-cache.php` | Moyen |
 | P2 | Simplifier les rendus admin très longs | `includes/class-wpd-settings.php`, `includes/class-wpd-diagnostic.php` | Moyen |
@@ -162,6 +162,10 @@ Le test de connexion de l'administration construit sa propre requête HTTP vers 
 
 Faible.
 
+### Statut
+
+Traité sur la branche `1.9.x` : l'action d'administration réutilise `WPD_Api::test_connection()` et conserve les mêmes paramètres de redirection ainsi que les mêmes messages utilisateur.
+
 ### Méthode de vérification
 
 - Tester l'action `wpd_test_connection` avec URL manquante, URL invalide, galerie indisponible et galerie valide.
@@ -193,6 +197,10 @@ La récupération d'images simple et la récupération récursive limitée utili
 ### Effort estimé
 
 Faible.
+
+### Statut
+
+Traité sur la branche `1.9.x` : la clé de déduplication historique, basée sur l'identifiant Piwigo puis sur `md5(wp_json_encode($image))`, est maintenant centralisée dans une méthode interne commune.
 
 ### Méthode de vérification
 
