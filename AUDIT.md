@@ -67,14 +67,14 @@ Ces duplications ne changent pas forcément le comportement aujourd'hui, mais el
 
 ### Situation actuelle
 
-Le cache stocke le résultat d'une récupération d'images avec une clé basée sur : URL Piwigo, album, `max`, récursivité et profondeur. La durée est configurable dans les réglages. Le vidage supprime les transients préfixés `wpd_album_`. Un cache mémoire limité à la requête PHP courante réutilise aussi les réponses d'images déjà obtenues avant de relire les transients ou de rappeler l'API.
+Le cache stocke le résultat d'une récupération d'images avec une clé basée sur : URL Piwigo, album, `max`, récursivité et profondeur. La durée est configurable dans les réglages. Le vidage supprime les transients préfixés `wpd_album_`. Un cache mémoire limité à la requête PHP courante réutilise aussi les réponses d'images déjà obtenues avant de relire les transients ou de rappeler l'API. Un second cache mémoire, également limité à la requête courante, mémorise les réponses API Piwigo réussies par URL et paramètres afin d'éviter les appels HTTP strictement identiques pendant le rendu d'une page.
 
 ### Points faibles
 
 1. La résolution d'un album non numérique appelle `get_all_categories()` et n'est pas mise en cache directement.
 2. `get_child_categories()` et `get_all_categories()` ne bénéficient pas d'un cache dédié.
 3. Deux shortcodes identiques sauf `limit`, `latest`, `random`, `sort` ou `order` peuvent réutiliser le même cache si `max=0`, mais un shortcode avec `max` crée une entrée séparée qui peut dupliquer une partie des données.
-4. Le cache mémoire par requête ne stocke pas les erreurs API, afin de ne pas propager un échec temporaire comme une donnée valide.
+4. Les caches mémoire par requête ne stockent pas les erreurs API, afin de ne pas propager un échec temporaire comme une donnée valide.
 5. Le vidage du cache parcourt les options SQL des transients standards ; il ne couvre pas explicitement les environnements avec object cache persistant si les transients ne sont pas stockés de la même manière.
 6. Il n'y a pas d'index applicatif des clés générées, ce qui limite les possibilités de purge ciblée par URL ou album.
 
@@ -86,6 +86,15 @@ Le cache stocke le résultat d'une récupération d'images avec une clé basée 
 - Étudier une stratégie `max` : garder `max` seulement pour limiter les très grands albums côté API, mais documenter son impact sur la granularité de cache.
 - Enregistrer un index des clés `wpd_album_*` dans une option dédiée afin de fiabiliser la purge même avec object cache persistant.
 - Ne pas ajouter de cache négatif pour les erreurs réseau tant que le besoin n'est pas démontré, afin de respecter la règle actuelle de non-cache des erreurs.
+
+
+### Mesure sur shortcodes identiques
+
+Cas mesuré : une page contient plusieurs shortcodes qui ciblent le même album Piwigo par nom ou chemin, avec la même URL Piwigo, pendant une seule requête PHP. Sans cache mémoire API, chaque shortcode relançait la même requête `pwg.categories.getList` nécessaire à la résolution de l'album avant d'atteindre le cache d'images. Avec le cache mémoire API, la première réponse réussie est réutilisée jusqu'à la fin de la requête PHP.
+
+- Avant : 3 appels API identiques `pwg.categories.getList` pour 3 shortcodes identiques.
+- Après : 1 appel API `pwg.categories.getList`, puis 2 lectures du cache mémoire de requête.
+- Réduction : 66,7 % d'appels API identiques sur ce scénario.
 
 ## Optimisations API
 

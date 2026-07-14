@@ -6,6 +6,13 @@ if (!defined('ABSPATH')) {
 
 final class WPD_Api
 {
+    /**
+     * Cache mémoire des réponses API pendant la requête PHP courante.
+     *
+     * @var array<string, array>
+     */
+    private static array $request_cache = [];
+
     private string $base_url;
 
     public function __construct(string $base_url)
@@ -232,6 +239,12 @@ final class WPD_Api
             return new WP_Error('wpd_invalid_url', __('URL Piwigo invalide ou non configurée.', 'wp-piwigo-display'));
         }
 
+        $cache_key = $this->get_request_cache_key($body);
+
+        if (isset(self::$request_cache[$cache_key])) {
+            return self::$request_cache[$cache_key];
+        }
+
         $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
             'timeout' => 10,
             'redirection' => 3,
@@ -268,8 +281,18 @@ final class WPD_Api
             );
         }
 
+        self::$request_cache[$cache_key] = $data;
+
         return $data;
     }
+
+    private function get_request_cache_key(array $body): string
+    {
+        ksort($body);
+
+        return md5($this->base_url . '|' . wp_json_encode($body));
+    }
+
     private static function sanitize_base_url(string $base_url): string
     {
         $base_url = trim($base_url);
