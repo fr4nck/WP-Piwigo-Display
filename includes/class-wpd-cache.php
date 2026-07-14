@@ -6,13 +6,27 @@ if (!defined('ABSPATH')) {
 
 final class WPD_Cache
 {
+    /**
+     * Cache mémoire limité à la requête PHP courante.
+     *
+     * @var array<string, array>
+     */
+    private static array $request_cache = [];
+
     public static function get_album_images(int $album_id, int $max = 0, string $piwigo_url = '', bool $recursive = false, int $depth = 10)
     {
         $piwigo_url = $piwigo_url !== '' ? untrailingslashit($piwigo_url) : WPD_Settings::get_piwigo_url();
         $cache_key = self::get_album_cache_key($album_id, $max, $piwigo_url, $recursive, $depth);
+
+        if (isset(self::$request_cache[$cache_key])) {
+            return self::$request_cache[$cache_key];
+        }
+
         $cached = get_transient($cache_key);
 
         if (is_array($cached)) {
+            self::$request_cache[$cache_key] = $cached;
+
             return $cached;
         }
 
@@ -25,6 +39,7 @@ final class WPD_Cache
             return $images;
         }
 
+        self::$request_cache[$cache_key] = $images;
         set_transient($cache_key, $images, WPD_Settings::get_cache_duration());
 
         return $images;
