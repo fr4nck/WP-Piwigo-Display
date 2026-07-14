@@ -116,22 +116,19 @@ Le cache stocke le résultat d'une récupération d'images avec une clé basée 
 ### Situation actuelle
 
 - Les assets sont enregistrés sur `wp_enqueue_scripts`.
-- Les styles/scripts du plugin sont effectivement enqueued au moment du rendu galerie ou slider.
-- Le script principal dépend toujours de `wpd-splide`, même pour une galerie sans slider.
-- Splide CSS/JS est enqueued seulement pour le slider, mais la dépendance du script principal peut forcer le chargement JS de Splide même pour la galerie.
+- Les styles du plugin sont enqueued au moment du rendu galerie ou slider.
+- Le script lightbox local (`wp-piwigo-display`) n'a plus de dépendance Splide et n'est enqueued que lorsque `lightbox=true`.
+- Le script slider (`wp-piwigo-display-slider`) dépend de `wpd-splide` et n'est enqueued que pour les rendus `type="slider"`.
+- Une galerie simple avec `lightbox="false"` ne charge aucun JavaScript côté plugin ; seul le CSS commun reste chargé pour préserver le rendu visuel.
 
-### Points faibles
+### Points faibles restants
 
-1. Une galerie simple peut charger Splide JS indirectement via la dépendance de `wp-piwigo-display`.
-2. Le script lightbox est chargé même si `lightbox="false"`.
-3. Le CSS unique contient galerie, slider, lightbox et modes visuels ; il est simple mais non segmenté.
-4. Splide est fourni depuis un CDN externe, ce qui dépend du réseau client, de la politique CSP et de la disponibilité jsDelivr.
-5. La lightbox construit un overlay global pour tous les liens au chargement DOM, même si peu d'interactions auront lieu.
+1. Le CSS unique contient galerie, slider, lightbox et modes visuels ; il est simple mais non segmenté.
+2. Splide est fourni depuis un CDN externe, ce qui dépend du réseau client, de la politique CSP et de la disponibilité jsDelivr.
+3. La lightbox locale construit un overlay global au chargement DOM dès qu'une lightbox est activée ; elle n'est pas encore initialisée paresseusement au premier clic.
 
 ### Recommandations
 
-- Découpler le script principal de Splide : enregistrer un script lightbox/galerie sans dépendance Splide et un script slider dépendant de Splide.
-- Charger le script lightbox seulement quand au moins un rendu actif a `lightbox=true`.
 - Conserver le CSS unique à court terme pour limiter le risque, puis envisager une séparation `base`, `slider`, `lightbox` si les gains sont mesurés.
 - Évaluer l'embarquement local de Splide ou un réglage/filtre de désactivation CDN, sans modifier le comportement par défaut avant décision mainteneur.
 - Initialiser la lightbox de manière paresseuse au premier clic si l'impact JS devient mesurable.
