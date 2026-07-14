@@ -91,38 +91,13 @@ final class WPD_Plugin
             $result = 'missing_url';
         } else {
             try {
-                $endpoint = add_query_arg(
-                    [
-                        'format' => 'json',
-                        'method' => 'pwg.session.getStatus',
-                    ],
-                    untrailingslashit($url) . '/ws.php'
-                );
-
-                $response = wp_remote_get(
-                    $endpoint,
-                    [
-                        'timeout' => 10,
-                        'redirection' => 3,
-                        'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
-                    ]
-                );
+                $api = new WPD_Api($url);
+                $response = $api->test_connection();
 
                 if (is_wp_error($response)) {
-                    $result = 'http_error';
+                    $result = $this->get_connection_test_result($response);
                 } else {
-                    $status_code = wp_remote_retrieve_response_code($response);
-                    $data = json_decode(wp_remote_retrieve_body($response), true);
-
-                    if ($status_code < 200 || $status_code >= 300) {
-                        $result = 'http_status';
-                    } elseif (!is_array($data)) {
-                        $result = 'invalid_response';
-                    } elseif (($data['stat'] ?? '') !== 'ok') {
-                        $result = 'api_error';
-                    } else {
-                        $result = 'success';
-                    }
+                    $result = 'success';
                 }
             } catch (Throwable $exception) {
                 $result = 'internal_error';
@@ -143,5 +118,25 @@ final class WPD_Plugin
 
         wp_safe_redirect($redirect_url);
         exit;
+    }
+
+    private function get_connection_test_result(WP_Error $error): string
+    {
+        switch ($error->get_error_code()) {
+            case 'wpd_http_error':
+                return 'http_error';
+
+            case 'wpd_http_status':
+                return 'http_status';
+
+            case 'wpd_invalid_json':
+                return 'invalid_response';
+
+            case 'wpd_api_error':
+                return 'api_error';
+
+            default:
+                return 'unknown_error';
+        }
     }
 }

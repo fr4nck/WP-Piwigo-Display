@@ -50,9 +50,7 @@ final class WPD_Api
             }
 
             foreach ($page_images as $image) {
-                $image_id = absint($image['id'] ?? 0);
-                $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
-                $images[$key] = $image;
+                $this->add_unique_image($images, $image);
 
                 if ($max > 0 && count($images) >= $max) {
                     return array_slice(array_values($images), 0, $max);
@@ -93,9 +91,7 @@ final class WPD_Api
             }
 
             foreach ($album_images as $image) {
-                $image_id = absint($image['id'] ?? 0);
-                $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
-                $images[$key] = $image;
+                $this->add_unique_image($images, $image);
 
                 if ($max > 0 && count($images) >= $max) {
                     return array_slice(array_values($images), 0, $max);
@@ -104,6 +100,20 @@ final class WPD_Api
         }
 
         return array_values($images);
+    }
+
+    /**
+     * Ajoute une image en conservant la clé de déduplication historique.
+     *
+     * @param array<string, array> $images
+     * @param array               $image
+     */
+    private function add_unique_image(array &$images, array $image): void
+    {
+        $image_id = absint($image['id'] ?? 0);
+        $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
+
+        $images[$key] = $image;
     }
 
     private function get_descendant_album_ids(int $album_id, int $depth)
