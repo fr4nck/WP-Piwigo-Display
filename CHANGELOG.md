@@ -1,3 +1,10 @@
+## 1.9.0-rc1
+
+* Chargement conditionnel des ressources.
+* Cache mémoire par requête.
+* Diagnostic administrateur avec export TXT.
+* Corrections et consolidation interne.
+
 ## 1.8.0
 
 * Ajout du paramètre `style`.

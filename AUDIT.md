@@ -23,7 +23,7 @@ L'architecture actuelle est lisible et compacte. La priorité de consolidation 1
 ### Point d'entrée
 
 - `wp-piwigo-display.php` déclare les métadonnées du plugin, les constantes de version, les chemins, charge toutes les classes et initialise `WPD_Plugin` sur `plugins_loaded`.
-- La version déclarée est `1.8.0`, ce qui confirme que la branche `1.9.x` doit rester une branche de consolidation préparatoire.
+- La version déclarée est `1.9.0-rc1`, ce qui confirme la préparation de la Release Candidate sur la branche `1.9.x`.
 
 ### Classes PHP
 
