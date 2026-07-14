@@ -26,15 +26,16 @@ final class WPD_Renderer
     private static function render_gallery(array $images, array $atts): string
     {
         wp_enqueue_style('wp-piwigo-display');
-        wp_enqueue_script('wp-piwigo-display');
+
+        if (self::is_enabled($atts['lightbox'] ?? 'true')) {
+            wp_enqueue_script('wp-piwigo-display');
+        }
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
         $height = self::sanitize_height((string) ($atts['height'] ?? ''), '180px');
         $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
         $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
-        $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
-        $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
         $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
 
         ob_start();
@@ -72,8 +73,11 @@ final class WPD_Renderer
     {
         wp_enqueue_style('wp-piwigo-display');
         wp_enqueue_style('wpd-splide');
-        wp_enqueue_script('wpd-splide');
-        wp_enqueue_script('wp-piwigo-display');
+        wp_enqueue_script('wp-piwigo-display-slider');
+
+        if (self::is_enabled($atts['lightbox'] ?? 'true')) {
+            wp_enqueue_script('wp-piwigo-display');
+        }
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'contain');
 
