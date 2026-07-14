@@ -4,6 +4,12 @@ Ce dépôt contient le plugin WordPress **WP Piwigo Display**. Toute contributio
 
 ## Philosophie du projet
 
+WP Piwigo Display est un projet d’éco-conception.
+
+Chaque ligne de code doit justifier son existence. Chaque requête HTTP, chaque requête SQL, chaque appel API, chaque fichier CSS et JavaScript chargé doit apporter une valeur mesurable.
+
+La meilleure optimisation est celle qui supprime du travail au serveur, au navigateur et au réseau sans modifier le résultat. La simplicité est toujours préférée à la sophistication.
+
 WP Piwigo Display doit rester un plugin léger, rapide et facilement maintenable. Chaque changement doit préserver l’expérience WordPress tout en facilitant l’intégration avec Piwigo.
 
 Les priorités du projet sont, dans cet ordre :
@@ -14,7 +20,7 @@ Les priorités du projet sont, dans cet ordre :
 4. Sécurité
 5. Maintenabilité
 
-Ne jamais augmenter la complexité sans bénéfice mesurable. Toute optimisation doit être mesurable et toute nouvelle dépendance doit être justifiée.
+Ne jamais augmenter la complexité sans bénéfice mesurable. Toute optimisation doit être démontrée, jamais supposée, et toute nouvelle dépendance doit être justifiée.
 
 ## Conventions Git
 
@@ -23,8 +29,29 @@ Ne jamais augmenter la complexité sans bénéfice mesurable. Toute optimisation
 - Une Pull Request = une seule responsabilité.
 - Un commit = une seule responsabilité.
 - Les messages de commit doivent décrire l’intention métier ou technique du changement, pas seulement les fichiers modifiés.
-- Une Pull Request doit cibler la branche de maintenance ou de développement appropriée ; pour la série 1.9, cibler `1.9.x`.
+- Une Pull Request doit cibler la branche `1.9.x`.
 - Ne pas mélanger corrections, refactorisations, documentation et changements fonctionnels dans une même Pull Request, sauf si cela est indispensable et expliqué.
+
+## Pull Requests
+
+Chaque Pull Request doit répondre aux questions suivantes :
+
+- Quel problème résout-elle ?
+- Quel bénéfice apporte-t-elle à l’utilisateur ?
+- Quel bénéfice technique apporte-t-elle ?
+- Quel est son impact sur les performances ?
+- Comment ce bénéfice est-il mesuré ?
+
+Une Pull Request qui ne présente aucun bénéfice mesurable doit le justifier.
+
+Une Pull Request ne doit traiter qu’un seul sujet.
+
+## Développement
+
+- Toute optimisation doit être accompagnée de mesures avant/après lorsque cela est possible.
+- Les optimisations doivent être démontrées, jamais supposées.
+- Avant toute Pull Request, rechercher si du code peut être supprimé plutôt qu’ajouté.
+- La simplicité est toujours préférée à la sophistication.
 
 ## Conventions de code
 
@@ -49,7 +76,7 @@ Ne jamais augmenter la complexité sans bénéfice mesurable. Toute optimisation
 - Documenter dans la Pull Request les commandes exécutées et les résultats obtenus.
 - Tester en priorité les chemins critiques : affichage des galeries, cache, appels API Piwigo, shortcodes, réglages d’administration et compatibilité WordPress.
 - Lorsqu’un test ne peut pas être exécuté, expliquer clairement la contrainte d’environnement et le risque résiduel.
-- Toute optimisation doit être accompagnée d’une mesure avant/après ou d’une méthode de mesure reproductible.
+- Toute optimisation doit être accompagnée de mesures avant/après lorsque cela est possible, ou d’une méthode de mesure reproductible lorsque la mesure directe n’est pas réalisable.
 
 ## Règles de revue de code
 
