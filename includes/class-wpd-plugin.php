@@ -26,6 +26,7 @@ final class WPD_Plugin
         add_action('admin_menu', [$this, 'register_settings_page']);
         add_action('admin_post_wpd_clear_cache', [$this, 'clear_cache']);
         add_action('admin_post_wpd_test_connection', [$this, 'test_connection']);
+        add_action('admin_post_wpd_export_diagnostic', [WPD_Diagnostic::class, 'export']);
     }
 
     public function load_textdomain(): void
@@ -47,7 +48,8 @@ final class WPD_Plugin
         wp_register_style('wp-piwigo-display', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display.css', [], WPD_VERSION);
         wp_register_style('wpd-splide', 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css', [], '4.1.4');
         wp_register_script('wpd-splide', 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js', [], '4.1.4', true);
-        wp_register_script('wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', ['wpd-splide'], WPD_VERSION, true);
+        wp_register_script('wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', ['wpd-splide'], WPD_VERSION, true);
+        wp_register_script('wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', [], WPD_VERSION, true);
     }
 
     public function register_settings(): void
@@ -58,6 +60,7 @@ final class WPD_Plugin
     public function register_settings_page(): void
     {
         WPD_Settings::register_page();
+        WPD_Diagnostic::register_page();
     }
 
     public function clear_cache(): void
@@ -88,38 +91,13 @@ final class WPD_Plugin
             $result = 'missing_url';
         } else {
             try {
-                $endpoint = add_query_arg(
-                    [
-                        'format' => 'json',
-                        'method' => 'pwg.session.getStatus',
-                    ],
-                    untrailingslashit($url) . '/ws.php'
-                );
-
-                $response = wp_remote_get(
-                    $endpoint,
-                    [
-                        'timeout' => 10,
-                        'redirection' => 3,
-                        'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
-                    ]
-                );
+                $api = new WPD_Api($url);
+                $response = $api->test_connection();
 
                 if (is_wp_error($response)) {
-                    $result = 'http_error';
+                    $result = $this->get_connection_test_result($response);
                 } else {
-                    $status_code = wp_remote_retrieve_response_code($response);
-                    $data = json_decode(wp_remote_retrieve_body($response), true);
-
-                    if ($status_code < 200 || $status_code >= 300) {
-                        $result = 'http_status';
-                    } elseif (!is_array($data)) {
-                        $result = 'invalid_response';
-                    } elseif (($data['stat'] ?? '') !== 'ok') {
-                        $result = 'api_error';
-                    } else {
-                        $result = 'success';
-                    }
+                    $result = 'success';
                 }
             } catch (Throwable $exception) {
                 $result = 'internal_error';
@@ -140,5 +118,25 @@ final class WPD_Plugin
 
         wp_safe_redirect($redirect_url);
         exit;
+    }
+
+    private function get_connection_test_result(WP_Error $error): string
+    {
+        switch ($error->get_error_code()) {
+            case 'wpd_http_error':
+                return 'http_error';
+
+            case 'wpd_http_status':
+                return 'http_status';
+
+            case 'wpd_invalid_json':
+                return 'invalid_response';
+
+            case 'wpd_api_error':
+                return 'api_error';
+
+            default:
+                return 'unknown_error';
+        }
     }
 }

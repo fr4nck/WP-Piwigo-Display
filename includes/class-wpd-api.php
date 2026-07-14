@@ -6,6 +6,13 @@ if (!defined('ABSPATH')) {
 
 final class WPD_Api
 {
+    /**
+     * Cache mémoire des réponses API pendant la requête PHP courante.
+     *
+     * @var array<string, array>
+     */
+    private static array $request_cache = [];
+
     private string $base_url;
 
     public function __construct(string $base_url)
@@ -43,9 +50,7 @@ final class WPD_Api
             }
 
             foreach ($page_images as $image) {
-                $image_id = absint($image['id'] ?? 0);
-                $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
-                $images[$key] = $image;
+                $this->add_unique_image($images, $image);
 
                 if ($max > 0 && count($images) >= $max) {
                     return array_slice(array_values($images), 0, $max);
@@ -86,9 +91,7 @@ final class WPD_Api
             }
 
             foreach ($album_images as $image) {
-                $image_id = absint($image['id'] ?? 0);
-                $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
-                $images[$key] = $image;
+                $this->add_unique_image($images, $image);
 
                 if ($max > 0 && count($images) >= $max) {
                     return array_slice(array_values($images), 0, $max);
@@ -97,6 +100,20 @@ final class WPD_Api
         }
 
         return array_values($images);
+    }
+
+    /**
+     * Ajoute une image en conservant la clé de déduplication historique.
+     *
+     * @param array<string, array> $images
+     * @param array               $image
+     */
+    private function add_unique_image(array &$images, array $image): void
+    {
+        $image_id = absint($image['id'] ?? 0);
+        $key = $image_id > 0 ? (string) $image_id : md5(wp_json_encode($image));
+
+        $images[$key] = $image;
     }
 
     private function get_descendant_album_ids(int $album_id, int $depth)
@@ -232,6 +249,12 @@ final class WPD_Api
             return new WP_Error('wpd_invalid_url', __('URL Piwigo invalide ou non configurée.', 'wp-piwigo-display'));
         }
 
+        $cache_key = $this->get_request_cache_key($body);
+
+        if (isset(self::$request_cache[$cache_key])) {
+            return self::$request_cache[$cache_key];
+        }
+
         $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
             'timeout' => 10,
             'redirection' => 3,
@@ -268,8 +291,18 @@ final class WPD_Api
             );
         }
 
+        self::$request_cache[$cache_key] = $data;
+
         return $data;
     }
+
+    private function get_request_cache_key(array $body): string
+    {
+        ksort($body);
+
+        return md5($this->base_url . '|' . wp_json_encode($body));
+    }
+
     private static function sanitize_base_url(string $base_url): string
     {
         $base_url = trim($base_url);

@@ -2,9 +2,9 @@
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
-Tested up to: 6.6
+Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -77,19 +77,25 @@ Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre
 
 == Changelog ==
 
+= 1.9.0 =
+* Chargement conditionnel des ressources JavaScript selon le type d'affichage.
+* Cache mémoire pendant une requête PHP afin d'éviter les appels API identiques.
+* Ajout d'une page de diagnostic réservée aux administrateurs avec export TXT.
+* Correction de la correspondance entre diapositives et miniatures du diaporama.
+* Mutualisation du test de connexion Piwigo et de la déduplication des images.
+* Consolidation de la documentation et de l'architecture interne.
+
 = 1.8.0 =
 * Ajout du paramètre `style`.
 * Nouveau mode d'intégration avec les variables CSS du thème WordPress.
 * Ajout des styles `theme`, `default`, `minimal` et `none`.
 * Ajout d'un réglage global d'intégration graphique.
 
-
 = 1.7.0 =
 * Ajout du paramètre `caption`.
 * Choix entre aucune légende, titre, description ou titre et description.
 * Ajout d'un réglage global des légendes.
 * Prise en charge des légendes dans la galerie, le diaporama et la lightbox.
-
 
 = 1.6.1 =
 * Documentation complète de l'affichage récursif.

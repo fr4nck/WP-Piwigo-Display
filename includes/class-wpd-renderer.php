@@ -26,15 +26,16 @@ final class WPD_Renderer
     private static function render_gallery(array $images, array $atts): string
     {
         wp_enqueue_style('wp-piwigo-display');
-        wp_enqueue_script('wp-piwigo-display');
+
+        if (self::is_enabled($atts['lightbox'] ?? 'true')) {
+            wp_enqueue_script('wp-piwigo-display');
+        }
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'cover');
         $height = self::sanitize_height((string) ($atts['height'] ?? ''), '180px');
         $rounded_class = self::is_enabled($atts['rounded'] ?? 'false') ? ' wp-piwigo-display-rounded' : '';
         $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
-        $raw_class = $fit === 'raw' ? ' wp-piwigo-display-raw' : '';
         $lightbox_class = self::is_enabled($atts['lightbox'] ?? 'true') ? ' wp-piwigo-display-lightbox-enabled' : '';
-        $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
         $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
 
         ob_start();
@@ -72,8 +73,11 @@ final class WPD_Renderer
     {
         wp_enqueue_style('wp-piwigo-display');
         wp_enqueue_style('wpd-splide');
-        wp_enqueue_script('wpd-splide');
-        wp_enqueue_script('wp-piwigo-display');
+        wp_enqueue_script('wp-piwigo-display-slider');
+
+        if (self::is_enabled($atts['lightbox'] ?? 'true')) {
+            wp_enqueue_script('wp-piwigo-display');
+        }
 
         $fit = self::sanitize_fit($atts['fit'] ?? 'contain');
 
@@ -91,7 +95,9 @@ final class WPD_Renderer
         $style_class = ' wp-piwigo-display-style-' . self::sanitize_style((string) ($atts['style'] ?? 'default'));
         $navigation = self::sanitize_navigation((string) ($atts['navigation'] ?? 'thumbnails'));
         $thumbnails = $navigation === 'thumbnails';
-        $dots = $navigation === 'dots';
+        $slider_images = array_values(array_filter($images, static function (array $image): bool {
+            return self::get_large_url($image) !== '';
+        }));
         $slider_id = 'wpd-slider-' . wp_generate_uuid4();
 
         ob_start();
@@ -106,17 +112,13 @@ final class WPD_Renderer
              aria-label="<?php esc_attr_e('Diaporama Piwigo', 'wp-piwigo-display'); ?>">
             <div class="splide__track">
                 <ul class="splide__list">
-                    <?php foreach ($images as $image) : ?>
+                    <?php foreach ($slider_images as $image) : ?>
                         <?php
                         $image_url = self::get_large_url($image);
                         $title = self::get_image_title($image);
                         $description = self::get_image_description($image);
                         $caption_mode = self::resolve_caption_mode((string) ($atts['caption'] ?? 'default'));
                         $lightbox_caption = self::get_caption_text($title, $description, $caption_mode);
-
-                        if ($image_url === '') {
-                            continue;
-                        }
                         ?>
                         <li class="splide__slide">
                             <a href="<?php echo esc_url($image_url); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr($lightbox_caption); ?>">
@@ -130,13 +132,13 @@ final class WPD_Renderer
 
             <?php if ($thumbnails) : ?>
                 <div class="wp-piwigo-display-slider-thumbnails" aria-label="<?php esc_attr_e('Miniatures du diaporama', 'wp-piwigo-display'); ?>">
-                    <?php foreach ($images as $index => $image) : ?>
+                    <?php foreach ($slider_images as $index => $image) : ?>
                         <?php
                         $thumb_url = self::get_image_url($image);
                         $title = self::get_image_title($image);
 
                         if ($thumb_url === '') {
-                            continue;
+                            $thumb_url = self::get_large_url($image);
                         }
                         ?>
                         <button type="button" class="wp-piwigo-display-slider-thumbnail<?php echo $index === 0 ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr((string) $index); ?>" aria-label="<?php echo esc_attr(sprintf(__('Afficher l’image %d', 'wp-piwigo-display'), $index + 1)); ?>">

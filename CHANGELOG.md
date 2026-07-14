@@ -1,3 +1,12 @@
+## 1.9.0
+
+* Chargement conditionnel des ressources JavaScript selon le type d'affichage.
+* Cache mémoire pendant une requête PHP afin d'éviter les appels API identiques.
+* Ajout d'une page de diagnostic réservée aux administrateurs avec export TXT.
+* Correction de la correspondance entre diapositives et miniatures du diaporama.
+* Mutualisation du test de connexion Piwigo et de la déduplication des images.
+* Consolidation de la documentation et de l'architecture interne.
+
 ## 1.8.0
 
 * Ajout du paramètre `style`.
@@ -117,88 +126,3 @@
 * Le cache tient compte de l'URL utilisée.
 
 ## 1.1.2
-
-* Ajout du bouton de vidage du cache dans les réglages.
-* Ajout d’une action sécurisée par nonce.
-* Affichage d’un message de confirmation après suppression du cache.
-
-## 1.1.1
-
-* Ajout du paramètre `navigation` pour le diaporama.
-* Valeurs possibles : `thumbnails`, `dots`, `none`.
-* Les points sont désactivés quand les miniatures sont affichées.
-* Ajout du réglage global de navigation par défaut.
-
-## 1.1.0
-
-* Ajout des réglages d’affichage par défaut.
-* Les shortcodes peuvent remplacer les réglages globaux au cas par cas.
-* Ajout d’un filtre `wp_piwigo_display_shortcode_defaults`.
-* Ajout d’un filtre `wp_piwigo_display_render` pour permettre des rendus externes.
-
-# Journal des modifications
-
-## 1.0.6
-
-* Retour au moteur Splide pour le diaporama.
-* Correction fiable de `interval` et `speed`.
-* Conservation des miniatures optionnelles.
-* Conservation de la lightbox.
-
-## 1.0.5
-
-* Correction du tempo automatique du diaporama.
-* Remplacement de l’intervalle par une minuterie relancée proprement après chaque image.
-* Meilleure stabilité après pause, survol, focus ou clic manuel.
-
-## 1.0.4
-
-* Correction du rendu slider par défaut.
-* Suppression du comportement brut variable dans le diaporama.
-* Le diaporama affiche les images en entier, sans recadrage ni déformation.
-* Passage de la transition par défaut à zéro pour éviter les effets fantômes.
-
-## 1.0.3
-
-* Stabilisation du diaporama en mode brut.
-* Limitation propre des photos portrait.
-* Ajout du paramètre `speed` pour la durée de transition.
-* Correction du défilement irrégulier.
-
-## 1.0.2
-
-* Ajout du mode `fit="raw"`.
-* Passage du cadrage par défaut en mode brut, sans recadrage imposé.
-* La galerie respecte la hauteur naturelle des images en mode brut.
-* Le diaporama respecte les proportions originales en mode brut.
-
-## 1.0.1
-
-* Ajout du mode `fit="auto"` par défaut.
-* Détection automatique portrait / paysage.
-* Les photos en portrait utilisent `contain` automatiquement.
-* Les photos en paysage utilisent `cover` automatiquement.
-
-## 1.0.0
-
-* Stabilisation du rendu galerie.
-* Stabilisation du rendu diaporama.
-* Ajout des miniatures optionnelles dans le diaporama.
-* Conservation de la lightbox locale.
-* Conservation des options `latest` et `random`.
-* Nettoyage de la documentation.
-
-## 0.9.0
-
-* Ajout d'une lightbox locale.
-* Suppression de la dépendance au CDN.
-* Ajout des options `latest` et `random`.
-
-## 0.8.1
-
-* Ajout de l'option `rounded`.
-* Suppression des angles arrondis par défaut.
-
-## 0.7.1
-
-* Correction de la hauteur par défaut du diaporama.
