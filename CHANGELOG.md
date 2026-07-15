@@ -1,3 +1,11 @@
+## 1.11.0
+
+* Ajout du filtrage des images par tags Piwigo avec `tag`, `tags` et `tag_mode`.
+* Application du filtrage par tags avant le filtrage par orientation puis avant tri, limites et modes `latest`/`random`.
+* Utilisation de `pwg.tags.getImages` en appel groupé lorsque les réponses d’album ne contiennent pas les tags.
+* Ajout des exemples de tags au générateur de shortcodes.
+* Préparation des métadonnées de version 1.11.0.
+
 ## 1.10.0
 
 * Ajout du paramètre `orientation` pour filtrer les images en portrait, paysage ou carré après récupération et avant rendu.

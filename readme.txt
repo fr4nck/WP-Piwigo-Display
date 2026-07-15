@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -69,6 +69,15 @@ Images portrait, paysage ou carrées :
 
 Le paramètre `orientation` accepte `all` par défaut, `portrait`, `landscape` et `square`. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
 
+Filtrage par tags Piwigo :
+
+`[piwigo album="154" tag="nature"]`
+`[piwigo album="154" tags="nature,animaux"]`
+`[piwigo album="154" tags="nature,animaux" tag_mode="any"]`
+`[piwigo album="154" tags="nature,animaux" tag_mode="all"]`
+
+`tag` et `tags` acceptent un ou plusieurs tags séparés par des virgules. Les espaces sont supprimés, les doublons sont ignorés et la comparaison ne tient pas compte de la casse. `tag_mode` vaut `any` par défaut ou `all` pour exiger tous les tags demandés.
+
 == Frequently Asked Questions ==
 
 = Où le plugin doit-il être installé ? =
@@ -84,6 +93,12 @@ Non. Les images restent dans Piwigo et sont affichées via l'API officielle.
 Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre de niveaux parcourus.
 
 == Changelog ==
+
+= 1.11.0 =
+* Ajout du filtrage des images par tags Piwigo avec `tag`, `tags` et `tag_mode`.
+* Application des tags avant orientation, tri, latest, random, limit et max.
+* Ajout des exemples de tags au générateur de shortcodes.
+* Préparation des métadonnées de version 1.11.0.
 
 = 1.10.0 =
 * Ajout du paramètre `orientation` pour filtrer les images en portrait, paysage ou carré après récupération et avant rendu.

@@ -220,6 +220,29 @@ Contrôle l'intégration visuelle :
 [piwigo album="154" style="none"]
 ```
 
+### `tag` et `tags`
+
+Filtrent les images selon les tags Piwigo déjà présents dans les données récupérées pour l’album. Le filtre est appliqué après la récupération des images, avant le filtre d’orientation, puis avant le tri et les limites.
+
+```text
+[piwigo album="154" tag="nature"]
+[piwigo album="154" tags="nature,animaux"]
+```
+
+`tag` et `tags` peuvent être utilisés indifféremment et même ensemble. Les valeurs sont séparées par des virgules, les espaces inutiles sont supprimés, les doublons sont ignorés et la comparaison ne tient pas compte de la casse. Une image sans information de tags est exclue uniquement lorsqu’un filtre par tags est actif.
+
+### `tag_mode`
+
+Détermine la façon de comparer plusieurs tags demandés :
+
+- `any` par défaut : l’image possède au moins un des tags demandés ;
+- `all` : l’image possède tous les tags demandés.
+
+```text
+[piwigo album="154" tags="nature,animaux" tag_mode="any"]
+[piwigo album="154" tags="nature,animaux" tag_mode="all"]
+```
+
 ### `orientation`
 
 Filtre les images après leur récupération depuis Piwigo et avant le rendu de la galerie ou du diaporama.
