@@ -61,7 +61,8 @@ final class WPD_Shortcode
 
         $recursive = filter_var($atts['recursive'], FILTER_VALIDATE_BOOLEAN);
         $depth = max(0, absint($atts['depth']));
-        $images = WPD_Cache::get_album_images(absint($album_id), absint($atts['max']), $piwigo_url, $recursive, $depth);
+        $fetch_max = (string) $atts['orientation'] === 'all' ? absint($atts['max']) : 0;
+        $images = WPD_Cache::get_album_images(absint($album_id), $fetch_max, $piwigo_url, $recursive, $depth);
 
         if (is_wp_error($images)) {
             return self::render_error($images->get_error_message());
