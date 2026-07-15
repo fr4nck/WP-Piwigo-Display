@@ -1,3 +1,10 @@
+## 1.9.1
+
+* Mise à jour des métadonnées de version pour la publication corrective 1.9.1.
+* Conservation de la protection contre le double chargement du plugin.
+* Complément du générateur de shortcodes dans l’administration avec des exemples récents pour les galeries, diaporamas, albums récursifs, tris, limites, presets et paramètres historiques.
+* Aucun changement dans le moteur de rendu ni dans l’API Piwigo.
+
 ## 1.9.0
 
 * Chargement conditionnel des ressources JavaScript selon le type d'affichage.
