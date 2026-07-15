@@ -13,10 +13,28 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WPD_VERSION', '1.9.0');
-define('WPD_PLUGIN_FILE', __FILE__);
-define('WPD_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('WPD_PLUGIN_URL', plugin_dir_url(__FILE__));
+if (!defined('WPD_VERSION')) {
+    define('WPD_VERSION', '1.9.0');
+}
+
+if (!defined('WPD_PLUGIN_FILE')) {
+    define('WPD_PLUGIN_FILE', __FILE__);
+}
+
+if (!defined('WPD_PLUGIN_DIR')) {
+    define('WPD_PLUGIN_DIR', plugin_dir_path(__FILE__));
+}
+
+if (!defined('WPD_PLUGIN_URL')) {
+    define('WPD_PLUGIN_URL', plugin_dir_url(__FILE__));
+}
+
+foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode'] as $wpd_class) {
+    if (class_exists($wpd_class, false)) {
+        return;
+    }
+}
+unset($wpd_class);
 
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
