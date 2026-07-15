@@ -385,6 +385,10 @@ final class WPD_Renderer
             return 'wp-piwigo-display-landscape';
         }
 
+        if (self::is_square($image)) {
+            return 'wp-piwigo-display-square';
+        }
+
         return 'wp-piwigo-display-orientation-unknown';
     }
 
@@ -401,7 +405,15 @@ final class WPD_Renderer
         $width = absint($image['width'] ?? 0);
         $height = absint($image['height'] ?? 0);
 
-        return $width > 0 && $height > 0 && $width >= $height;
+        return $width > 0 && $height > 0 && $width > $height;
+    }
+
+    private static function is_square(array $image): bool
+    {
+        $width = absint($image['width'] ?? 0);
+        $height = absint($image['height'] ?? 0);
+
+        return $width > 0 && $height > 0 && $width === $height;
     }
 
     private static function sanitize_navigation(string $navigation): string

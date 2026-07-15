@@ -219,3 +219,20 @@ Contrôle l'intégration visuelle :
 [piwigo album="154" style="theme"]
 [piwigo album="154" style="none"]
 ```
+
+### `orientation`
+
+Filtre les images après leur récupération depuis Piwigo et avant le rendu de la galerie ou du diaporama.
+
+- `all` : toutes les images, valeur par défaut ;
+- `portrait` : hauteur supérieure à la largeur ;
+- `landscape` : largeur supérieure à la hauteur ;
+- `square` : largeur égale à la hauteur.
+
+```text
+[piwigo album="154" orientation="portrait"]
+[piwigo album="154" orientation="landscape"]
+[piwigo album="154" orientation="square"]
+```
+
+Si les dimensions sont absentes, l’image est conservée uniquement avec `orientation="all"`.

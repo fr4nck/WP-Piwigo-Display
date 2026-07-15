@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.9.1
+Stable tag: 1.10.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -23,7 +23,7 @@ Fonctionnalités principales :
 * lightbox ;
 * cache WordPress ;
 * réglages d'affichage par défaut ;
-* tri et limitation des images ;
+* tri, limitation et filtrage par orientation des images ;
 * affichage d'un album et de ses sous-albums ;
 * profondeur récursive configurable ;
 * pagination des résultats Piwigo ;
@@ -61,6 +61,14 @@ Dernières images d'une arborescence :
 
 `[piwigo album="154" recursive="true" sort="date" order="desc" limit="20"]`
 
+Images portrait, paysage ou carrées :
+
+`[piwigo album="154" orientation="portrait"]`
+`[piwigo album="154" orientation="landscape"]`
+`[piwigo album="154" orientation="square"]`
+
+Le paramètre `orientation` accepte `all` par défaut, `portrait`, `landscape` et `square`. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
+
 == Frequently Asked Questions ==
 
 = Où le plugin doit-il être installé ? =
@@ -76,6 +84,12 @@ Non. Les images restent dans Piwigo et sont affichées via l'API officielle.
 Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre de niveaux parcourus.
 
 == Changelog ==
+
+= 1.10.0 =
+* Ajout du paramètre `orientation` pour filtrer les images en portrait, paysage ou carré après récupération et avant rendu.
+* Conservation des images sans dimensions uniquement avec `orientation="all"`.
+* Ajout des exemples d’orientation au générateur de shortcodes.
+* Préparation des métadonnées de version 1.10.0.
 
 = 1.9.1 =
 * Mise à jour des métadonnées de version pour la publication corrective 1.9.1.

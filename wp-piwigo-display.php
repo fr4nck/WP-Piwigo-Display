@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Piwigo Display
  * Description: Affiche simplement des albums Piwigo dans WordPress à l'aide d'un shortcode.
- * Version: 1.9.1
+ * Version: 1.10.0
  * Author: Franck Bellardie
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('WPD_VERSION')) {
-    define('WPD_VERSION', '1.9.1');
+    define('WPD_VERSION', '1.10.0');
 }
 
 if (!defined('WPD_PLUGIN_FILE')) {

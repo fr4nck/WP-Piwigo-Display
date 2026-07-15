@@ -20,7 +20,7 @@ Piwigo reste la source des photos ; WordPress se charge uniquement de leur affic
 - profondeur récursive configurable ;
 - pagination automatique des résultats Piwigo ;
 - suppression des doublons ;
-- tri et limitation des images ;
+- tri, limitation et filtrage par orientation des images ;
 - presets d'affichage ;
 - sélection d'album par identifiant, nom ou chemin.
 
@@ -61,6 +61,16 @@ Autre galerie Piwigo pour un affichage ponctuel :
 ```text
 [piwigo url="https://autre-galerie.example.org" album="154"]
 ```
+
+Filtrage par orientation après récupération des images :
+
+```text
+[piwigo album="154" orientation="portrait"]
+[piwigo album="154" orientation="landscape"]
+[piwigo album="154" orientation="square"]
+```
+
+Le paramètre `orientation` accepte `all` par défaut, `portrait` pour les images plus hautes que larges, `landscape` pour les images plus larges que hautes et `square` pour les images carrées. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
 
 ## Affichage récursif
 
