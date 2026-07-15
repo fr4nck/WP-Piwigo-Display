@@ -72,6 +72,17 @@ Filtrage par orientation après récupération des images :
 
 Le paramètre `orientation` accepte `all` par défaut, `portrait` pour les images plus hautes que larges, `landscape` pour les images plus larges que hautes et `square` pour les images carrées. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
 
+Filtrage par tags Piwigo après récupération des images et avant le filtrage par orientation :
+
+```text
+[piwigo album="154" tag="nature"]
+[piwigo album="154" tags="nature,animaux"]
+[piwigo album="154" tags="nature,animaux" tag_mode="any"]
+[piwigo album="154" tags="nature,animaux" tag_mode="all"]
+```
+
+`tag` et `tags` peuvent être utilisés indifféremment. Les tags sont séparés par des virgules, nettoyés des espaces inutiles, dédupliqués et comparés sans tenir compte de la casse. `tag_mode="any"` conserve les images avec au moins un tag demandé ; `tag_mode="all"` exige tous les tags demandés.
+
 ## Affichage récursif
 
 Le paramètre `recursive="true"` inclut les images de l'album indiqué et celles de ses sous-albums.

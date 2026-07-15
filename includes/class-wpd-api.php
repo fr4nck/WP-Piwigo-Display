@@ -63,6 +63,46 @@ final class WPD_Api
         return array_values($images);
     }
 
+
+    public function get_images_by_tags(array $tags, string $tag_mode = 'any')
+    {
+        if (empty($tags)) {
+            return [];
+        }
+
+        $images = [];
+        $page = 0;
+        $per_page = 500;
+
+        do {
+            $response = $this->request([
+                'method' => 'pwg.tags.getImages',
+                'tag_name' => $tags,
+                'tag_mode_and' => $tag_mode === 'all' ? 'true' : 'false',
+                'per_page' => $per_page,
+                'page' => $page,
+            ]);
+
+            if (is_wp_error($response)) {
+                return $response;
+            }
+
+            $page_images = $response['result']['images'] ?? [];
+
+            if (!is_array($page_images)) {
+                $page_images = [];
+            }
+
+            foreach ($page_images as $image) {
+                $this->add_unique_image($images, $image);
+            }
+
+            $page++;
+        } while (count($page_images) === $per_page && $page < 1000);
+
+        return array_values($images);
+    }
+
     public function get_images_from_album_recursive(int $album_id, int $max = 0, int $depth = 10)
     {
         if ($depth <= 0) {

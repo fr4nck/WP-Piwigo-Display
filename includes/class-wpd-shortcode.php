@@ -29,6 +29,9 @@ final class WPD_Shortcode
                 'caption' => 'default',
                 'style' => 'default',
                 'orientation' => 'all',
+                'tag' => '',
+                'tags' => '',
+                'tag_mode' => 'any',
             ],
             WPD_Settings::get_shortcode_defaults()
         );
@@ -61,7 +64,10 @@ final class WPD_Shortcode
 
         $recursive = filter_var($atts['recursive'], FILTER_VALIDATE_BOOLEAN);
         $depth = max(0, absint($atts['depth']));
-        $fetch_max = (string) $atts['orientation'] === 'all' ? absint($atts['max']) : 0;
+        $tag_filter = self::normalize_tag_filter((string) ($atts['tag'] ?? ''), (string) ($atts['tags'] ?? ''));
+        $has_tag_filter = !empty($tag_filter);
+        $fetch_max = (string) $atts['orientation'] === 'all' && !$has_tag_filter ? absint($atts['max']) : 0;
+        $images_prefiltered_by_tag = false;
         $images = WPD_Cache::get_album_images(absint($album_id), $fetch_max, $piwigo_url, $recursive, $depth);
 
         if (is_wp_error($images)) {
@@ -70,6 +76,24 @@ final class WPD_Shortcode
 
         if (empty($images)) {
             return self::render_error(__('Aucune image n’a été trouvée dans cet album Piwigo.', 'wp-piwigo-display'));
+        }
+
+        if ($has_tag_filter && !self::images_contain_tag_data($images)) {
+            $images = WPD_Cache::get_album_images_by_tags(absint($album_id), $tag_filter, (string) $atts['tag_mode'], $piwigo_url, $recursive, $depth);
+
+            if (is_wp_error($images)) {
+                return self::render_error($images->get_error_message());
+            }
+
+            $images_prefiltered_by_tag = true;
+        }
+
+        if (!$images_prefiltered_by_tag) {
+            $images = self::filter_images_by_tags($images, $tag_filter, (string) $atts['tag_mode']);
+        }
+
+        if (empty($images) && $has_tag_filter) {
+            return self::render_error(__('Aucune image ne correspond aux tags demandés.', 'wp-piwigo-display'));
         }
 
         $images = self::filter_images_by_orientation($images, (string) $atts['orientation']);
@@ -88,6 +112,109 @@ final class WPD_Shortcode
     }
 
 
+
+    private static function images_contain_tag_data(array $images): bool
+    {
+        foreach ($images as $image) {
+            if (is_array($image) && array_key_exists('tags', $image)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function filter_images_by_tags(array $images, array $requested_tags, string $tag_mode): array
+    {
+        if (empty($requested_tags)) {
+            return $images;
+        }
+
+        return array_values(array_filter($images, static function (array $image) use ($requested_tags, $tag_mode): bool {
+            $image_tags = self::get_normalized_image_tags($image);
+
+            if (empty($image_tags)) {
+                return false;
+            }
+
+            $matches = array_intersect($requested_tags, $image_tags);
+
+            if ($tag_mode === 'all') {
+                return count($matches) === count($requested_tags);
+            }
+
+            return !empty($matches);
+        }));
+    }
+
+    private static function normalize_tag_filter(string $tag, string $tags): array
+    {
+        $values = array_merge(explode(',', $tag), explode(',', $tags));
+        $normalized = [];
+
+        foreach ($values as $value) {
+            $tag_name = self::normalize_tag_name($value);
+
+            if ($tag_name !== '') {
+                $normalized[$tag_name] = $tag_name;
+            }
+        }
+
+        return array_values($normalized);
+    }
+
+    private static function get_normalized_image_tags(array $image): array
+    {
+        if (!isset($image['tags'])) {
+            return [];
+        }
+
+        $tags = $image['tags'];
+
+        if (is_string($tags)) {
+            $tags = explode(',', $tags);
+        }
+
+        if (!is_array($tags)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($tags as $tag) {
+            $value = '';
+
+            if (is_array($tag)) {
+                foreach (['name', 'url_name', 'value'] as $key) {
+                    if (isset($tag[$key])) {
+                        $value = (string) $tag[$key];
+                        break;
+                    }
+                }
+            } elseif (is_scalar($tag)) {
+                $value = (string) $tag;
+            }
+
+            $tag_name = self::normalize_tag_name($value);
+
+            if ($tag_name !== '') {
+                $normalized[$tag_name] = $tag_name;
+            }
+        }
+
+        return array_values($normalized);
+    }
+
+    private static function normalize_tag_name(string $tag): string
+    {
+        $tag = trim(wp_strip_all_tags($tag));
+
+        if ($tag === '') {
+            return '';
+        }
+
+        return function_exists('mb_strtolower') ? mb_strtolower($tag, 'UTF-8') : strtolower($tag);
+    }
 
     private static function filter_images_by_orientation(array $images, string $orientation): array
     {
@@ -139,6 +266,9 @@ final class WPD_Shortcode
             ['all', 'portrait', 'landscape', 'square'],
             'all'
         );
+        $atts['tag'] = isset($atts['tag']) ? sanitize_text_field((string) $atts['tag']) : '';
+        $atts['tags'] = isset($atts['tags']) ? sanitize_text_field((string) $atts['tags']) : '';
+        $atts['tag_mode'] = self::sanitize_choice((string) ($atts['tag_mode'] ?? 'any'), ['any', 'all'], 'any');
         $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';
         $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', (string) ($atts['height'] ?? '')) === 1 ? (string) $atts['height'] : '';
         $atts['autoplay'] = self::sanitize_bool_string($atts['autoplay'] ?? 'true');
