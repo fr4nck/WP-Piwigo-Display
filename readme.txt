@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -76,6 +76,12 @@ Non. Les images restent dans Piwigo et sont affichées via l'API officielle.
 Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre de niveaux parcourus.
 
 == Changelog ==
+
+= 1.9.1 =
+* Mise à jour des métadonnées de version pour la publication corrective 1.9.1.
+* Conservation de la protection contre le double chargement du plugin.
+* Complément du générateur de shortcodes dans l’administration avec des exemples récents et utiles.
+* Aucun changement dans le moteur de rendu ni dans l’API Piwigo.
 
 = 1.9.0 =
 * Chargement conditionnel des ressources JavaScript selon le type d'affichage.

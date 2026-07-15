@@ -293,6 +293,12 @@ final class WPD_Settings
 
             <hr />
 
+            <h2><?php esc_html_e('Générateur de shortcodes', 'wp-piwigo-display'); ?></h2>
+            <p><?php esc_html_e('Copiez un exemple puis remplacez l’identifiant d’album par celui de votre galerie Piwigo.', 'wp-piwigo-display'); ?></p>
+            <?php self::render_shortcode_examples(); ?>
+
+            <hr />
+
             <h2><?php esc_html_e('Cache', 'wp-piwigo-display'); ?></h2>
             <p><?php esc_html_e('Vous pouvez vider le cache si vous venez de modifier des albums ou d’ajouter des photos dans Piwigo.', 'wp-piwigo-display'); ?></p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
@@ -302,6 +308,38 @@ final class WPD_Settings
             </form>
         </div>
         <?php
+    }
+
+
+    private static function render_shortcode_examples(): void
+    {
+        $examples = [
+            __('Galerie simple', 'wp-piwigo-display') => '[piwigo album="154"]',
+            __('Slider', 'wp-piwigo-display') => '[piwigo album="154" type="slider"]',
+            __('Album récursif', 'wp-piwigo-display') => '[piwigo album="154" recursive="true"]',
+            __('Profondeur limitée', 'wp-piwigo-display') => '[piwigo album="154" recursive="true" depth="2"]',
+            __('Tri par date décroissante', 'wp-piwigo-display') => '[piwigo album="154" sort="date" order="desc"]',
+            __('Limitation du nombre d’images', 'wp-piwigo-display') => '[piwigo album="154" limit="20"]',
+            __('Preset actualités', 'wp-piwigo-display') => '[piwigo album="154" preset="actualites"]',
+            __('Style', 'wp-piwigo-display') => '[piwigo album="154" style="minimal"]',
+            __('Caption', 'wp-piwigo-display') => '[piwigo album="154" caption="title-description"]',
+            __('Lightbox', 'wp-piwigo-display') => '[piwigo album="154" lightbox="true"]',
+            __('Max', 'wp-piwigo-display') => '[piwigo album="154" max="12"]',
+            __('Latest', 'wp-piwigo-display') => '[piwigo album="154" latest="12"]',
+            __('Random', 'wp-piwigo-display') => '[piwigo album="154" random="12"]',
+        ];
+
+        echo '<table class="widefat striped">';
+        echo '<thead><tr><th>' . esc_html__('Usage', 'wp-piwigo-display') . '</th><th>' . esc_html__('Shortcode', 'wp-piwigo-display') . '</th></tr></thead>';
+        echo '<tbody>';
+        foreach ($examples as $label => $shortcode) {
+            echo '<tr>';
+            echo '<td>' . esc_html($label) . '</td>';
+            echo '<td><code>' . esc_html($shortcode) . '</code></td>';
+            echo '</tr>';
+        }
+        echo '</tbody>';
+        echo '</table>';
     }
 
     private static function input(string $type, string $key, string $value, string $class = '', string $placeholder = '', array $attrs = []): void
