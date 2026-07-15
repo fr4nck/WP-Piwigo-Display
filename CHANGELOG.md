@@ -1,3 +1,10 @@
+## 1.10.0
+
+* Ajout du paramètre `orientation` pour filtrer les images en portrait, paysage ou carré après récupération et avant rendu.
+* Conservation des images sans dimensions uniquement avec `orientation="all"`.
+* Ajout des exemples d’orientation au générateur de shortcodes.
+* Préparation des métadonnées de version 1.10.0.
+
 ## 1.9.1
 
 * Mise à jour des métadonnées de version pour la publication corrective 1.9.1.

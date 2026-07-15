@@ -28,6 +28,7 @@ final class WPD_Shortcode
                 'depth' => '10',
                 'caption' => 'default',
                 'style' => 'default',
+                'orientation' => 'all',
             ],
             WPD_Settings::get_shortcode_defaults()
         );
@@ -70,6 +71,12 @@ final class WPD_Shortcode
             return self::render_error(__('Aucune image n’a été trouvée dans cet album Piwigo.', 'wp-piwigo-display'));
         }
 
+        $images = self::filter_images_by_orientation($images, (string) $atts['orientation']);
+
+        if (empty($images)) {
+            return self::render_error(__('Aucune image ne correspond à l’orientation demandée.', 'wp-piwigo-display'));
+        }
+
         $html = WPD_Renderer::render($images, $atts);
 
         if (WPD_Settings::get_debug_mode() && current_user_can('manage_options')) {
@@ -79,6 +86,33 @@ final class WPD_Shortcode
         return $html;
     }
 
+
+
+    private static function filter_images_by_orientation(array $images, string $orientation): array
+    {
+        if ($orientation === 'all') {
+            return $images;
+        }
+
+        return array_values(array_filter($images, static function (array $image) use ($orientation): bool {
+            $width = absint($image['width'] ?? 0);
+            $height = absint($image['height'] ?? 0);
+
+            if ($width <= 0 || $height <= 0) {
+                return false;
+            }
+
+            if ($orientation === 'portrait') {
+                return $height > $width;
+            }
+
+            if ($orientation === 'landscape') {
+                return $width > $height;
+            }
+
+            return $width === $height;
+        }));
+    }
 
     private static function sanitize_atts(array $atts): array
     {
@@ -98,6 +132,11 @@ final class WPD_Shortcode
             (string) ($atts['style'] ?? 'default'),
             ['default', 'theme', 'minimal', 'none'],
             'default'
+        );
+        $atts['orientation'] = self::sanitize_choice(
+            (string) ($atts['orientation'] ?? 'all'),
+            ['all', 'portrait', 'landscape', 'square'],
+            'all'
         );
         $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';
         $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', (string) ($atts['height'] ?? '')) === 1 ? (string) $atts['height'] : '';
