@@ -247,15 +247,20 @@ Détermine la façon de comparer plusieurs tags demandés :
 
 Filtre les images après leur récupération depuis Piwigo et avant le rendu de la galerie ou du diaporama.
 
-- `all` : toutes les images, valeur par défaut ;
+- `all` (toutes les images) : toutes les images, valeur par défaut ;
 - `portrait` : hauteur supérieure à la largeur ;
-- `landscape` : largeur supérieure à la hauteur ;
-- `square` : largeur égale à la hauteur.
+- `paysage` : largeur supérieure à la hauteur ;
+- `carré` : largeur égale à la hauteur.
+
+Les alias `landscape` pour `paysage`, `square` et `carre` pour `carré` restent acceptés. Plusieurs orientations peuvent être séparées par des virgules.
 
 ```text
 [piwigo album="154" orientation="portrait"]
-[piwigo album="154" orientation="landscape"]
-[piwigo album="154" orientation="square"]
+[piwigo album="154" orientation="paysage"]
+[piwigo album="154" orientation="carré"]
+[piwigo album="154" orientation="portrait,carré"]
+[piwigo album="154" orientation="paysage,carre"]
+[piwigo album="154" orientation="landscape,square"]
 ```
 
 Si les dimensions sont absentes, l’image est conservée uniquement avec `orientation="all"`.

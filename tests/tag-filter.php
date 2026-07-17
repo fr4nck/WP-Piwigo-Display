@@ -16,6 +16,13 @@ if (!function_exists('wp_strip_all_tags')) {
     }
 }
 
+if (!function_exists('sanitize_text_field')) {
+    function sanitize_text_field($text): string
+    {
+        return trim(strip_tags((string) $text));
+    }
+}
+
 require_once __DIR__ . '/../includes/class-wpd-shortcode.php';
 require_once __DIR__ . '/../includes/class-wpd-renderer.php';
 

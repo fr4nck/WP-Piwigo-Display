@@ -64,10 +64,10 @@ Dernières images d'une arborescence :
 Images portrait, paysage ou carrées :
 
 `[piwigo album="154" orientation="portrait"]`
-`[piwigo album="154" orientation="landscape"]`
-`[piwigo album="154" orientation="square"]`
+`[piwigo album="154" orientation="paysage"]`
+`[piwigo album="154" orientation="carré"]`
 
-Le paramètre `orientation` accepte `all` par défaut, `portrait`, `landscape` et `square`. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
+Le paramètre `orientation` accepte `all` (toutes les images) par défaut, `portrait`, `paysage` et `carré`. Les alias historiques `landscape` et `square`, ainsi que `carre` sans accent, restent acceptés. Plusieurs orientations peuvent être séparées par des virgules, par exemple `orientation="portrait,carré"`. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
 
 Filtrage par tags Piwigo :
 
