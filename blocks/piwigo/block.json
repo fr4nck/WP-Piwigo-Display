@@ -10,12 +10,12 @@
   "textdomain": "wp-piwigo-display",
   "editorScript": "file:./index.js",
   "attributes": {
-    "albumId":{"type":"string","default":""}, "displayType":{"type":"string","default":"gallery"},
-    "recursive":{"type":"boolean","default":false}, "depth":{"type":"number","default":10}, "limit":{"type":"number","default":0}, "max":{"type":"number","default":0}, "latest":{"type":"number","default":0}, "random":{"type":"number","default":0},
-    "sort":{"type":"string","default":"manual"}, "order":{"type":"string","default":"desc"}, "orientations":{"type":"array","default":[]},
-    "caption":{"type":"string","default":"default"}, "lightbox":{"type":"boolean","default":true}, "rounded":{"type":"boolean","default":false}, "style":{"type":"string","default":"default"},
-    "autoplay":{"type":"boolean","default":true}, "interval":{"type":"number","default":5000}, "speed":{"type":"number","default":500}, "ratio":{"type":"string","default":"16/9"}, "height":{"type":"string","default":""}, "fit":{"type":"string","default":"contain"}, "navigation":{"type":"string","default":"thumbnails"},
-    "tag":{"type":"string","default":""}, "tags":{"type":"string","default":""}, "tagMode":{"type":"string","default":"any"}
+    "albumId":{"type":"string"}, "displayType":{"type":"string"},
+    "recursive":{"type":"boolean"}, "depth":{"type":"number"}, "limit":{"type":"number"}, "max":{"type":"number"}, "latest":{"type":"number"}, "random":{"type":"number"},
+    "sort":{"type":"string"}, "order":{"type":"string"}, "orientations":{"type":"array"},
+    "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "style":{"type":"string"},
+    "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "ratio":{"type":"string"}, "height":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
+    "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
   },
   "supports":{"html":false}
 }
