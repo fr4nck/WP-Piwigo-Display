@@ -218,11 +218,15 @@ final class WPD_Shortcode
 
     private static function filter_images_by_orientation(array $images, string $orientation): array
     {
+        $orientation = self::sanitize_orientation($orientation);
+
         if ($orientation === 'all') {
             return $images;
         }
 
-        return array_values(array_filter($images, static function (array $image) use ($orientation): bool {
+        $orientations = explode(',', $orientation);
+
+        return array_values(array_filter($images, static function (array $image) use ($orientations): bool {
             $width = absint($image['width'] ?? 0);
             $height = absint($image['height'] ?? 0);
 
@@ -230,16 +234,46 @@ final class WPD_Shortcode
                 return false;
             }
 
-            if ($orientation === 'portrait') {
-                return $height > $width;
+            if ($height > $width) {
+                return in_array('portrait', $orientations, true);
             }
 
-            if ($orientation === 'landscape') {
-                return $width > $height;
+            if ($width > $height) {
+                return in_array('landscape', $orientations, true);
             }
 
-            return $width === $height;
+            return in_array('square', $orientations, true);
         }));
+    }
+
+    private static function sanitize_orientation(string $value): string
+    {
+        $value = sanitize_text_field($value);
+        $orientations = [];
+
+        foreach (explode(',', $value) as $orientation) {
+            $orientation = trim($orientation);
+            $orientation = function_exists('mb_strtolower') ? mb_strtolower($orientation, 'UTF-8') : strtolower($orientation);
+
+            if ($orientation === 'all') {
+                return 'all';
+            }
+
+            $normalized = [
+                'portrait' => 'portrait',
+                'paysage' => 'landscape',
+                'landscape' => 'landscape',
+                'carré' => 'square',
+                'carre' => 'square',
+                'square' => 'square',
+            ][$orientation] ?? '';
+
+            if ($normalized !== '') {
+                $orientations[$normalized] = $normalized;
+            }
+        }
+
+        return empty($orientations) ? 'all' : implode(',', array_values($orientations));
     }
 
     private static function sanitize_atts(array $atts): array
@@ -261,11 +295,7 @@ final class WPD_Shortcode
             ['default', 'theme', 'minimal', 'none'],
             'default'
         );
-        $atts['orientation'] = self::sanitize_choice(
-            (string) ($atts['orientation'] ?? 'all'),
-            ['all', 'portrait', 'landscape', 'square'],
-            'all'
-        );
+        $atts['orientation'] = self::sanitize_orientation((string) ($atts['orientation'] ?? 'all'));
         $atts['tag'] = isset($atts['tag']) ? sanitize_text_field((string) $atts['tag']) : '';
         $atts['tags'] = isset($atts['tags']) ? sanitize_text_field((string) $atts['tags']) : '';
         $atts['tag_mode'] = self::sanitize_choice((string) ($atts['tag_mode'] ?? 'any'), ['any', 'all'], 'any');

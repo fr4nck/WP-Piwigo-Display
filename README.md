@@ -66,11 +66,11 @@ Filtrage par orientation après récupération des images :
 
 ```text
 [piwigo album="154" orientation="portrait"]
-[piwigo album="154" orientation="landscape"]
-[piwigo album="154" orientation="square"]
+[piwigo album="154" orientation="paysage"]
+[piwigo album="154" orientation="carré"]
 ```
 
-Le paramètre `orientation` accepte `all` par défaut, `portrait` pour les images plus hautes que larges, `landscape` pour les images plus larges que hautes et `square` pour les images carrées. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
+Le paramètre `orientation` accepte `all` (toutes les images) par défaut, `portrait` pour les images plus hautes que larges, `paysage` pour les images plus larges que hautes et `carré` pour les images carrées. Les alias historiques `landscape` et `square`, ainsi que `carre` sans accent, restent acceptés. Plusieurs orientations peuvent être séparées par des virgules, par exemple `orientation="portrait,carré"`. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
 
 Filtrage par tags Piwigo après récupération des images et avant le filtrage par orientation :
 
