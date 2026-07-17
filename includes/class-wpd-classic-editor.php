@@ -62,22 +62,34 @@ final class WPD_Classic_Editor
         ?>
         <div id="wpd-classic-builder" title="<?php echo esc_attr__('Galerie Piwigo', 'wp-piwigo-display'); ?>" style="display:none;">
             <div class="wpd-builder-grid">
-                <label><?php esc_html_e('Album Piwigo', 'wp-piwigo-display'); ?><input type="number" min="1" data-wpd="album"></label>
+                <div class="wpd-album-field"><label><?php esc_html_e('Album Piwigo', 'wp-piwigo-display'); ?><input type="text" data-wpd="album" placeholder="154, nom ou chemin"></label><button type="button" class="button wpd-browse-albums"><?php esc_html_e('Choisir dans Piwigo', 'wp-piwigo-display'); ?></button><div class="wpd-album-picker" hidden></div></div>
                 <label><?php esc_html_e('Affichage', 'wp-piwigo-display'); ?><select data-wpd="type"><option value="gallery">Galerie</option><option value="slider">Diaporama</option></select></label>
+                <label><?php esc_html_e('Preset', 'wp-piwigo-display'); ?><select data-wpd="preset"><option value="">Aucun</option><option value="slider">Slider</option><option value="actualites">Actualités</option></select></label>
                 <label><?php esc_html_e('Tri', 'wp-piwigo-display'); ?><select data-wpd="sort"><option value="manual">Ordre Piwigo</option><option value="date">Date</option><option value="name">Nom</option><option value="id">Identifiant</option><option value="random">Aléatoire</option></select></label>
                 <label><?php esc_html_e('Ordre', 'wp-piwigo-display'); ?><select data-wpd="order"><option value="desc">Décroissant</option><option value="asc">Croissant</option></select></label>
                 <label><?php esc_html_e('Limite', 'wp-piwigo-display'); ?><input type="number" min="0" data-wpd="limit" value="0"></label>
                 <label><?php esc_html_e('Maximum', 'wp-piwigo-display'); ?><input type="number" min="0" data-wpd="max" value="0"></label>
+                <label><?php esc_html_e('Dernières images', 'wp-piwigo-display'); ?><input type="number" min="0" data-wpd="latest" value="0"></label>
+                <label><?php esc_html_e('Images aléatoires', 'wp-piwigo-display'); ?><input type="number" min="0" data-wpd="random" value="0"></label>
                 <label><?php esc_html_e('Orientation', 'wp-piwigo-display'); ?><select data-wpd="orientation"><option value="">Toutes</option><option value="portrait">Portrait</option><option value="paysage">Paysage</option><option value="carré">Carré</option><option value="portrait,paysage">Portrait + paysage</option></select></label>
                 <label><?php esc_html_e('Légende', 'wp-piwigo-display'); ?><select data-wpd="caption"><option value="default">Réglage global</option><option value="none">Aucune</option><option value="title">Titre</option><option value="description">Description</option><option value="title-description">Titre et description</option></select></label>
                 <label><?php esc_html_e('Style', 'wp-piwigo-display'); ?><select data-wpd="style"><option value="default">Réglage global</option><option value="theme">Thème WordPress</option><option value="minimal">Minimal</option><option value="none">Sans habillage</option></select></label>
-                <label><?php esc_html_e('Tags', 'wp-piwigo-display'); ?><input type="text" data-wpd="tags" placeholder="tag1,tag2"></label>
+                <label><?php esc_html_e('Cadrage', 'wp-piwigo-display'); ?><select data-wpd="fit"><option value="contain">Image entière</option><option value="cover">Cadre rempli</option><option value="auto">Automatique</option><option value="raw">Brut</option></select></label>
+                <label><?php esc_html_e('Hauteur', 'wp-piwigo-display'); ?><input type="text" data-wpd="height" placeholder="520px"></label>
+                <label><?php esc_html_e('Tag unique', 'wp-piwigo-display'); ?><input type="text" data-wpd="tag"></label>
+                <label><?php esc_html_e('Plusieurs tags', 'wp-piwigo-display'); ?><input type="text" data-wpd="tags" placeholder="tag1,tag2"></label>
+                <label><?php esc_html_e('Correspondance des tags', 'wp-piwigo-display'); ?><select data-wpd="tag_mode"><option value="any">Au moins un</option><option value="all">Tous</option></select></label>
+                <label><?php esc_html_e('URL Piwigo spécifique', 'wp-piwigo-display'); ?><input type="url" data-wpd="url" placeholder="https://phototheque.example.org"></label>
+                <label class="wpd-slider-layout-option"><?php esc_html_e('Largeur du diaporama', 'wp-piwigo-display'); ?><select data-wpd="width"><option value="100%">100 %</option><option value="75%">75 %</option><option value="66%">66 %</option><option value="50%">50 %</option><option value="33%">33 %</option></select></label>
+                <label class="wpd-slider-layout-option"><?php esc_html_e('Alignement', 'wp-piwigo-display'); ?><select data-wpd="align"><option value="center">Centré</option><option value="left">À gauche, texte à droite</option><option value="right">À droite, texte à gauche</option></select></label>
             </div>
             <fieldset class="wpd-builder-checks">
                 <label><input type="checkbox" data-wpd="recursive"> <?php esc_html_e('Inclure les sous-albums', 'wp-piwigo-display'); ?></label>
+                <label class="wpd-depth-option"><?php esc_html_e('Profondeur des sous-albums', 'wp-piwigo-display'); ?> <input type="number" min="1" max="10" value="10" data-wpd="depth" class="small-text"></label>
                 <label><input type="checkbox" data-wpd="lightbox" checked> <?php esc_html_e('Lightbox', 'wp-piwigo-display'); ?></label>
                 <label><input type="checkbox" data-wpd="rounded"> <?php esc_html_e('Coins arrondis', 'wp-piwigo-display'); ?></label>
-                <label><input type="checkbox" data-wpd="autoplay" checked> <?php esc_html_e('Lecture automatique du diaporama', 'wp-piwigo-display'); ?></label>
+                <label class="wpd-slider-options"><input type="checkbox" data-wpd="autoplay" checked> <?php esc_html_e('Lecture automatique du diaporama', 'wp-piwigo-display'); ?></label>
+                <label class="wpd-slider-options"><input type="checkbox" data-wpd="thumbnails" checked> <?php esc_html_e('Miniatures (compatibilité)', 'wp-piwigo-display'); ?></label>
             </fieldset>
             <div class="wpd-slider-options">
                 <label><?php esc_html_e('Intervalle (ms)', 'wp-piwigo-display'); ?><input type="number" min="1000" data-wpd="interval" value="5000"></label>
@@ -85,7 +97,7 @@ final class WPD_Classic_Editor
                 <label><?php esc_html_e('Ratio', 'wp-piwigo-display'); ?><input type="text" data-wpd="ratio" value="16/9"></label>
                 <label><?php esc_html_e('Navigation', 'wp-piwigo-display'); ?><select data-wpd="navigation"><option value="thumbnails">Miniatures</option><option value="dots">Points</option><option value="none">Aucune</option></select></label>
             </div>
-            <label class="wpd-shortcode-preview"><?php esc_html_e('Shortcode généré', 'wp-piwigo-display'); ?><textarea readonly rows="3" data-wpd-preview></textarea></label>
+            <label class="wpd-shortcode-preview"><?php esc_html_e('Shortcode généré', 'wp-piwigo-display'); ?><textarea readonly rows="4" data-wpd-preview></textarea></label>
         </div>
         <?php
     }
