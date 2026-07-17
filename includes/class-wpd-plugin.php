@@ -54,6 +54,7 @@ final class WPD_Plugin
     public function register_assets(): void
     {
         wp_register_style('wp-piwigo-display', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display.css', [], WPD_VERSION);
+        wp_add_inline_style('wp-piwigo-display', '.wpd-slider-layout{width:var(--wpd-slider-width,100%);max-width:100%;box-sizing:border-box}.wpd-slider-layout.wpd-slider-align-left{float:left;margin:0 1.5rem 1rem 0}.wpd-slider-layout.wpd-slider-align-right{float:right;margin:0 0 1rem 1.5rem}.wpd-slider-layout.wpd-slider-align-center{margin-left:auto;margin-right:auto}@media(max-width:782px){.wpd-slider-layout{float:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}}');
         wp_register_style('wpd-splide', 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css', [], '4.1.4');
         wp_register_script('wpd-splide', 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js', [], '4.1.4', true);
         wp_register_script('wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', ['wpd-splide'], WPD_VERSION, true);
