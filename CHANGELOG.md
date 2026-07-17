@@ -1,3 +1,10 @@
+## 1.12.0
+
+* Ajout du bloc Gutenberg dynamique « WP Piwigo Display » utilisant strictement le moteur de rendu du shortcode.
+* Ajout des réglages de galerie, diaporama, tri, orientations et tags dans l’inspecteur du bloc.
+* Ajout de l’aperçu serveur dans Gutenberg et de la copie du shortcode équivalent.
+* Ajout d’une information sur le bloc dans les réglages du plugin.
+
 ## 1.11.0
 
 * Ajout du filtrage des images par tags Piwigo avec `tag`, `tags` et `tag_mode`.

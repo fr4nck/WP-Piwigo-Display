@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.11.0
+Stable tag: 1.12.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -18,6 +18,7 @@ Les images restent dans Piwigo. WordPress interroge l'API, met les résultats en
 
 Fonctionnalités principales :
 
+* bloc Gutenberg dynamique dans la catégorie Médias ;
 * galerie responsive ;
 * diaporama ;
 * lightbox ;
@@ -37,7 +38,11 @@ Fonctionnalités principales :
 1. Téléverser le fichier ZIP depuis Extensions > Ajouter une extension.
 2. Activer WP Piwigo Display.
 3. Configurer l'URL de la galerie dans Réglages > WP Piwigo Display.
-4. Utiliser un shortcode comme `[piwigo album="154"]`.
+4. Dans Gutenberg, insérer le bloc « WP Piwigo Display » depuis Médias, ou utiliser un shortcode comme `[piwigo album="154"]`.
+
+== Bloc Gutenberg ==
+
+Dans Gutenberg, ajoutez le bloc **WP Piwigo Display** dans la catégorie Médias puis renseignez l’identifiant numérique de l’album. Son aperçu et son affichage public utilisent le même moteur que le shortcode.
 
 == Shortcodes ==
 
@@ -93,6 +98,13 @@ Non. Les images restent dans Piwigo et sont affichées via l'API officielle.
 Ajoutez `recursive="true"` au shortcode. Utilisez `depth` pour limiter le nombre de niveaux parcourus.
 
 == Changelog ==
+
+= 1.12.0 =
+* Ajout du bloc Gutenberg dynamique WP Piwigo Display avec aperçu serveur.
+* Le bloc réutilise strictement le moteur de rendu des shortcodes.
+* Ajout des réglages de galerie, diaporama, tri, orientation et tags.
+
+
 
 = 1.11.0 =
 * Ajout du filtrage des images par tags Piwigo avec `tag`, `tags` et `tag_mode`.
