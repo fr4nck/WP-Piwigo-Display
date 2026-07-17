@@ -1,3 +1,10 @@
+## 1.13.0
+
+* Ajout d’un bouton « Insérer une galerie Piwigo » dans l’éditeur classique WordPress.
+* Ajout d’une fenêtre de conception du shortcode avec album, galerie ou diaporama, tri, ordre, limites, orientations, légendes, style, tags et options du slider.
+* Insertion du shortcode généré à l’emplacement du curseur dans TinyMCE ou dans l’éditeur texte.
+* Conservation du bloc Gutenberg pour les sites utilisant l’éditeur de blocs.
+
 ## 1.12.0
 
 * Ajout du bloc Gutenberg dynamique « WP Piwigo Display » utilisant strictement le moteur de rendu du shortcode.
