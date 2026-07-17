@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "wp-piwigo-display/gallery",
+  "version": "1.12.0",
+  "title": "WP Piwigo Display",
+  "category": "media",
+  "icon": "format-gallery",
+  "description": "Insère une galerie ou un diaporama Piwigo.",
+  "textdomain": "wp-piwigo-display",
+  "editorScript": "file:./index.js",
+  "attributes": {
+    "albumId":{"type":"string"}, "displayType":{"type":"string"},
+    "recursive":{"type":"boolean"}, "depth":{"type":"number"}, "limit":{"type":"number"}, "max":{"type":"number"}, "latest":{"type":"number"}, "random":{"type":"number"},
+    "sort":{"type":"string"}, "order":{"type":"string"}, "orientations":{"type":"array"},
+    "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "style":{"type":"string"},
+    "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "ratio":{"type":"string"}, "height":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
+    "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
+  },
+  "supports":{"html":false}
+}

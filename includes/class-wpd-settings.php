@@ -293,6 +293,13 @@ final class WPD_Settings
 
             <hr />
 
+            <h2><?php esc_html_e('Bloc Gutenberg', 'wp-piwigo-display'); ?></h2>
+            <p><?php esc_html_e('Le bloc « WP Piwigo Display » est disponible dans la catégorie Médias de l’éditeur Gutenberg. Renseignez l’identifiant de l’album pour créer une galerie sans écrire de shortcode.', 'wp-piwigo-display'); ?></p>
+            <p><code>WP Piwigo Display → album 154</code></p>
+            <p><?php esc_html_e('Dans l’éditeur classique, le shortcode [piwigo album="154"] reste disponible.', 'wp-piwigo-display'); ?></p>
+
+            <hr />
+
             <h2><?php esc_html_e('Générateur de shortcodes', 'wp-piwigo-display'); ?></h2>
             <p><?php esc_html_e('Copiez un exemple puis remplacez l’identifiant d’album par celui de votre galerie Piwigo.', 'wp-piwigo-display'); ?></p>
             <?php self::render_shortcode_examples(); ?>

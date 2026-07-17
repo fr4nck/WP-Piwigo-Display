@@ -6,6 +6,7 @@ Piwigo reste la source des photos ; WordPress se charge uniquement de leur affic
 
 ## Fonctionnalités
 
+- bloc Gutenberg **WP Piwigo Display** ;
 - shortcode unique `[piwigo]` ;
 - galerie responsive ;
 - diaporama avec Splide ;
@@ -23,6 +24,10 @@ Piwigo reste la source des photos ; WordPress se charge uniquement de leur affic
 - tri, limitation et filtrage par orientation des images ;
 - presets d'affichage ;
 - sélection d'album par identifiant, nom ou chemin.
+
+## Bloc Gutenberg
+
+Dans l’éditeur de blocs, insérez **WP Piwigo Display** depuis la catégorie Médias, puis renseignez l’identifiant numérique de l’album. Le bloc produit un rendu dynamique identique au shortcode et conserve uniquement sa configuration dans le contenu. Le shortcode reste disponible dans l’éditeur classique.
 
 ## Exemples
 
