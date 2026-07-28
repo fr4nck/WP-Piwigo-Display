@@ -15,6 +15,19 @@
     height: var(--wpd-editor-slider-height);
 }
 
+.wpd-block-slider-edit {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 6;
+    opacity: 0;
+}
+
+.wpd-block-slider-resizer:hover .wpd-block-slider-edit,
+.wpd-block-slider-resizer:focus-within .wpd-block-slider-edit {
+    opacity: 1;
+}
+
 .wpd-block-slider-dimensions {
     position: absolute;
     top: 0.5rem;

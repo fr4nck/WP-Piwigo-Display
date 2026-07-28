@@ -40,6 +40,17 @@ wpd_resize_assert_same(true, strpos($editor, "event.key === 'Home'") !== false, 
 wpd_resize_assert_same(true, strpos($editor, 'pointermove') !== false, 'Les poignées doivent gérer le glissement.');
 wpd_resize_assert_same(true, strpos($editor, 'legacyHeight') !== false, 'Les unités historiques doivent être distinguées des hauteurs Gutenberg en pixels.');
 wpd_resize_assert_same(true, strpos($editor, "querySelector('.splide__track") !== false, 'La hauteur doit être mesurée sur la piste du diaporama.');
+wpd_resize_assert_same(true, strpos($editor, 'wpd-block-slider-edit') !== false, 'Le diaporama Gutenberg doit proposer un bouton Modifier.');
+wpd_resize_assert_same(true, strpos($editor, "openGeneralSidebar('edit-post/block')") !== false, 'Le bouton Modifier doit ouvrir les réglages natifs du bloc.');
 
 $tinymce = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-tinymce.js');
 wpd_resize_assert_same(true, strpos($tinymce, 'WPD_SHORTCODE_') !== false, 'TinyMCE doit restaurer le shortcode après la sérialisation HTML.');
+wpd_resize_assert_same(true, strpos($tinymce, "editor.on('dblclick'") !== false, 'L’aperçu TinyMCE doit être modifiable par double-clic.');
+wpd_resize_assert_same(true, strpos($tinymce, 'wpd:edit-shortcode') !== false, 'TinyMCE doit transmettre le shortcode au composeur.');
+
+$classic = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js');
+wpd_resize_assert_same(true, strpos($classic, "on('wpd:edit-shortcode'") !== false, 'Le composeur classique doit rouvrir le shortcode sélectionné.');
+wpd_resize_assert_same(true, strpos($classic, 'editingLegacyHeight') !== false, 'Le composeur classique doit préserver une hauteur historique inchangée.');
+
+$asset = file_get_contents(__DIR__ . '/../blocks/piwigo/index.asset.php');
+wpd_resize_assert_same(true, strpos($asset, "'wp-data'") !== false, 'Le bouton Modifier doit déclarer sa dépendance au registre de données WordPress.');

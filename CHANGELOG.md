@@ -3,6 +3,7 @@
 * Ajout du redimensionnement visuel des diaporamas dans Gutenberg, à la souris et au clavier.
 * Enregistrement d’une largeur de 20 à 100 % et d’une hauteur facultative de 160 à 1 200 px.
 * Ajout d’un aperçu TinyMCE compatible avec la restitution des shortcodes existants.
+* Ajout du bouton « Modifier » dans Gutenberg et de la modification par double-clic dans TinyMCE.
 * Conservation d’une largeur publique responsive, plafonnée à 100 % et forcée à 100 % sur mobile.
 
 ## 1.13.0

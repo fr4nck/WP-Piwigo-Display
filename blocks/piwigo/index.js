@@ -129,6 +129,18 @@
             }
         };
 
+        var openSettings = function(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            if (!window.wp.data) return;
+            var editorDispatch = window.wp.data.dispatch('core/edit-post');
+            if (editorDispatch && editorDispatch.openGeneralSidebar) {
+                editorDispatch.openGeneralSidebar('edit-post/block');
+            }
+        };
+
         var orientation = function(value, label) {
             return el(CheckboxControl,{label:label,checked:a.orientations.indexOf(value)!==-1,onChange:function(checked){var values=a.orientations.filter(function(item){return item!==value;});if(checked)values.push(value);set({orientations:values});}});
         };
@@ -152,8 +164,15 @@
             preview = el('div',{
                     className:'wpd-block-slider-resizer' + (resizing ? ' is-resizing' : '') + (height ? ' has-custom-height' : ''),
                     ref:frame,
+                    onDoubleClick:openSettings,
                     style:{width:width+'%','--wpd-editor-slider-height':height ? height+'px' : 'auto'}
                 },
+                el(Button,{
+                    className:'wpd-block-slider-edit',
+                    variant:'secondary',
+                    size:'small',
+                    onClick:openSettings
+                },__('Modifier','wp-piwigo-display')),
                 preview,
                 el('span',{className:'wpd-block-slider-dimensions','aria-live':'polite'},width+' %'+(height ? ' × '+height+' px' : (legacyHeight ? ' × '+legacyHeight : ''))),
                 el('span',{

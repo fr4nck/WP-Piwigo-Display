@@ -114,6 +114,8 @@ Ces paramètres règlent la mise en page d’un diaporama :
 
 La largeur publique est plafonnée à 100 % et forcée à 100 % sous 782 px.
 
+Dans Gutenberg, le bouton **Modifier** ou un double-clic sur le diaporama rouvre les réglages du bloc. Dans TinyMCE, un double-clic sur l’aperçu rouvre le composeur et met à jour le shortcode sélectionné.
+
 ```text
 [piwigo album="154" type="slider" navigation="thumbnails"]
 ```

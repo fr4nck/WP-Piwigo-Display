@@ -44,6 +44,8 @@ Fonctionnalités principales :
 
 Dans Gutenberg, ajoutez le bloc **WP Piwigo Display** dans la catégorie Médias puis renseignez l’identifiant numérique de l’album. Son aperçu et son affichage public utilisent le même moteur que le shortcode.
 
+Les diaporamas disposent de poignées de redimensionnement et d’un bouton « Modifier » dans Gutenberg. Dans l’éditeur classique, un double-clic sur l’aperçu TinyMCE rouvre le composeur du shortcode.
+
 == Shortcodes ==
 
 Album simple :
