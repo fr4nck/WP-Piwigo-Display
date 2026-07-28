@@ -58,7 +58,9 @@
         var update = useDebounce(function(next){setDelayed(next);}, 500);
         element.useEffect(function(){update(explicit);}, [explicit]);
         var width = clamp(dimensionNumber(a.width, 100), 20, 100);
-        var height = a.height === '' ? '' : clamp(dimensionNumber(a.height, 160), 160, 1200);
+        var hasPixelHeight = /^\d+px$/.test(String(a.height || ''));
+        var legacyHeight = a.height !== '' && !hasPixelHeight ? String(a.height) : '';
+        var height = hasPixelHeight ? clamp(dimensionNumber(a.height, 160), 160, 1200) : '';
 
         element.useEffect(function() {
             if (!resizing) return;
@@ -93,13 +95,15 @@
             var node = frame.current;
             if (!node) return;
             var rect = node.getBoundingClientRect();
+            var track = node.querySelector('.splide__track, .wp-piwigo-display-slider-track');
+            var trackRect = track ? track.getBoundingClientRect() : rect;
             var parentRect = node.parentElement ? node.parentElement.getBoundingClientRect() : rect;
             drag.current = {
                 axis: axis,
                 x: event.clientX,
                 y: event.clientY,
                 width: width,
-                height: height || clamp(Math.round(rect.height), 160, 1200),
+                height: height || clamp(Math.round(trackRect.height), 160, 1200),
                 availableWidth: Math.max(1, parentRect.width)
             };
             setResizing(axis);
@@ -137,7 +141,7 @@
             el(PanelBody,{title:__('Tri','wp-piwigo-display'),initialOpen:false,key:'sort'},select(__('Tri','wp-piwigo-display'),'sort',[['manual',__('Ordre Piwigo','wp-piwigo-display')],['date',__('Date','wp-piwigo-display')],['name',__('Nom','wp-piwigo-display')],['id',__('Identifiant','wp-piwigo-display')],['random',__('Aléatoire','wp-piwigo-display')]],a,set),select(__('Ordre','wp-piwigo-display'),'order',[['asc',__('Croissant','wp-piwigo-display')],['desc',__('Décroissant','wp-piwigo-display')]],a,set)),
             el(PanelBody,{title:__('Orientation','wp-piwigo-display'),initialOpen:false,key:'orientation'},el('p',null,__('Toutes si aucune orientation n’est cochée.','wp-piwigo-display')),orientation('portrait',__('Portrait','wp-piwigo-display')),orientation('paysage',__('Paysage','wp-piwigo-display')),orientation('carré',__('Carré','wp-piwigo-display'))),
             el(PanelBody,{title:__('Affichage','wp-piwigo-display'),initialOpen:false,key:'display'},select(__('Légendes','wp-piwigo-display'),'caption',[['default',__('Réglage global','wp-piwigo-display')],['none',__('Aucune','wp-piwigo-display')],['title',__('Titre','wp-piwigo-display')],['description',__('Description','wp-piwigo-display')],['title-description',__('Titre et description','wp-piwigo-display')]],a,set),el(ToggleControl,{label:__('Lightbox','wp-piwigo-display'),checked:a.lightbox,onChange:function(v){set({lightbox:v});}}),el(ToggleControl,{label:__('Coins arrondis','wp-piwigo-display'),checked:a.rounded,onChange:function(v){set({rounded:v});}}),select(__('Style','wp-piwigo-display'),'style',[['default',__('Réglage global','wp-piwigo-display')],['theme',__('Thème WordPress','wp-piwigo-display')],['minimal',__('Minimal','wp-piwigo-display')],['none',__('Sans habillage','wp-piwigo-display')]],a,set)),
-            a.displayType==='slider' && el(PanelBody,{title:__('Diaporama','wp-piwigo-display'),initialOpen:true,key:'slider'},el(ToggleControl,{label:__('Lecture automatique','wp-piwigo-display'),checked:a.autoplay,onChange:function(v){set({autoplay:v});}}),number(__('Tempo (ms)','wp-piwigo-display'),'interval',a,set),number(__('Vitesse de transition (ms)','wp-piwigo-display'),'speed',a,set),el(TextControl,{label:__('Ratio','wp-piwigo-display'),value:a.ratio,onChange:function(v){set({ratio:v});}}),el(TextControl,{label:__('Largeur (%)','wp-piwigo-display'),type:'number',min:20,max:100,value:width,onChange:function(v){set({width:clamp(dimensionNumber(v,100),20,100)+'%'});}}),el(TextControl,{label:__('Hauteur (px)','wp-piwigo-display'),type:'number',min:160,max:1200,value:height,onChange:function(v){set({height:v===''?'':clamp(dimensionNumber(v,160),160,1200)+'px'});},help:__('Laissez vide pour utiliser le ratio.','wp-piwigo-display')}),select(__('Respect de l’image','wp-piwigo-display'),'fit',[['contain',__('Image entière','wp-piwigo-display')],['cover',__('Cadre rempli','wp-piwigo-display')],['auto',__('Automatique','wp-piwigo-display')],['raw',__('Brut','wp-piwigo-display')]],a,set),select(__('Navigation','wp-piwigo-display'),'navigation',[['thumbnails',__('Miniatures','wp-piwigo-display')],['dots',__('Points','wp-piwigo-display')],['none',__('Aucune','wp-piwigo-display')]],a,set)),
+            a.displayType==='slider' && el(PanelBody,{title:__('Diaporama','wp-piwigo-display'),initialOpen:true,key:'slider'},el(ToggleControl,{label:__('Lecture automatique','wp-piwigo-display'),checked:a.autoplay,onChange:function(v){set({autoplay:v});}}),number(__('Tempo (ms)','wp-piwigo-display'),'interval',a,set),number(__('Vitesse de transition (ms)','wp-piwigo-display'),'speed',a,set),el(TextControl,{label:__('Ratio','wp-piwigo-display'),value:a.ratio,onChange:function(v){set({ratio:v});}}),el(TextControl,{label:__('Largeur (%)','wp-piwigo-display'),type:'number',min:20,max:100,value:width,onChange:function(v){set({width:clamp(dimensionNumber(v,100),20,100)+'%'});}}),el(TextControl,{label:__('Hauteur (px)','wp-piwigo-display'),type:'number',min:160,max:1200,value:height,onChange:function(v){set({height:v===''?'':clamp(dimensionNumber(v,160),160,1200)+'px'});},help:legacyHeight ? __('Hauteur historique conservée : ','wp-piwigo-display')+legacyHeight : __('Laissez vide pour utiliser le ratio.','wp-piwigo-display')}),select(__('Respect de l’image','wp-piwigo-display'),'fit',[['contain',__('Image entière','wp-piwigo-display')],['cover',__('Cadre rempli','wp-piwigo-display')],['auto',__('Automatique','wp-piwigo-display')],['raw',__('Brut','wp-piwigo-display')]],a,set),select(__('Navigation','wp-piwigo-display'),'navigation',[['thumbnails',__('Miniatures','wp-piwigo-display')],['dots',__('Points','wp-piwigo-display')],['none',__('Aucune','wp-piwigo-display')]],a,set)),
             el(PanelBody,{title:__('Filtres avancés','wp-piwigo-display'),initialOpen:false,key:'tags'},el(TextControl,{label:__('Tag unique','wp-piwigo-display'),value:a.tag,onChange:function(v){set({tag:v});}}),el(TextControl,{label:__('Plusieurs tags (séparés par des virgules)','wp-piwigo-display'),value:a.tags,onChange:function(v){set({tags:v});}}),select(__('Mode','wp-piwigo-display'),'tagMode',[['any',__('Au moins un','wp-piwigo-display')],['all',__('Tous','wp-piwigo-display')]],a,set),el(Button,{variant:'secondary',onClick:function(){navigator.clipboard.writeText(shortcode);}},__('Copier le shortcode équivalent','wp-piwigo-display')))
         ];
         var preview = !a.albumId
@@ -151,7 +155,7 @@
                     style:{width:width+'%','--wpd-editor-slider-height':height ? height+'px' : 'auto'}
                 },
                 preview,
-                el('span',{className:'wpd-block-slider-dimensions','aria-live':'polite'},width+' %'+(height ? ' × '+height+' px' : '')),
+                el('span',{className:'wpd-block-slider-dimensions','aria-live':'polite'},width+' %'+(height ? ' × '+height+' px' : (legacyHeight ? ' × '+legacyHeight : ''))),
                 el('span',{
                     className:'wpd-block-slider-handle wpd-block-slider-handle-width',
                     role:'slider',tabIndex:0,'aria-label':__('Redimensionner la largeur du diaporama','wp-piwigo-display'),

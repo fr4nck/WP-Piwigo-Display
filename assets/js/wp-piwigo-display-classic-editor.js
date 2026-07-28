@@ -51,6 +51,7 @@
             add(parts, 'tags', value('tags'), true);
             add(parts, 'tag_mode', value('tag_mode'), true);
             add(parts, 'url', value('url'), true);
+            add(parts, 'height', value('height') ? bounded('height', 160, 1200, 160) + 'px' : '', true);
 
             parts.push('recursive="' + (checked('recursive') ? 'true' : 'false') + '"');
             if (checked('recursive')) add(parts, 'depth', value('depth') || '10', true);
@@ -58,7 +59,6 @@
             parts.push('rounded="' + (checked('rounded') ? 'true' : 'false') + '"');
 
             if (type === 'slider') {
-                add(parts, 'height', value('height') ? bounded('height', 160, 1200, 160) + 'px' : '', true);
                 parts.push('autoplay="' + (checked('autoplay') ? 'true' : 'false') + '"');
                 parts.push('thumbnails="' + (checked('thumbnails') ? 'true' : 'false') + '"');
                 ['interval', 'speed', 'ratio', 'navigation', 'align'].forEach(function (key) {

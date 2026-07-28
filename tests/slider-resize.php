@@ -38,3 +38,8 @@ $editor = file_get_contents(__DIR__ . '/../blocks/piwigo/index.js');
 wpd_resize_assert_same(true, strpos($editor, "role:'slider'") !== false, 'Les poignées doivent exposer un rôle accessible.');
 wpd_resize_assert_same(true, strpos($editor, "event.key === 'Home'") !== false, 'Les poignées doivent gérer le clavier.');
 wpd_resize_assert_same(true, strpos($editor, 'pointermove') !== false, 'Les poignées doivent gérer le glissement.');
+wpd_resize_assert_same(true, strpos($editor, 'legacyHeight') !== false, 'Les unités historiques doivent être distinguées des hauteurs Gutenberg en pixels.');
+wpd_resize_assert_same(true, strpos($editor, "querySelector('.splide__track") !== false, 'La hauteur doit être mesurée sur la piste du diaporama.');
+
+$tinymce = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-tinymce.js');
+wpd_resize_assert_same(true, strpos($tinymce, 'WPD_SHORTCODE_') !== false, 'TinyMCE doit restaurer le shortcode après la sérialisation HTML.');

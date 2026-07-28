@@ -25,11 +25,17 @@
             if (!event.get || event.content.indexOf('wpd-tinymce-shortcode') === -1) return;
 
             var container = document.createElement('div');
+            var shortcodes = [];
             container.innerHTML = event.content;
             Array.prototype.forEach.call(container.querySelectorAll('.wpd-tinymce-shortcode[data-wpd-shortcode]'), function (node) {
-                node.parentNode.replaceChild(document.createTextNode(node.getAttribute('data-wpd-shortcode')), node);
+                var token = 'WPD_SHORTCODE_' + shortcodes.length + '_PLACEHOLDER';
+                shortcodes.push(node.getAttribute('data-wpd-shortcode'));
+                node.parentNode.replaceChild(document.createTextNode(token), node);
             });
             event.content = container.innerHTML;
+            shortcodes.forEach(function (shortcode, index) {
+                event.content = event.content.replace('WPD_SHORTCODE_' + index + '_PLACEHOLDER', shortcode);
+            });
         });
     });
 })();
