@@ -43,7 +43,127 @@ final class WPD_Settings
 
     public static function register_page(): void
     {
-        add_options_page(__('WP Piwigo Display', 'wp-piwigo-display'), __('WP Piwigo Display', 'wp-piwigo-display'), 'manage_options', 'wp-piwigo-display', [self::class, 'render_page']);
+        add_menu_page(
+            __('WP Piwigo Display', 'wp-piwigo-display'),
+            __('WP Piwigo', 'wp-piwigo-display'),
+            'manage_options',
+            'wp-piwigo-display',
+            [self::class, 'render_dashboard_page'],
+            'dashicons-format-gallery',
+            58
+        );
+
+        add_submenu_page('wp-piwigo-display', __('Tableau de bord', 'wp-piwigo-display'), __('Tableau de bord', 'wp-piwigo-display'), 'manage_options', 'wp-piwigo-display', [self::class, 'render_dashboard_page']);
+        add_submenu_page('wp-piwigo-display', __('Composer une galerie', 'wp-piwigo-display'), __('Composer', 'wp-piwigo-display'), 'manage_options', 'wp-piwigo-display-compose', [self::class, 'render_composer_page']);
+        add_submenu_page('wp-piwigo-display', __('Réglages', 'wp-piwigo-display'), __('Réglages', 'wp-piwigo-display'), 'manage_options', 'wp-piwigo-display-settings', [self::class, 'render_page']);
+    }
+
+    public static function render_dashboard_page(): void
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        $url = self::get_piwigo_url();
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e('WP Piwigo Display', 'wp-piwigo-display'); ?></h1>
+            <p><?php esc_html_e('Accès rapide aux outils du plugin.', 'wp-piwigo-display'); ?></p>
+            <div class="card" style="max-width:900px">
+                <h2><?php esc_html_e('État', 'wp-piwigo-display'); ?></h2>
+                <p><strong><?php esc_html_e('Galerie Piwigo :', 'wp-piwigo-display'); ?></strong> <?php echo $url !== '' ? esc_html($url) : esc_html__('non configurée', 'wp-piwigo-display'); ?></p>
+                <p><a class="button button-primary" href="<?php echo esc_url(admin_url('admin.php?page=wp-piwigo-display-compose')); ?>"><?php esc_html_e('Composer une galerie ou un diaporama', 'wp-piwigo-display'); ?></a>
+                <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=wp-piwigo-display-settings')); ?>"><?php esc_html_e('Réglages', 'wp-piwigo-display'); ?></a>
+                <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=wp-piwigo-display-diagnostic')); ?>"><?php esc_html_e('Diagnostic / debug', 'wp-piwigo-display'); ?></a></p>
+            </div>
+        </div>
+        <?php
+    }
+
+    public static function render_composer_page(): void
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e('Composer une galerie ou un diaporama', 'wp-piwigo-display'); ?></h1>
+            <p><?php esc_html_e('Toutes les options prises en charge par le shortcode sont disponibles ci-dessous.', 'wp-piwigo-display'); ?></p>
+            <div id="wpd-admin-composer" class="card" style="max-width:1050px">
+                <table class="form-table"><tbody>
+                    <tr><th><label for="wpd-c-album">Album</label></th><td><div class="wpd-album-field"><input id="wpd-c-album" class="regular-text" type="text" placeholder="154, nom ou chemin"><button type="button" class="button wpd-browse-albums">Choisir dans Piwigo</button><div class="wpd-album-picker" hidden></div></div></td></tr>
+                    <tr><th><label for="wpd-c-type">Affichage</label></th><td><select id="wpd-c-type"><option value="gallery">Galerie</option><option value="slider">Diaporama</option></select></td></tr>
+                    <tr><th><label for="wpd-c-preset">Preset</label></th><td><select id="wpd-c-preset"><option value="">Aucun</option><option value="slider">Slider</option><option value="actualites">Actualités</option></select></td></tr>
+                    <tr><th><label for="wpd-c-sort">Tri</label></th><td><select id="wpd-c-sort"><option value="manual">Ordre Piwigo</option><option value="date">Date</option><option value="name">Nom</option><option value="id">Identifiant</option><option value="random">Aléatoire</option></select> <select id="wpd-c-order"><option value="desc">Décroissant</option><option value="asc">Croissant</option></select></td></tr>
+                    <tr><th>Quantité</th><td><label>Limite <input id="wpd-c-limit" class="small-text" type="number" min="0" value="0"></label> <label>Maximum <input id="wpd-c-max" class="small-text" type="number" min="0" value="0"></label> <label>Dernières <input id="wpd-c-latest" class="small-text" type="number" min="0" value="0"></label> <label>Aléatoires <input id="wpd-c-random" class="small-text" type="number" min="0" value="0"></label></td></tr>
+                    <tr><th><label for="wpd-c-orientation">Orientation</label></th><td><select id="wpd-c-orientation"><option value="">Toutes</option><option value="portrait">Portrait</option><option value="paysage">Paysage</option><option value="carré">Carré</option><option value="portrait,paysage">Portrait + paysage</option></select></td></tr>
+                    <tr><th>Tags</th><td><label>Tag <input id="wpd-c-tag" type="text"></label> <label>Tags <input id="wpd-c-tags" type="text" placeholder="tag1,tag2"></label> <select id="wpd-c-tag-mode"><option value="any">Au moins un</option><option value="all">Tous</option></select></td></tr>
+                    <tr><th>Présentation</th><td><select id="wpd-c-caption"><option value="default">Légende globale</option><option value="none">Sans légende</option><option value="title">Titre</option><option value="description">Description</option><option value="title-description">Titre + description</option></select> <select id="wpd-c-style"><option value="default">Style global</option><option value="theme">Thème WordPress</option><option value="minimal">Minimal</option><option value="none">Sans habillage</option></select> <select id="wpd-c-fit"><option value="contain">Image entière</option><option value="cover">Cadre rempli</option><option value="auto">Automatique</option><option value="raw">Brut</option></select> <label>Hauteur <input id="wpd-c-height" class="small-text" type="text" placeholder="520px"></label></td></tr>
+                    <tr><th>Options générales</th><td><label><input id="wpd-c-recursive" type="checkbox"> Inclure les sous-albums</label> <label><input id="wpd-c-lightbox" type="checkbox" checked> Lightbox</label> <label><input id="wpd-c-rounded" type="checkbox"> Coins arrondis</label></td></tr>
+                    <tr id="wpd-c-depth-row"><th><label for="wpd-c-depth">Profondeur des sous-albums</label></th><td><input id="wpd-c-depth" class="small-text" type="number" min="1" max="10" value="10"> <span class="description">1 = enfants directs uniquement, 10 = tous les niveaux.</span></td></tr>
+                    <tr class="wpd-c-slider"><th>Diaporama</th><td><label><input id="wpd-c-autoplay" type="checkbox" checked> Lecture automatique</label> <label><input id="wpd-c-thumbnails" type="checkbox" checked> Miniatures (compatibilité)</label> <label>Intervalle <input id="wpd-c-interval" class="small-text" type="number" min="1000" value="5000"></label> <label>Vitesse <input id="wpd-c-speed" class="small-text" type="number" min="0" value="500"></label></td></tr>
+                    <tr class="wpd-c-slider"><th>Format du diaporama</th><td><label>Ratio <input id="wpd-c-ratio" class="small-text" type="text" value="16/9"></label> <select id="wpd-c-navigation"><option value="thumbnails">Miniatures</option><option value="dots">Points</option><option value="none">Aucune navigation</option></select> <select id="wpd-c-width"><option value="100%">100 %</option><option value="75%">75 %</option><option value="66%">66 %</option><option value="50%">50 %</option><option value="33%">33 %</option></select> <select id="wpd-c-align"><option value="center">Centré</option><option value="left">À gauche, texte autour</option><option value="right">À droite, texte autour</option></select></td></tr>
+                    <tr><th><label for="wpd-c-url">URL Piwigo spécifique</label></th><td><input id="wpd-c-url" class="regular-text" type="url" placeholder="https://phototheque.example.org"> <span class="description">Laissez vide pour utiliser le réglage global.</span></td></tr>
+                    <tr><th><label for="wpd-c-output">Shortcode</label></th><td><textarea id="wpd-c-output" class="large-text code" rows="6" readonly></textarea><p><button type="button" class="button button-primary" id="wpd-c-copy">Copier le shortcode</button></p></td></tr>
+                </tbody></table>
+            </div>
+            <h2><?php esc_html_e('Exemples', 'wp-piwigo-display'); ?></h2>
+            <?php self::render_shortcode_examples(); ?>
+        </div>
+        <script>
+        (function(){
+            const q=id=>document.getElementById(id);
+            const esc=value=>String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+            const add=(parts,key,value,allowZero=false)=>{if(value!=='' && (allowZero || value!=='0')) parts.push(key+'="'+esc(value)+'"');};
+            function initAlbumPicker(){
+                if(window.WPDAlbumPicker){
+                    window.WPDAlbumPicker.attach(document.querySelector('#wpd-admin-composer .wpd-album-field'), q('wpd-c-album'));
+                }
+            }
+            function updateVisibility(){
+                const recursive=q('wpd-c-recursive').checked;
+                q('wpd-c-depth').disabled=!recursive;
+                q('wpd-c-depth-row').style.opacity=recursive?'1':'0.55';
+                const slider=q('wpd-c-type').value==='slider';
+                document.querySelectorAll('.wpd-c-slider').forEach(row=>row.style.display=slider?'table-row':'none');
+            }
+            function build(){
+                updateVisibility();
+                const parts=[];
+                add(parts,'album',q('wpd-c-album').value.trim(),true);
+                add(parts,'preset',q('wpd-c-preset').value,true);
+                add(parts,'type',q('wpd-c-type').value,true);
+                add(parts,'sort',q('wpd-c-sort').value,true);
+                add(parts,'order',q('wpd-c-order').value,true);
+                ['limit','max','latest','random'].forEach(k=>add(parts,k,q('wpd-c-'+k).value,false));
+                add(parts,'orientation',q('wpd-c-orientation').value,true);
+                add(parts,'tag',q('wpd-c-tag').value.trim(),true);
+                add(parts,'tags',q('wpd-c-tags').value.trim(),true);
+                add(parts,'tag_mode',q('wpd-c-tag-mode').value,true);
+                add(parts,'caption',q('wpd-c-caption').value,true);
+                add(parts,'style',q('wpd-c-style').value,true);
+                add(parts,'fit',q('wpd-c-fit').value,true);
+                add(parts,'height',q('wpd-c-height').value.trim(),true);
+                parts.push('recursive="'+(q('wpd-c-recursive').checked?'true':'false')+'"');
+                if(q('wpd-c-recursive').checked) add(parts,'depth',q('wpd-c-depth').value||'10',true);
+                parts.push('lightbox="'+(q('wpd-c-lightbox').checked?'true':'false')+'"');
+                parts.push('rounded="'+(q('wpd-c-rounded').checked?'true':'false')+'"');
+                if(q('wpd-c-type').value==='slider'){
+                    parts.push('autoplay="'+(q('wpd-c-autoplay').checked?'true':'false')+'"');
+                    parts.push('thumbnails="'+(q('wpd-c-thumbnails').checked?'true':'false')+'"');
+                    ['interval','speed','ratio','navigation','width','align'].forEach(k=>add(parts,k,q('wpd-c-'+k).value,true));
+                }
+                add(parts,'url',q('wpd-c-url').value.trim(),true);
+                q('wpd-c-output').value='[piwigo '+parts.join(' ')+']';
+            }
+            document.querySelectorAll('#wpd-admin-composer input,#wpd-admin-composer select').forEach(el=>{el.addEventListener('input',build);el.addEventListener('change',build);});
+            q('wpd-c-copy').addEventListener('click',()=>navigator.clipboard.writeText(q('wpd-c-output').value));
+            document.addEventListener('DOMContentLoaded', initAlbumPicker, {once:true});
+            window.addEventListener('load', initAlbumPicker, {once:true});
+            initAlbumPicker();
+            build();
+        })();
+        </script>
+        <?php
     }
 
     public static function default_options(): array

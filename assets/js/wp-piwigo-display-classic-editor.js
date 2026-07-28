@@ -5,8 +5,8 @@
         var currentEditor = 'content';
         var $dialog = $('#wpd-classic-builder');
 
-        if (!$dialog.length || typeof $dialog.dialog !== 'function') {
-            return;
+        if (window.WPDAlbumPicker) {
+            window.WPDAlbumPicker.attach($dialog.find('.wpd-album-field'), $dialog.find('[data-wpd="album"]'));
         }
 
         function value(name) {
@@ -21,28 +21,42 @@
             return String(input).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         }
 
+        function add(parts, key, item, allowZero) {
+            if (item === undefined || item === null || item === '') return;
+            if (!allowZero && item === '0') return;
+            parts.push(key + '="' + escapeValue(item) + '"');
+        }
+
         function buildShortcode() {
-            var album = value('album');
             var type = value('type');
             var parts = [];
 
-            if (album) parts.push('album="' + escapeValue(album) + '"');
-            parts.push('type="' + escapeValue(type) + '"');
+            add(parts, 'album', value('album'), true);
+            add(parts, 'preset', value('preset'), true);
+            add(parts, 'type', type, true);
+            add(parts, 'sort', value('sort'), true);
+            add(parts, 'order', value('order'), true);
+            ['limit', 'max', 'latest', 'random'].forEach(function (key) { add(parts, key, value(key), false); });
+            add(parts, 'orientation', value('orientation'), true);
+            add(parts, 'caption', value('caption'), true);
+            add(parts, 'style', value('style'), true);
+            add(parts, 'fit', value('fit'), true);
+            add(parts, 'height', value('height'), true);
+            add(parts, 'tag', value('tag'), true);
+            add(parts, 'tags', value('tags'), true);
+            add(parts, 'tag_mode', value('tag_mode'), true);
+            add(parts, 'url', value('url'), true);
+
             parts.push('recursive="' + (checked('recursive') ? 'true' : 'false') + '"');
-
-            ['limit', 'max', 'sort', 'order', 'orientation', 'caption', 'style', 'tags'].forEach(function (key) {
-                var item = value(key);
-                if (item !== '' && item !== '0') parts.push(key + '="' + escapeValue(item) + '"');
-            });
-
+            if (checked('recursive')) add(parts, 'depth', value('depth') || '10', true);
             parts.push('lightbox="' + (checked('lightbox') ? 'true' : 'false') + '"');
             parts.push('rounded="' + (checked('rounded') ? 'true' : 'false') + '"');
 
             if (type === 'slider') {
                 parts.push('autoplay="' + (checked('autoplay') ? 'true' : 'false') + '"');
-                ['interval', 'speed', 'ratio', 'navigation'].forEach(function (key) {
-                    var item = value(key);
-                    if (item !== '') parts.push(key + '="' + escapeValue(item) + '"');
+                parts.push('thumbnails="' + (checked('thumbnails') ? 'true' : 'false') + '"');
+                ['interval', 'speed', 'ratio', 'navigation', 'width', 'align'].forEach(function (key) {
+                    add(parts, key, value(key), true);
                 });
             }
 
@@ -51,14 +65,15 @@
 
         function refresh() {
             var slider = value('type') === 'slider';
-            $dialog.find('.wpd-slider-options').toggle(slider);
+            $dialog.find('.wpd-slider-options, .wpd-slider-layout-option').toggle(slider);
+            $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
 
         function insertShortcode() {
             var shortcode = buildShortcode();
             if (!value('album')) {
-                window.alert('Indiquez un identifiant d’album Piwigo.');
+                window.alert('Choisissez un album Piwigo ou indiquez son identifiant, son nom ou son chemin.');
                 return;
             }
 
@@ -77,7 +92,7 @@
         $dialog.dialog({
             autoOpen: false,
             modal: true,
-            width: 760,
+            width: 900,
             maxWidth: '95%',
             buttons: [
                 { text: 'Insérer dans la page', class: 'button button-primary', click: insertShortcode },

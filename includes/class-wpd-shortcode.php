@@ -32,6 +32,8 @@ final class WPD_Shortcode
                 'tag' => '',
                 'tags' => '',
                 'tag_mode' => 'any',
+                'width' => '100%',
+                'align' => 'center',
             ],
             WPD_Settings::get_shortcode_defaults()
         );
@@ -104,14 +106,23 @@ final class WPD_Shortcode
 
         $html = WPD_Renderer::render($images, $atts);
 
+        if ((string) ($atts['type'] ?? '') === 'slider') {
+            $width = (string) ($atts['width'] ?? '100%');
+            $align = (string) ($atts['align'] ?? 'center');
+            $html = sprintf(
+                '<div class="wpd-slider-layout wpd-slider-align-%1$s" style="--wpd-slider-width:%2$s">%3$s</div>',
+                esc_attr($align),
+                esc_attr($width),
+                $html
+            );
+        }
+
         if (WPD_Settings::get_debug_mode() && current_user_can('manage_options')) {
             $html .= self::render_debug(absint($album_id), $piwigo_url, $atts, is_array($images) ? count($images) : 0);
         }
 
         return $html;
     }
-
-
 
     private static function images_contain_tag_data(array $images): bool
     {
@@ -299,6 +310,8 @@ final class WPD_Shortcode
         $atts['tag'] = isset($atts['tag']) ? sanitize_text_field((string) $atts['tag']) : '';
         $atts['tags'] = isset($atts['tags']) ? sanitize_text_field((string) $atts['tags']) : '';
         $atts['tag_mode'] = self::sanitize_choice((string) ($atts['tag_mode'] ?? 'any'), ['any', 'all'], 'any');
+        $atts['width'] = preg_match('/^(100|75|66|50|33)%$/', (string) ($atts['width'] ?? '100%')) === 1 ? (string) $atts['width'] : '100%';
+        $atts['align'] = self::sanitize_choice((string) ($atts['align'] ?? 'center'), ['left', 'right', 'center'], 'center');
         $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';
         $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', (string) ($atts['height'] ?? '')) === 1 ? (string) $atts['height'] : '';
         $atts['autoplay'] = self::sanitize_bool_string($atts['autoplay'] ?? 'true');

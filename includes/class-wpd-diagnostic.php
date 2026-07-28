@@ -9,7 +9,7 @@ final class WPD_Diagnostic
     public static function register_page(): void
     {
         add_submenu_page(
-            'options-general.php',
+            'wp-piwigo-display',
             __('Diagnostic WP Piwigo Display', 'wp-piwigo-display'),
             __('Diagnostic Piwigo', 'wp-piwigo-display'),
             'manage_options',
@@ -84,9 +84,6 @@ final class WPD_Diagnostic
         return implode("\n", $lines) . "\n";
     }
 
-    /**
-     * @return array<string, string>
-     */
     private static function collect(): array
     {
         $api = self::probe_api();
@@ -107,9 +104,6 @@ final class WPD_Diagnostic
         ];
     }
 
-    /**
-     * @return array{status: string, response_time: string, piwigo_version: string}
-     */
     private static function probe_api(): array
     {
         $piwigo_url = WPD_Settings::get_piwigo_url();
