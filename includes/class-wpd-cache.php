@@ -119,12 +119,11 @@ final class WPD_Cache
         $stale_key = self::get_stale_key($cache_key);
         $stale = get_transient($stale_key);
         $lock_key = self::get_lock_key($cache_key);
+        $lock_acquired = self::acquire_lock($lock_key);
 
-        if (!self::acquire_lock($lock_key)) {
-            if (is_array($stale)) {
-                self::$request_cache[$cache_key] = $stale;
-                return $stale;
-            }
+        if (!$lock_acquired && is_array($stale)) {
+            self::$request_cache[$cache_key] = $stale;
+            return $stale;
         }
 
         try {
@@ -147,7 +146,9 @@ final class WPD_Cache
             set_transient($stale_key, $value, max(DAY_IN_SECONDS, $duration * 7));
             return $value;
         } finally {
-            self::release_lock($lock_key);
+            if ($lock_acquired) {
+                self::release_lock($lock_key);
+            }
         }
     }
 
@@ -157,7 +158,19 @@ final class WPD_Cache
             return wp_cache_add($lock_key, 1, 'wp-piwigo-display', self::LOCK_TTL);
         }
 
-        return add_option('_transient_' . $lock_key, (string) time(), '', 'no');
+        $option_name = '_transient_' . $lock_key;
+        $now = time();
+        if (add_option($option_name, (string) $now, '', 'no')) {
+            return true;
+        }
+
+        $existing = (int) get_option($option_name, 0);
+        if ($existing > 0 && ($now - $existing) > self::LOCK_TTL) {
+            delete_option($option_name);
+            return add_option($option_name, (string) $now, '', 'no');
+        }
+
+        return false;
     }
 
     private static function release_lock(string $lock_key): void
