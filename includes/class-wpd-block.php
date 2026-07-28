@@ -22,9 +22,9 @@ final class WPD_Block
             'limit' => 'limit', 'max' => 'max', 'latest' => 'latest', 'random' => 'random',
             'sort' => 'sort', 'order' => 'order', 'orientations' => 'orientation', 'caption' => 'caption',
             'lightbox' => 'lightbox', 'rounded' => 'rounded', 'style' => 'style', 'autoplay' => 'autoplay',
-            'interval' => 'interval', 'speed' => 'speed', 'ratio' => 'ratio', 'width' => 'width',
-            'height' => 'height', 'align' => 'align', 'fit' => 'fit', 'navigation' => 'navigation',
-            'tag' => 'tag', 'tags' => 'tags', 'tagMode' => 'tag_mode',
+            'interval' => 'interval', 'speed' => 'speed', 'transition' => 'transition', 'direction' => 'direction',
+            'ratio' => 'ratio', 'width' => 'width', 'height' => 'height', 'align' => 'align',
+            'fit' => 'fit', 'navigation' => 'navigation', 'tag' => 'tag', 'tags' => 'tags', 'tagMode' => 'tag_mode',
         ];
         $atts = [];
         foreach ($map as $block_key => $shortcode_key) {
@@ -46,7 +46,9 @@ final class WPD_Block
 
     public static function render(array $attributes = [], string $content = '', ?WP_Block $block = null): string
     {
-        // One call deliberately: the shortcode remains the only rendering engine.
-        return WPD_Shortcode::render(self::attributes_to_shortcode($attributes));
+        $atts = self::attributes_to_shortcode($attributes);
+        $output = WPD_Shortcode::render($atts);
+
+        return WPD_Slider_Transitions::inject_slider_attributes($output, 'piwigo', $atts, []);
     }
 }
