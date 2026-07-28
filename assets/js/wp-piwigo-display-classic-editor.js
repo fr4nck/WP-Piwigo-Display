@@ -27,6 +27,12 @@
             parts.push(key + '="' + escapeValue(item) + '"');
         }
 
+        function bounded(name, minimum, maximum, fallback) {
+            var parsed = parseInt(value(name), 10);
+            if (!Number.isFinite(parsed)) return fallback;
+            return Math.min(maximum, Math.max(minimum, parsed));
+        }
+
         function buildShortcode() {
             var type = value('type');
             var parts = [];
@@ -41,11 +47,11 @@
             add(parts, 'caption', value('caption'), true);
             add(parts, 'style', value('style'), true);
             add(parts, 'fit', value('fit'), true);
-            add(parts, 'height', value('height'), true);
             add(parts, 'tag', value('tag'), true);
             add(parts, 'tags', value('tags'), true);
             add(parts, 'tag_mode', value('tag_mode'), true);
             add(parts, 'url', value('url'), true);
+            add(parts, 'height', value('height') ? bounded('height', 160, 1200, 160) + 'px' : '', true);
 
             parts.push('recursive="' + (checked('recursive') ? 'true' : 'false') + '"');
             if (checked('recursive')) add(parts, 'depth', value('depth') || '10', true);
@@ -55,9 +61,10 @@
             if (type === 'slider') {
                 parts.push('autoplay="' + (checked('autoplay') ? 'true' : 'false') + '"');
                 parts.push('thumbnails="' + (checked('thumbnails') ? 'true' : 'false') + '"');
-                ['interval', 'speed', 'ratio', 'navigation', 'width', 'align'].forEach(function (key) {
+                ['interval', 'speed', 'ratio', 'navigation', 'align'].forEach(function (key) {
                     add(parts, key, value(key), true);
                 });
+                add(parts, 'width', bounded('width', 20, 100, 100) + '%', true);
             }
 
             return '[piwigo ' + parts.join(' ') + ']';

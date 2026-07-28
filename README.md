@@ -27,7 +27,11 @@ Piwigo reste la source des photos ; WordPress se charge uniquement de leur affic
 
 ## Bloc Gutenberg
 
-Dans l’éditeur de blocs, insérez **WP Piwigo Display** depuis la catégorie Médias, puis renseignez l’identifiant numérique de l’album. Le bloc produit un rendu dynamique identique au shortcode et conserve uniquement sa configuration dans le contenu. Le shortcode reste disponible dans l’éditeur classique.
+Dans l’éditeur de blocs, insérez **WP Piwigo Display** depuis la catégorie Médias, puis renseignez l’identifiant numérique de l’album. Le bloc produit un rendu dynamique identique au shortcode et conserve uniquement sa configuration dans le contenu.
+
+Un diaporama peut être redimensionné directement dans Gutenberg avec les poignées placées à droite et en bas. La largeur est comprise entre 20 et 100 %, la hauteur facultative entre 160 et 1 200 px. Les flèches règlent la poignée sélectionnée, `Maj` augmente le pas et `Début`/`Fin` applique la borne correspondante. Sur mobile, la largeur publique reste forcée à 100 %.
+
+Le shortcode reste disponible dans l’éditeur classique. TinyMCE l’affiche sous la forme d’un aperçu non éditable, puis restitue exactement le shortcode lors de l’enregistrement.
 
 ## Exemples
 
@@ -41,6 +45,7 @@ Diaporama :
 
 ```text
 [piwigo album="154" type="slider"]
+[piwigo album="154" type="slider" width="72%" height="480px"]
 ```
 
 Album et tous ses sous-albums :

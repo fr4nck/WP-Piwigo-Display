@@ -22,8 +22,9 @@ final class WPD_Block
             'limit' => 'limit', 'max' => 'max', 'latest' => 'latest', 'random' => 'random',
             'sort' => 'sort', 'order' => 'order', 'orientations' => 'orientation', 'caption' => 'caption',
             'lightbox' => 'lightbox', 'rounded' => 'rounded', 'style' => 'style', 'autoplay' => 'autoplay',
-            'interval' => 'interval', 'speed' => 'speed', 'ratio' => 'ratio', 'height' => 'height',
-            'fit' => 'fit', 'navigation' => 'navigation', 'tag' => 'tag', 'tags' => 'tags', 'tagMode' => 'tag_mode',
+            'interval' => 'interval', 'speed' => 'speed', 'ratio' => 'ratio', 'width' => 'width',
+            'height' => 'height', 'align' => 'align', 'fit' => 'fit', 'navigation' => 'navigation',
+            'tag' => 'tag', 'tags' => 'tags', 'tagMode' => 'tag_mode',
         ];
         $atts = [];
         foreach ($map as $block_key => $shortcode_key) {

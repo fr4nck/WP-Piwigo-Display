@@ -23,7 +23,8 @@ wpd_block_assert_same([WPD_Block::class, 'render'], $GLOBALS['wpd_registered_blo
 $atts = WPD_Block::attributes_to_shortcode([
     'albumId' => '154', 'displayType' => 'slider', 'recursive' => true, 'depth' => 2,
     'orientations' => ['portrait', 'paysage', 'carré'], 'lightbox' => false,
-    'autoplay' => true, 'tagMode' => 'all', 'limit' => -4, 'unknown' => 'ignored',
+    'autoplay' => true, 'tagMode' => 'all', 'limit' => -4, 'width' => '72%',
+    'height' => '480px', 'align' => 'right', 'unknown' => 'ignored',
 ]);
 wpd_block_assert_same('154', $atts['album'], 'L’album doit être transmis au shortcode.');
 wpd_block_assert_same('slider', $atts['type'], 'Le diaporama doit être transmis au shortcode.');
@@ -31,4 +32,7 @@ wpd_block_assert_same('true', $atts['recursive'], 'Les booléens doivent être c
 wpd_block_assert_same('false', $atts['lightbox'], 'Les booléens faux doivent être convertis au format shortcode.');
 wpd_block_assert_same('portrait,paysage,carré', $atts['orientation'], 'Les orientations françaises multiples doivent être conservées.');
 wpd_block_assert_same('all', $atts['tag_mode'], 'Le mode de tags doit être transmis.');
+wpd_block_assert_same('72%', $atts['width'], 'La largeur du diaporama doit être transmise.');
+wpd_block_assert_same('480px', $atts['height'], 'La hauteur du diaporama doit être transmise.');
+wpd_block_assert_same('right', $atts['align'], 'L’alignement du diaporama doit être transmis.');
 wpd_block_assert_same(false, isset($atts['unknown']), 'Les attributs inconnus ne doivent pas être transmis.');
