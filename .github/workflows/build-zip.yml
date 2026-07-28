@@ -1,0 +1,41 @@
+name: Build plugin ZIP
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 2.0.x
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare plugin directory
+        run: |
+          mkdir -p build/wp-piwigo-display
+          rsync -a ./ build/wp-piwigo-display/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'build' \
+            --exclude '*.zip'
+
+      - name: Create ZIP
+        run: |
+          cd build
+          zip -r wp-piwigo-display-2.0.0-rc1.zip wp-piwigo-display
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-piwigo-display-2.0.0-rc1
+          path: build/wp-piwigo-display-2.0.0-rc1.zip
+          if-no-files-found: error
+          retention-days: 14
