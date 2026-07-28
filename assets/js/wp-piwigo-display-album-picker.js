@@ -47,12 +47,12 @@
             matches.forEach(function (album) {
                 var $button = $('<button type="button" class="wpd-album-option" role="option"></button>');
                 $button.css('--wpd-depth', album.depth || 0);
-                $button.attr('data-value', album.path || album.id);
+                $button.attr('data-value', album.id);
                 $button.append($('<span class="dashicons dashicons-category" aria-hidden="true"></span>'));
                 $button.append($('<span class="wpd-album-option-name"></span>').text(album.name));
                 $button.append($('<span class="wpd-album-option-meta"></span>').text('#' + album.id + (album.images ? ' · ' + album.images + ' photo(s)' : '')));
                 $button.on('click', function () {
-                    $(input).val(album.path || album.id).trigger('input').trigger('change');
+                    $(input).val(album.id).trigger('input').trigger('change');
                     $picker.attr('hidden', 'hidden').empty();
                 });
                 $list.append($button);
