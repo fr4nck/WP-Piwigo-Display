@@ -50,5 +50,6 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-classic-editor.php';
 
 add_action('plugins_loaded', static function () {
     WPD_Plugin::init();
+    WPD_Service_Account::register();
     WPD_Classic_Editor::register();
 });
