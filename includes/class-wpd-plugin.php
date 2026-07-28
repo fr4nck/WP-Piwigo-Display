@@ -174,7 +174,7 @@ final class WPD_Plugin
         check_admin_referer('wpd_clear_cache');
         $deleted = WPD_Cache::clear_all();
 
-        wp_safe_redirect(add_query_arg(['page' => 'wp-piwigo-display', 'wpd_cache_cleared' => (string) $deleted], admin_url('admin.php')));
+        wp_safe_redirect(add_query_arg(['page' => 'wp-piwigo-display-settings', 'wpd_cache_cleared' => (string) $deleted], admin_url('admin.php')));
         exit;
     }
 
@@ -212,7 +212,7 @@ final class WPD_Plugin
 
         $redirect_url = add_query_arg(
             [
-                'page' => 'wp-piwigo-display',
+                'page' => 'wp-piwigo-display-settings',
                 'wpd_connection_test' => $result,
             ],
             admin_url('admin.php')
