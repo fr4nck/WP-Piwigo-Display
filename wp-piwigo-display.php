@@ -29,7 +29,7 @@ if (!defined('WPD_PLUGIN_URL')) {
     define('WPD_PLUGIN_URL', plugin_dir_url(__FILE__));
 }
 
-foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor'] as $wpd_class) {
+foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor', 'WPD_Slider_Transitions'] as $wpd_class) {
     if (class_exists($wpd_class, false)) {
         return;
     }
@@ -47,9 +47,11 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-renderer.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shortcode.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-block.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-classic-editor.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-slider-transitions.php';
 
 add_action('plugins_loaded', static function () {
     WPD_Plugin::init();
     WPD_Service_Account::register();
     WPD_Classic_Editor::register();
+    WPD_Slider_Transitions::register();
 });
