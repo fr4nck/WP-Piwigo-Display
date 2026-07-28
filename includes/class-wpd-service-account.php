@@ -4,9 +4,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Compte technique Piwigo utilisé exclusivement côté serveur.
- */
 final class WPD_Service_Account
 {
     public const OPTION_NAME = 'wp_piwigo_display_service_account';
@@ -19,6 +16,7 @@ final class WPD_Service_Account
         add_action('admin_init', [self::class, 'register_settings'], 20);
         add_action('wp_ajax_wpd_get_albums', [self::class, 'ajax_get_albums'], 1);
         add_action('admin_post_wpd_test_service_account', [self::class, 'test_connection']);
+        add_action('admin_notices', [self::class, 'render_notice']);
     }
 
     public static function register_settings(): void
@@ -46,12 +44,21 @@ final class WPD_Service_Account
         $previous = self::get_options();
         $password = isset($options['password']) ? (string) $options['password'] : '';
 
-        return [
+        $sanitized = [
             'enabled' => filter_var($options['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
             'username' => sanitize_text_field((string) ($options['username'] ?? '')),
-            // Un champ vide conserve le secret déjà enregistré.
             'password' => $password !== '' ? $password : (string) ($previous['password'] ?? ''),
         ];
+
+        $changed = ($previous['enabled'] ?? 'false') !== $sanitized['enabled']
+            || ($previous['username'] ?? '') !== $sanitized['username']
+            || ($previous['password'] ?? '') !== $sanitized['password'];
+
+        if ($changed && class_exists('WPD_Cache')) {
+            WPD_Cache::clear_all();
+        }
+
+        return $sanitized;
     }
 
     public static function render_section(): void
@@ -94,10 +101,8 @@ final class WPD_Service_Account
             esc_html__('Le mot de passe n’est jamais réaffiché dans l’administration.', 'wp-piwigo-display')
         );
 
-        if (self::is_configured()) {
-            $url = wp_nonce_url(admin_url('admin-post.php?action=wpd_test_service_account'), 'wpd_test_service_account');
-            echo '<p><a class="button" href="' . esc_url($url) . '">' . esc_html__('Tester le compte de service', 'wp-piwigo-display') . '</a></p>';
-        }
+        $url = wp_nonce_url(admin_url('admin-post.php?action=wpd_test_service_account'), 'wpd_test_service_account');
+        echo '<p><a class="button" href="' . esc_url($url) . '">' . esc_html__('Tester le compte de service', 'wp-piwigo-display') . '</a></p>';
     }
 
     public static function test_connection(): void
@@ -107,8 +112,11 @@ final class WPD_Service_Account
         }
         check_admin_referer('wpd_test_service_account');
 
-        $result = 'error';
-        if (self::is_configured() && WPD_Settings::get_piwigo_url() !== '') {
+        if (!self::is_configured()) {
+            $result = 'not_configured';
+        } elseif (WPD_Settings::get_piwigo_url() === '') {
+            $result = 'missing_url';
+        } else {
             $response = (new WPD_Service_Api(WPD_Settings::get_piwigo_url()))->test_connection();
             $result = is_wp_error($response) ? 'error' : 'success';
         }
@@ -120,9 +128,27 @@ final class WPD_Service_Account
         exit;
     }
 
-    /**
-     * Intercepte le sélecteur existant quand le compte technique est actif.
-     */
+    public static function render_notice(): void
+    {
+        if (!isset($_GET['page'], $_GET['wpd_service_test'])) {
+            return;
+        }
+        if (sanitize_key((string) wp_unslash($_GET['page'])) !== 'wp-piwigo-display-settings') {
+            return;
+        }
+
+        $result = sanitize_key((string) wp_unslash($_GET['wpd_service_test']));
+        $class = $result === 'success' ? 'notice notice-success is-dismissible' : 'notice notice-error is-dismissible';
+        $messages = [
+            'success' => __('Connexion du compte de service réussie.', 'wp-piwigo-display'),
+            'not_configured' => __('Compte de service incomplet ou désactivé.', 'wp-piwigo-display'),
+            'missing_url' => __('URL Piwigo manquante.', 'wp-piwigo-display'),
+            'error' => __('Échec de connexion. Vérifiez HTTPS, l’identifiant, le mot de passe et les droits Piwigo.', 'wp-piwigo-display'),
+        ];
+        $message = $messages[$result] ?? $messages['error'];
+        printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), esc_html($message));
+    }
+
     public static function ajax_get_albums(): void
     {
         if (!self::is_configured()) {
@@ -206,7 +232,7 @@ final class WPD_Service_Account
 
     public static function is_managed_by_constants(): bool
     {
-        return defined(self::USERNAME_CONSTANT) || defined(self::PASSWORD_CONSTANT);
+        return defined(self::ENABLED_CONSTANT) || defined(self::USERNAME_CONSTANT) || defined(self::PASSWORD_CONSTANT);
     }
 
     public static function get_context_hash(): string
