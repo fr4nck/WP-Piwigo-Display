@@ -6,17 +6,22 @@ if (!defined('ABSPATH')) {
 
 /**
  * Client Piwigo authentifié utilisé exclusivement côté serveur.
+ *
+ * La session Piwigo n'est jamais persistée : les cookies restent dans cette
+ * instance PHP et disparaissent à la fin de la requête WordPress.
  */
 final class WPD_Service_Api
 {
     private string $base_url;
+
     /** @var WP_Http_Cookie[] */
     private array $cookies = [];
+
     private bool $authenticated = false;
 
     public function __construct(string $base_url)
     {
-        $this->base_url = untrailingslashit(esc_url_raw($base_url));
+        $this->base_url = self::sanitize_service_url($base_url);
     }
 
     public function test_connection()
@@ -26,7 +31,20 @@ final class WPD_Service_Api
             return $login;
         }
 
-        return $this->request(['method' => 'pwg.session.getStatus'], false);
+        $status = $this->request(['method' => 'pwg.session.getStatus'], false);
+        if (is_wp_error($status)) {
+            return $status;
+        }
+
+        $username = sanitize_text_field((string) ($status['result']['username'] ?? ''));
+        if ($username === '' || strcasecmp($username, 'guest') === 0) {
+            return new WP_Error(
+                'wpd_service_guest_session',
+                __('Piwigo a ouvert une session invitée au lieu du compte de service.', 'wp-piwigo-display')
+            );
+        }
+
+        return $status;
     }
 
     public function get_all_categories()
@@ -41,6 +59,7 @@ final class WPD_Service_Api
         }
 
         $categories = $response['result']['categories'] ?? [];
+
         return is_array($categories) ? $categories : [];
     }
 
@@ -71,9 +90,8 @@ final class WPD_Service_Api
             $page_images = is_array($page_images) ? $page_images : [];
 
             foreach ($page_images as $image) {
-                $id = absint($image['id'] ?? 0);
-                $key = $id > 0 ? (string) $id : md5(wp_json_encode($image));
-                $images[$key] = $image;
+                $this->add_unique_image($images, $image);
+
                 if ($max > 0 && count($images) >= $max) {
                     return array_slice(array_values($images), 0, $max);
                 }
@@ -87,6 +105,14 @@ final class WPD_Service_Api
 
     public function get_images_from_album_recursive(int $album_id, int $max = 0, int $depth = 10)
     {
+        if ($album_id <= 0) {
+            return new WP_Error('wpd_invalid_album', __('Identifiant d\'album invalide.', 'wp-piwigo-display'));
+        }
+
+        if ($depth <= 0) {
+            return $this->get_images_from_album($album_id, $max, false);
+        }
+
         if ($depth >= 10) {
             return $this->get_images_from_album($album_id, $max, true);
         }
@@ -101,6 +127,7 @@ final class WPD_Service_Api
             $category_id = absint($category['id'] ?? 0);
             $path = array_values(array_filter(array_map('absint', explode(',', (string) ($category['uppercats'] ?? '')))));
             $root = array_search($album_id, $path, true);
+
             if ($category_id > 0 && $root !== false) {
                 $relative_depth = count($path) - $root - 1;
                 if ($relative_depth >= 1 && $relative_depth <= $depth) {
@@ -115,10 +142,10 @@ final class WPD_Service_Api
             if (is_wp_error($current)) {
                 return $current;
             }
+
             foreach ($current as $image) {
-                $id = absint($image['id'] ?? 0);
-                $key = $id > 0 ? (string) $id : md5(wp_json_encode($image));
-                $images[$key] = $image;
+                $this->add_unique_image($images, $image);
+
                 if ($max > 0 && count($images) >= $max) {
                     return array_slice(array_values($images), 0, $max);
                 }
@@ -134,20 +161,34 @@ final class WPD_Service_Api
             return [];
         }
 
-        $response = $this->request([
-            'method' => 'pwg.tags.getImages',
-            'tag_name' => $tags,
-            'tag_mode_and' => $tag_mode === 'all' ? 'true' : 'false',
-            'per_page' => 500,
-            'page' => 0,
-        ]);
+        $images = [];
+        $page = 0;
+        $per_page = 500;
 
-        if (is_wp_error($response)) {
-            return $response;
-        }
+        do {
+            $response = $this->request([
+                'method' => 'pwg.tags.getImages',
+                'tag_name' => array_values(array_map('sanitize_text_field', $tags)),
+                'tag_mode_and' => $tag_mode === 'all' ? 'true' : 'false',
+                'per_page' => $per_page,
+                'page' => $page,
+            ]);
 
-        $images = $response['result']['images'] ?? [];
-        return is_array($images) ? $images : [];
+            if (is_wp_error($response)) {
+                return $response;
+            }
+
+            $page_images = $response['result']['images'] ?? [];
+            $page_images = is_array($page_images) ? $page_images : [];
+
+            foreach ($page_images as $image) {
+                $this->add_unique_image($images, $image);
+            }
+
+            $page++;
+        } while (count($page_images) === $per_page && $page < 1000);
+
+        return array_values($images);
     }
 
     private function login()
@@ -167,17 +208,31 @@ final class WPD_Service_Api
         ], false);
 
         if (is_wp_error($response)) {
-            return $response;
+            return new WP_Error(
+                'wpd_service_login_failed',
+                __('Échec de l’authentification du compte de service Piwigo.', 'wp-piwigo-display')
+            );
+        }
+
+        if (empty($this->cookies)) {
+            return new WP_Error(
+                'wpd_service_cookie_missing',
+                __('Piwigo n’a pas fourni de cookie de session au compte de service.', 'wp-piwigo-display')
+            );
         }
 
         $this->authenticated = true;
+
         return true;
     }
 
     private function request(array $body, bool $authenticate = true)
     {
         if ($this->base_url === '') {
-            return new WP_Error('wpd_invalid_url', __('URL Piwigo invalide ou non configurée.', 'wp-piwigo-display'));
+            return new WP_Error(
+                'wpd_service_https_required',
+                __('Le compte de service exige une URL Piwigo HTTPS valide.', 'wp-piwigo-display')
+            );
         }
 
         if ($authenticate) {
@@ -189,20 +244,28 @@ final class WPD_Service_Api
 
         $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
             'timeout' => 10,
-            'redirection' => 3,
+            'redirection' => 0,
             'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
             'body' => $body,
             'cookies' => $this->cookies,
+            'sslverify' => true,
         ]);
 
         if (is_wp_error($response)) {
-            return new WP_Error('wpd_http_error', sprintf(__('Impossible de contacter la galerie Piwigo : %s', 'wp-piwigo-display'), $response->get_error_message()));
+            return new WP_Error(
+                'wpd_http_error',
+                sprintf(__('Impossible de contacter la galerie Piwigo : %s', 'wp-piwigo-display'), $response->get_error_message())
+            );
         }
 
-        $this->cookies = array_merge($this->cookies, wp_remote_retrieve_cookies($response));
+        $this->merge_response_cookies(wp_remote_retrieve_cookies($response));
+
         $status_code = wp_remote_retrieve_response_code($response);
         if ($status_code < 200 || $status_code >= 300) {
-            return new WP_Error('wpd_http_status', sprintf(__('La galerie Piwigo a répondu avec le code HTTP %d.', 'wp-piwigo-display'), $status_code));
+            return new WP_Error(
+                'wpd_http_status',
+                sprintf(__('La galerie Piwigo a répondu avec le code HTTP %d.', 'wp-piwigo-display'), $status_code)
+            );
         }
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
@@ -211,9 +274,52 @@ final class WPD_Service_Api
         }
 
         if (($data['stat'] ?? '') !== 'ok') {
-            return new WP_Error('wpd_api_error', sprintf(__('Erreur renvoyée par Piwigo : %s', 'wp-piwigo-display'), sanitize_text_field((string) ($data['message'] ?? __('erreur inconnue', 'wp-piwigo-display')))));
+            return new WP_Error(
+                'wpd_api_error',
+                sprintf(
+                    __('Erreur renvoyée par Piwigo : %s', 'wp-piwigo-display'),
+                    sanitize_text_field((string) ($data['message'] ?? __('erreur inconnue', 'wp-piwigo-display')))
+                )
+            );
         }
 
         return $data;
+    }
+
+    /**
+     * @param array<string, array> $images
+     * @param array               $image
+     */
+    private function add_unique_image(array &$images, array $image): void
+    {
+        $id = absint($image['id'] ?? 0);
+        $key = $id > 0 ? (string) $id : md5(wp_json_encode($image));
+        $images[$key] = $image;
+    }
+
+    /**
+     * Évite d'accumuler plusieurs cookies portant le même nom.
+     *
+     * @param WP_Http_Cookie[] $cookies
+     */
+    private function merge_response_cookies(array $cookies): void
+    {
+        foreach ($cookies as $cookie) {
+            if (!$cookie instanceof WP_Http_Cookie || $cookie->name === '') {
+                continue;
+            }
+
+            $this->cookies[$cookie->name] = $cookie;
+        }
+    }
+
+    private static function sanitize_service_url(string $base_url): string
+    {
+        $url = untrailingslashit(esc_url_raw(trim($base_url)));
+        if ($url === '' || wp_parse_url($url, PHP_URL_SCHEME) !== 'https') {
+            return '';
+        }
+
+        return $url;
     }
 }
