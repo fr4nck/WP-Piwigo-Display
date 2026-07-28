@@ -29,7 +29,7 @@ if (!defined('WPD_PLUGIN_URL')) {
     define('WPD_PLUGIN_URL', plugin_dir_url(__FILE__));
 }
 
-foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor'] as $wpd_class) {
+foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor'] as $wpd_class) {
     if (class_exists($wpd_class, false)) {
         return;
     }
@@ -39,6 +39,7 @@ unset($wpd_class);
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-service-account.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-service-api.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-api.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-cache.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-diagnostic.php';
