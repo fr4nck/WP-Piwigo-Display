@@ -10,23 +10,28 @@ function initSplideSliders() {
     document.querySelectorAll('.wp-piwigo-display-slider.splide').forEach(function (slider) {
         var autoplay = slider.dataset.autoplay === 'true';
         var interval = parseInt(slider.dataset.interval || '5000', 10);
-        var speed = parseInt(slider.dataset.speed || '500', 10);
+        var configuredSpeed = parseInt(slider.dataset.speed || '500', 10);
         var navigation = slider.dataset.navigation || 'thumbnails';
+        var transition = ['slide', 'fade', 'none'].indexOf(slider.dataset.transition) !== -1 ? slider.dataset.transition : 'slide';
+        var direction = slider.dataset.direction === 'rtl' ? 'rtl' : 'ltr';
         var thumbnails = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slider-thumbnail'));
+        var isFade = transition === 'fade';
+        var speed = transition === 'none' ? 0 : configuredSpeed;
 
         var splide = new Splide(slider, {
-            type: 'loop',
+            type: isFade ? 'fade' : 'loop',
+            direction: direction,
             perPage: 1,
             autoplay: autoplay,
             interval: interval,
             speed: speed,
+            rewind: isFade,
             pauseOnHover: true,
             pauseOnFocus: true,
             arrows: true,
             pagination: navigation === 'dots',
             keyboard: true,
-            drag: true,
-            rewind: false
+            drag: !isFade
         });
 
         splide.on('move', function (newIndex) {

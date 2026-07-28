@@ -15,7 +15,7 @@
     "recursive":{"type":"boolean"}, "depth":{"type":"number"}, "limit":{"type":"number"}, "max":{"type":"number"}, "latest":{"type":"number"}, "random":{"type":"number"},
     "sort":{"type":"string"}, "order":{"type":"string"}, "orientations":{"type":"array"},
     "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "style":{"type":"string"},
-    "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
+    "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "transition":{"type":"string","default":"slide"}, "direction":{"type":"string","default":"ltr"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
     "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
   },
   "supports":{"html":false}

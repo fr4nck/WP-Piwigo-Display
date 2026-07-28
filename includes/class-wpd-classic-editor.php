@@ -99,8 +99,10 @@ final class WPD_Classic_Editor
                 <label class="wpd-slider-options"><input type="checkbox" data-wpd="thumbnails" checked> <?php esc_html_e('Miniatures (compatibilité)', 'wp-piwigo-display'); ?></label>
             </fieldset>
             <div class="wpd-slider-options">
-                <label><?php esc_html_e('Intervalle (ms)', 'wp-piwigo-display'); ?><input type="number" min="1000" data-wpd="interval" value="5000"></label>
-                <label><?php esc_html_e('Vitesse (ms)', 'wp-piwigo-display'); ?><input type="number" min="0" data-wpd="speed" value="500"></label>
+                <label><?php esc_html_e('Durée d’affichage (ms)', 'wp-piwigo-display'); ?><input type="number" min="1000" data-wpd="interval" value="5000"></label>
+                <label><?php esc_html_e('Vitesse de transition (ms)', 'wp-piwigo-display'); ?><input type="number" min="0" data-wpd="speed" value="500"></label>
+                <label><?php esc_html_e('Effet de transition', 'wp-piwigo-display'); ?><select data-wpd="transition"><option value="slide">Glissement</option><option value="fade">Fondu</option><option value="none">Sans animation</option></select></label>
+                <label><?php esc_html_e('Direction', 'wp-piwigo-display'); ?><select data-wpd="direction"><option value="ltr">Vers la gauche</option><option value="rtl">Vers la droite</option></select></label>
                 <label><?php esc_html_e('Ratio', 'wp-piwigo-display'); ?><input type="text" data-wpd="ratio" value="16/9"></label>
                 <label><?php esc_html_e('Navigation', 'wp-piwigo-display'); ?><select data-wpd="navigation"><option value="thumbnails">Miniatures</option><option value="dots">Points</option><option value="none">Aucune</option></select></label>
             </div>

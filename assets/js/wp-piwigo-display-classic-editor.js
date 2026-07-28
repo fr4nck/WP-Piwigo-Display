@@ -116,7 +116,7 @@
             if (type === 'slider') {
                 parts.push('autoplay="' + (checked('autoplay') ? 'true' : 'false') + '"');
                 parts.push('thumbnails="' + (checked('thumbnails') ? 'true' : 'false') + '"');
-                ['interval', 'speed', 'ratio', 'navigation', 'align'].forEach(function (key) {
+                ['interval', 'speed', 'transition', 'direction', 'ratio', 'navigation', 'align'].forEach(function (key) {
                     add(parts, key, value(key), true);
                 });
                 add(parts, 'width', bounded('width', 20, 100, 100) + '%', true);
