@@ -310,10 +310,15 @@ final class WPD_Shortcode
         $atts['tag'] = isset($atts['tag']) ? sanitize_text_field((string) $atts['tag']) : '';
         $atts['tags'] = isset($atts['tags']) ? sanitize_text_field((string) $atts['tags']) : '';
         $atts['tag_mode'] = self::sanitize_choice((string) ($atts['tag_mode'] ?? 'any'), ['any', 'all'], 'any');
-        $atts['width'] = preg_match('/^(100|75|66|50|33)%$/', (string) ($atts['width'] ?? '100%')) === 1 ? (string) $atts['width'] : '100%';
+        $width = (string) ($atts['width'] ?? '100%');
+        $atts['width'] = preg_match('/^\d{1,3}%$/', $width) === 1
+            ? min(100, max(20, absint($width))) . '%'
+            : '100%';
         $atts['align'] = self::sanitize_choice((string) ($atts['align'] ?? 'center'), ['left', 'right', 'center'], 'center');
-        $atts['ratio'] = preg_match('/^\d+\/\d+$/', (string) ($atts['ratio'] ?? '16/9')) === 1 ? (string) $atts['ratio'] : '16/9';
-        $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', (string) ($atts['height'] ?? '')) === 1 ? (string) $atts['height'] : '';
+        $ratio = (string) ($atts['ratio'] ?? '16/9');
+        $height = (string) ($atts['height'] ?? '');
+        $atts['ratio'] = preg_match('/^\d+\/\d+$/', $ratio) === 1 ? $ratio : '16/9';
+        $atts['height'] = preg_match('/^\d+(px|rem|em|vh|vw|%)$/', $height) === 1 ? $height : '';
         $atts['autoplay'] = self::sanitize_bool_string($atts['autoplay'] ?? 'true');
         $atts['rounded'] = self::sanitize_bool_string($atts['rounded'] ?? 'false');
         $atts['lightbox'] = self::sanitize_bool_string($atts['lightbox'] ?? 'true');

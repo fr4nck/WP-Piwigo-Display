@@ -16,6 +16,13 @@ final class WPD_Classic_Editor
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('admin_footer-post.php', [self::class, 'render_modal']);
         add_action('admin_footer-post-new.php', [self::class, 'render_modal']);
+        add_filter('mce_external_plugins', [self::class, 'register_tinymce_plugin']);
+    }
+
+    public static function register_tinymce_plugin(array $plugins): array
+    {
+        $plugins['wpd_shortcode_preview'] = WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-tinymce.js';
+        return $plugins;
     }
 
     public static function enqueue_assets(string $hook): void
@@ -75,12 +82,12 @@ final class WPD_Classic_Editor
                 <label><?php esc_html_e('Légende', 'wp-piwigo-display'); ?><select data-wpd="caption"><option value="default">Réglage global</option><option value="none">Aucune</option><option value="title">Titre</option><option value="description">Description</option><option value="title-description">Titre et description</option></select></label>
                 <label><?php esc_html_e('Style', 'wp-piwigo-display'); ?><select data-wpd="style"><option value="default">Réglage global</option><option value="theme">Thème WordPress</option><option value="minimal">Minimal</option><option value="none">Sans habillage</option></select></label>
                 <label><?php esc_html_e('Cadrage', 'wp-piwigo-display'); ?><select data-wpd="fit"><option value="contain">Image entière</option><option value="cover">Cadre rempli</option><option value="auto">Automatique</option><option value="raw">Brut</option></select></label>
-                <label><?php esc_html_e('Hauteur', 'wp-piwigo-display'); ?><input type="text" data-wpd="height" placeholder="520px"></label>
+                <label><?php esc_html_e('Hauteur (px)', 'wp-piwigo-display'); ?><input type="number" min="160" max="1200" data-wpd="height" placeholder="520"></label>
                 <label><?php esc_html_e('Tag unique', 'wp-piwigo-display'); ?><input type="text" data-wpd="tag"></label>
                 <label><?php esc_html_e('Plusieurs tags', 'wp-piwigo-display'); ?><input type="text" data-wpd="tags" placeholder="tag1,tag2"></label>
                 <label><?php esc_html_e('Correspondance des tags', 'wp-piwigo-display'); ?><select data-wpd="tag_mode"><option value="any">Au moins un</option><option value="all">Tous</option></select></label>
                 <label><?php esc_html_e('URL Piwigo spécifique', 'wp-piwigo-display'); ?><input type="url" data-wpd="url" placeholder="https://phototheque.example.org"></label>
-                <label class="wpd-slider-layout-option"><?php esc_html_e('Largeur du diaporama', 'wp-piwigo-display'); ?><select data-wpd="width"><option value="100%">100 %</option><option value="75%">75 %</option><option value="66%">66 %</option><option value="50%">50 %</option><option value="33%">33 %</option></select></label>
+                <label class="wpd-slider-layout-option"><?php esc_html_e('Largeur du diaporama (%)', 'wp-piwigo-display'); ?><input type="number" min="20" max="100" data-wpd="width" value="100"></label>
                 <label class="wpd-slider-layout-option"><?php esc_html_e('Alignement', 'wp-piwigo-display'); ?><select data-wpd="align"><option value="center">Centré</option><option value="left">À gauche, texte à droite</option><option value="right">À droite, texte à gauche</option></select></label>
             </div>
             <fieldset class="wpd-builder-checks">

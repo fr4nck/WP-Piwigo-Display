@@ -99,6 +99,21 @@ Navigation du diaporama :
 - `dots` ;
 - `none`.
 
+### `width`, `height` et `align`
+
+Ces paramètres règlent la mise en page d’un diaporama :
+
+```text
+[piwigo album="154" type="slider" width="72%" height="480px" align="center"]
+```
+
+- `width` accepte un pourcentage de 20 à 100 ; les valeurs hors limites sont bornées ;
+- `height` est facultatif ; Gutenberg enregistre une valeur de 160 à 1 200 px ;
+- les unités historiques `rem`, `em`, `vh`, `vw` et `%` restent acceptées dans les shortcodes existants ;
+- `align` accepte `left`, `center` ou `right`.
+
+La largeur publique est plafonnée à 100 % et forcée à 100 % sous 782 px.
+
 ```text
 [piwigo album="154" type="slider" navigation="thumbnails"]
 ```
