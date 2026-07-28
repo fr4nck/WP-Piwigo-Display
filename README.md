@@ -16,6 +16,17 @@ Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans co
 - diagnostic et purge du cache ;
 - compte de service Piwigo pour publier, côté WordPress, des albums privés autorisés.
 
+## Développement 3.x
+
+Les diaporamas acceptent désormais des transitions configurables :
+
+- `transition="slide"` : glissement standard ;
+- `transition="fade"` : fondu natif Splide ;
+- `transition="none"` : changement immédiat sans animation ;
+- `direction="ltr"` ou `direction="rtl"` : sens horizontal du diaporama.
+
+La durée d’affichage (`interval`) et la vitesse de transition (`speed`) restent deux réglages indépendants. Ces options sont disponibles dans Gutenberg, l’éditeur classique et le composeur.
+
 ## Installation
 
 1. Installer le ZIP depuis **Extensions > Ajouter une extension**.
@@ -44,6 +55,8 @@ Les identifiants restent côté serveur. Ils ne sont pas insérés dans le HTML,
 ```text
 [piwigo album="154"]
 [piwigo album="154" type="slider" width="72%" height="480px"]
+[piwigo album="154" type="slider" transition="fade" speed="700"]
+[piwigo album="154" type="slider" transition="slide" direction="rtl"]
 [piwigo album="154" recursive="true" depth="2"]
 [piwigo album="154" sort="date" order="desc" limit="20"]
 [piwigo album="154" tags="nature,animaux" tag_mode="all"]
