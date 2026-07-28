@@ -1,162 +1,70 @@
 # WP Piwigo Display
 
-WP Piwigo Display est un plugin **WordPress** permettant d'afficher des albums Piwigo via l'API officielle, sans importer les images dans la médiathèque WordPress.
+Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
-Piwigo reste la source des photos ; WordPress se charge uniquement de leur affichage.
+## Version 2.0.0
 
-## Fonctionnalités
+- bloc Gutenberg dynamique ;
+- éditeur classique avec aperçu TinyMCE ;
+- composeur d’administration ;
+- galerie responsive et diaporama Splide ;
+- redimensionnement visuel des diaporamas dans Gutenberg ;
+- sélection d’album par identifiant, nom, chemin ou arborescence ;
+- sous-albums et profondeur configurable ;
+- tri, limites, orientations, tags, légendes et styles ;
+- cache WordPress séparé par contexte d’accès ;
+- diagnostic et purge du cache ;
+- compte de service Piwigo pour publier, côté WordPress, des albums privés autorisés.
 
-- bloc Gutenberg **WP Piwigo Display** ;
-- shortcode unique `[piwigo]` ;
-- galerie responsive ;
-- diaporama avec Splide ;
-- lightbox ;
-- cache WordPress avec transients ;
-- vidage manuel du cache ;
-- test de connexion Piwigo ;
-- réglages d'affichage par défaut ;
-- navigation du diaporama par miniatures, points ou aucune ;
-- URL Piwigo ponctuelle dans un shortcode ;
-- affichage d'un album et de ses sous-albums ;
-- profondeur récursive configurable ;
-- pagination automatique des résultats Piwigo ;
-- suppression des doublons ;
-- tri, limitation et filtrage par orientation des images ;
-- presets d'affichage ;
-- sélection d'album par identifiant, nom ou chemin.
+## Installation
 
-## Bloc Gutenberg
+1. Installer le ZIP depuis **Extensions > Ajouter une extension**.
+2. Activer **WP Piwigo Display**.
+3. Renseigner l’URL HTTPS de Piwigo dans les réglages du plugin.
+4. Insérer le bloc Gutenberg ou utiliser `[piwigo album="154"]`.
 
-Dans l’éditeur de blocs, insérez **WP Piwigo Display** depuis la catégorie Médias, puis renseignez l’identifiant numérique de l’album. Le bloc produit un rendu dynamique identique au shortcode et conserve uniquement sa configuration dans le contenu.
+## Compte de service Piwigo
 
-Un diaporama peut être redimensionné directement dans Gutenberg avec les poignées placées à droite et en bas. La largeur est comprise entre 20 et 100 %, la hauteur facultative entre 160 et 1 200 px. Les flèches règlent la poignée sélectionnée, `Maj` augmente le pas et `Début`/`Fin` applique la borne correspondante. Le bouton **Modifier**, ou un double-clic sur le diaporama, rouvre les réglages complets du bloc. Sur mobile, la largeur publique reste forcée à 100 %.
+Le compte de service est un compte Piwigo dédié à WordPress. Il permet au serveur WordPress de récupérer les albums privés auxquels ce compte a accès. Les visiteurs ne se connectent pas à Piwigo.
 
-Le shortcode reste disponible dans l’éditeur classique. TinyMCE l’affiche sous la forme d’un aperçu non éditable ; un double-clic rouvre le composeur pour le modifier, puis l’enregistrement restitue exactement le shortcode.
+Les photos d’un album privé affiché sur une page publique WordPress deviennent publiquement consultables sur cette page. Le compte doit donc être limité aux seuls albums destinés à cette diffusion.
+
+Configuration recommandée dans `wp-config.php` :
+
+```php
+define('WPD_PIWIGO_SERVICE_ENABLED', true);
+define('WPD_PIWIGO_SERVICE_USERNAME', 'wordpress-publication');
+define('WPD_PIWIGO_SERVICE_PASSWORD', 'mot-de-passe-fort');
+```
+
+Les identifiants restent côté serveur. Ils ne sont pas insérés dans le HTML, JavaScript, les blocs ou les shortcodes.
 
 ## Exemples
 
-Album simple :
-
 ```text
 [piwigo album="154"]
-```
-
-Diaporama :
-
-```text
-[piwigo album="154" type="slider"]
 [piwigo album="154" type="slider" width="72%" height="480px"]
-```
-
-Album et tous ses sous-albums :
-
-```text
-[piwigo album="154" recursive="true"]
-```
-
-Album et deux niveaux de sous-albums :
-
-```text
 [piwigo album="154" recursive="true" depth="2"]
-```
-
-Dernières images d'une arborescence :
-
-```text
-[piwigo album="154" recursive="true" sort="date" order="desc" limit="20"]
-```
-
-Autre galerie Piwigo pour un affichage ponctuel :
-
-```text
-[piwigo url="https://autre-galerie.example.org" album="154"]
-```
-
-Filtrage par orientation après récupération des images :
-
-```text
-[piwigo album="154" orientation="portrait"]
-[piwigo album="154" orientation="paysage"]
-[piwigo album="154" orientation="carré"]
-```
-
-Le paramètre `orientation` accepte `all` (toutes les images) par défaut, `portrait` pour les images plus hautes que larges, `paysage` pour les images plus larges que hautes et `carré` pour les images carrées. Les alias historiques `landscape` et `square`, ainsi que `carre` sans accent, restent acceptés. Plusieurs orientations peuvent être séparées par des virgules, par exemple `orientation="portrait,carré"`. Les images sans dimensions sont conservées uniquement avec `orientation="all"`.
-
-Filtrage par tags Piwigo après récupération des images et avant le filtrage par orientation :
-
-```text
-[piwigo album="154" tag="nature"]
-[piwigo album="154" tags="nature,animaux"]
-[piwigo album="154" tags="nature,animaux" tag_mode="any"]
+[piwigo album="154" sort="date" order="desc" limit="20"]
 [piwigo album="154" tags="nature,animaux" tag_mode="all"]
 ```
 
-`tag` et `tags` peuvent être utilisés indifféremment. Les tags sont séparés par des virgules, nettoyés des espaces inutiles, dédupliqués et comparés sans tenir compte de la casse. `tag_mode="any"` conserve les images avec au moins un tag demandé ; `tag_mode="all"` exige tous les tags demandés.
+## Compatibilité
 
-## Affichage récursif
-
-Le paramètre `recursive="true"` inclut les images de l'album indiqué et celles de ses sous-albums.
-
-Le paramètre `depth` limite la profondeur :
-
-- `depth="0"` : album indiqué uniquement ;
-- `depth="1"` : album et enfants directs ;
-- `depth="2"` : album, enfants et petits-enfants ;
-- `depth="10"` : toute la descendance prise en charge par le plugin.
-
-Le mode récursif utilise un cache distinct selon l'album, l'URL Piwigo et la profondeur demandée.
+- WordPress 6.0 ou supérieur ;
+- PHP 8.1 à 8.4 validé par CI ;
+- Piwigo accessible en HTTPS pour le compte de service.
 
 ## Documentation
-
-La documentation complète se trouve dans le dossier [`docs`](docs/).
 
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Shortcodes](docs/shortcodes.md)
-- [Albums récursifs](docs/albums-recursifs.md)
+- [Compte de service](docs/COMPTE-DE-SERVICE.md)
+- [Recette V2](docs/RECETTE-V2.md)
 - [Architecture](docs/architecture.md)
-- [Philosophie](docs/philosophie.md)
 - [Feuille de route](ROADMAP.md)
 
 ## Licence
 
 GNU GPL v3 ou version ultérieure.
-
-
-## Gestion des légendes
-
-Le paramètre `caption` contrôle les informations affichées sous les images ou sur le diaporama :
-
-```text
-[piwigo album="154" caption="none"]
-[piwigo album="154" caption="title"]
-[piwigo album="154" caption="description"]
-[piwigo album="154" caption="title-description"]
-```
-
-La valeur `default` utilise le choix enregistré dans les réglages WordPress :
-
-```text
-[piwigo album="154" caption="default"]
-```
-
-Le réglage s'applique aux galeries, aux diaporamas et aux légendes de la lightbox.
-
-
-## Intégration graphique
-
-Le paramètre `style` contrôle l'habillage visuel :
-
-```text
-[piwigo album="154" style="theme"]
-[piwigo album="154" style="default"]
-[piwigo album="154" style="minimal"]
-[piwigo album="154" style="none"]
-```
-
-- `theme` : reprend les variables CSS du thème WordPress lorsqu'elles existent ;
-- `default` : style standard du plugin ;
-- `minimal` : présentation plus discrète ;
-- `none` : retrait de l'habillage graphique afin de laisser le thème ou un CSS personnalisé prendre la main.
-
-Le réglage global **Intégration graphique** peut être remplacé dans chaque shortcode.
