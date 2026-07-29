@@ -6,7 +6,7 @@
   "title": "WP Piwigo Display",
   "category": "media",
   "icon": "format-gallery",
-  "description": "Insère une galerie ou un diaporama Piwigo.",
+  "description": "Insère une galerie, un diaporama ou un mur Masonry Piwigo.",
   "textdomain": "wp-piwigo-display",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./editor.css",
@@ -16,6 +16,7 @@
     "sort":{"type":"string"}, "order":{"type":"string"}, "orientations":{"type":"array"},
     "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "style":{"type":"string"},
     "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "transition":{"type":"string","default":"slide"}, "direction":{"type":"string","default":"ltr"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
+    "masonryColumns":{"type":"number","default":4}, "masonryGap":{"type":"number","default":16},
     "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
   },
   "supports":{"html":false}
