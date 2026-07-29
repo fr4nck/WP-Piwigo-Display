@@ -78,14 +78,14 @@ final class WPD_Shapes {
 	/**
 	 * Applies shape classes and radius variables to Piwigo shortcode output.
 	 *
-	 * @param string              $output Shortcode output.
-	 * @param string              $tag    Shortcode tag.
-	 * @param array<string,mixed> $attr   Shortcode attributes.
-	 * @param array<int,mixed>    $match  Shortcode match data.
+	 * @param string              $output          Shortcode output.
+	 * @param string              $tag             Shortcode tag.
+	 * @param array<string,mixed> $attr            Shortcode attributes.
+	 * @param array<int,mixed>    $shortcode_match Shortcode match data.
 	 * @return string
 	 */
-	public static function apply_shape( string $output, string $tag, array $attr, array $match ): string {
-		unset( $match );
+	public static function apply_shape( string $output, string $tag, array $attr, array $shortcode_match ): string {
+		unset( $shortcode_match );
 
 		if ( 'piwigo' !== $tag || '' === $output ) {
 			return $output;
