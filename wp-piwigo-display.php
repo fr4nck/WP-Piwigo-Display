@@ -29,7 +29,7 @@ if (!defined('WPD_PLUGIN_URL')) {
     define('WPD_PLUGIN_URL', plugin_dir_url(__FILE__));
 }
 
-foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor', 'WPD_Slider_Transitions', 'WPD_Masonry', 'WPD_Composer_Parity'] as $wpd_class) {
+foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor', 'WPD_Slider_Transitions', 'WPD_Masonry', 'WPD_Composer_Parity', 'WPD_Gutenberg_Parity'] as $wpd_class) {
     if (class_exists($wpd_class, false)) {
         return;
     }
@@ -50,6 +50,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-classic-editor.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-slider-transitions.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-masonry.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 
 add_action('plugins_loaded', static function () {
     WPD_Plugin::init();
@@ -58,4 +59,5 @@ add_action('plugins_loaded', static function () {
     WPD_Slider_Transitions::register();
     WPD_Masonry::register();
     WPD_Composer_Parity::register();
+    WPD_Gutenberg_Parity::register();
 });

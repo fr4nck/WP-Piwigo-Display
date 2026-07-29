@@ -10,7 +10,7 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 | Galerie | Oui | Oui | Oui | Oui |
 | Diaporama | Oui | Oui | Oui | Oui |
 | Masonry | Oui | Oui | Oui | Oui |
-| Presets | Oui | Oui | Oui | Non exposé |
+| Presets | Oui | Oui | Oui | Oui |
 | Limite, maximum, dernières, aléatoires | Oui | Oui | Oui | Oui |
 | Tri et ordre | Oui | Oui | Oui | Oui |
 | Orientation | Oui | Oui | Oui | Oui |
@@ -21,16 +21,11 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 | Transition et direction | Oui | Oui | Oui | Oui |
 | Ratio, navigation, largeur, alignement | Oui | Oui | Oui | Oui |
 | Colonnes et espacement Masonry | Oui | Oui | Oui | Oui |
-| URL Piwigo spécifique | Oui | Oui | Oui | Non exposé |
+| URL Piwigo spécifique | Oui | Oui | Oui | Oui |
 
-## Écarts documentés
+## Écart documenté
 
-Gutenberg reste volontairement plus guidé que les deux composeurs complets. Deux écarts sont encore identifiés :
-
-- le sélecteur visuel d’albums n’est pas encore intégré au bloc ;
-- `preset` et `url` ne sont pas exposés dans l’inspecteur Gutenberg.
-
-Ces écarts ne suppriment pas les fonctions du moteur et doivent être traités comme des améliorations distinctes.
+Le sélecteur visuel d’albums n’est pas encore intégré au bloc Gutenberg. La saisie par identifiant reste disponible dans l’inspecteur. Les presets et l’URL Piwigo spécifique sont désormais exposés dans un panneau avancé.
 
 ## Checklist de non-régression
 
@@ -42,5 +37,6 @@ Avant une version :
 4. vérifier `width` avec `align` ;
 5. vérifier `transition` avec `direction` ;
 6. vérifier `masonry_columns` avec `masonry_gap` ;
-7. tester la sélection visuelle d’un album dans l’administration et Classic Editor ;
-8. signaler explicitement toute validation WordPress non réalisée.
+7. vérifier `preset` et `url` dans Gutenberg ;
+8. tester la sélection visuelle d’un album dans l’administration et Classic Editor ;
+9. signaler explicitement toute validation WordPress non réalisée.
