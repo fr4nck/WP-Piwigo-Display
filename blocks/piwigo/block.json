@@ -12,6 +12,7 @@
   "editorStyle": "file:./editor.css",
   "attributes": {
     "albumId":{"type":"string"}, "displayType":{"type":"string"},
+    "preset":{"type":"string","default":""}, "piwigoUrl":{"type":"string","default":""},
     "recursive":{"type":"boolean"}, "depth":{"type":"number"}, "limit":{"type":"number"}, "max":{"type":"number"}, "latest":{"type":"number"}, "random":{"type":"number"},
     "sort":{"type":"string"}, "order":{"type":"string"}, "orientations":{"type":"array"},
     "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "style":{"type":"string"},
