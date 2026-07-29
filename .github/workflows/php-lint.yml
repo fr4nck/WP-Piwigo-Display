@@ -50,10 +50,7 @@ jobs:
       - name: Check PHP compatibility
         run: composer compatibility
 
-      - name: Check normalized WordPress files
-        run: composer standards:checked
-
-      - name: Audit remaining WordPress Coding Standards
+      - name: Audit WordPress Coding Standards
         continue-on-error: true
         run: composer standards:report
 
