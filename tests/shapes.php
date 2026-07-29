@@ -5,6 +5,9 @@ $module = file_get_contents(__DIR__ . '/../includes/class-wpd-shapes.php');
 $css = file_get_contents(__DIR__ . '/../assets/css/wp-piwigo-display-shapes.css');
 $block = file_get_contents(__DIR__ . '/../blocks/piwigo/block.json');
 $editor = file_get_contents(__DIR__ . '/../blocks/piwigo/shapes.js');
+$classic = file_get_contents(__DIR__ . '/../includes/class-wpd-classic-editor.php');
+$classic_js = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js');
+$composer = file_get_contents(__DIR__ . '/../includes/class-wpd-composer-parity.php');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -20,4 +23,7 @@ $assert(strpos($module, "'star'") !== false && strpos($module, "'hexagon'") !== 
 $assert(strpos($css, 'clip-path: polygon') !== false, 'Les formes complexes doivent utiliser clip-path.');
 $assert(strpos($css, '@supports not (clip-path: polygon(0 0))') !== false, 'Un repli sans clip-path doit être prévu.');
 $assert(strpos($block, '"shape"') !== false && strpos($block, '"radius"') !== false, 'Les attributs Gutenberg doivent être déclarés.');
-$assert(strpos($editor, 'Arrondi des angles (%)') !== false, 'Le réglage fin de l’arrondi doit être disponible.');
+$assert(strpos($editor, 'Arrondi des angles (%)') !== false, 'Le réglage fin de l’arrondi doit être disponible dans Gutenberg.');
+$assert(strpos($classic, 'data-wpd="shape"') !== false && strpos($classic, 'data-wpd="radius"') !== false, 'Classic Editor doit proposer la forme et le rayon.');
+$assert(strpos($classic_js, "add(parts, 'shape'") !== false && strpos($classic_js, "add(parts, 'radius'") !== false, 'Classic Editor doit générer les attributs de forme.');
+$assert(strpos($composer, 'wpd-c-shape') !== false && strpos($composer, 'wpd-c-radius') !== false, 'Le composeur d’administration doit proposer la forme et le rayon.');
