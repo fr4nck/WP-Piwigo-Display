@@ -1,40 +1,64 @@
 <?php
 /**
  * Plugin Name: WP Piwigo Display
- * Description: Affiche simplement des albums Piwigo dans WordPress à l'aide d'un shortcode.
+ * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
  * Version: 2.0.0
+ * Requires at least: 6.0
+ * Requires PHP: 8.1
  * Author: Franck Bellardie
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: wp-piwigo-display
+ *
+ * @package WP_Piwigo_Display
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-if (!defined('WPD_VERSION')) {
-    define('WPD_VERSION', '2.0.0');
+if ( ! defined( 'WPD_VERSION' ) ) {
+	define( 'WPD_VERSION', '2.0.0' );
 }
 
-if (!defined('WPD_PLUGIN_FILE')) {
-    define('WPD_PLUGIN_FILE', __FILE__);
+if ( ! defined( 'WPD_PLUGIN_FILE' ) ) {
+	define( 'WPD_PLUGIN_FILE', __FILE__ );
 }
 
-if (!defined('WPD_PLUGIN_DIR')) {
-    define('WPD_PLUGIN_DIR', plugin_dir_path(__FILE__));
+if ( ! defined( 'WPD_PLUGIN_DIR' ) ) {
+	define( 'WPD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-if (!defined('WPD_PLUGIN_URL')) {
-    define('WPD_PLUGIN_URL', plugin_dir_url(__FILE__));
+if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
+	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-foreach (['WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor', 'WPD_Slider_Transitions', 'WPD_Masonry', 'WPD_Composer_Parity', 'WPD_Gutenberg_Parity', 'WPD_Shapes'] as $wpd_class) {
-    if (class_exists($wpd_class, false)) {
-        return;
-    }
+$wpd_loaded_classes = array(
+	'WPD_Plugin',
+	'WPD_Settings',
+	'WPD_Service_Account',
+	'WPD_Service_Api',
+	'WPD_Api',
+	'WPD_Cache',
+	'WPD_Diagnostic',
+	'WPD_Renderer',
+	'WPD_Shortcode',
+	'WPD_Block',
+	'WPD_Classic_Editor',
+	'WPD_Slider_Transitions',
+	'WPD_Masonry',
+	'WPD_Composer_Parity',
+	'WPD_Gutenberg_Parity',
+	'WPD_Shapes',
+);
+
+foreach ( $wpd_loaded_classes as $wpd_class ) {
+	if ( class_exists( $wpd_class, false ) ) {
+		return;
+	}
 }
-unset($wpd_class);
+
+unset( $wpd_class, $wpd_loaded_classes );
 
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
@@ -53,13 +77,20 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
 
-add_action('plugins_loaded', static function () {
-    WPD_Plugin::init();
-    WPD_Service_Account::register();
-    WPD_Classic_Editor::register();
-    WPD_Slider_Transitions::register();
-    WPD_Masonry::register();
-    WPD_Composer_Parity::register();
-    WPD_Gutenberg_Parity::register();
-    WPD_Shapes::register();
-});
+/**
+ * Registers the plugin components after all plugins are loaded.
+ *
+ * @return void
+ */
+function wpd_bootstrap_plugin(): void {
+	WPD_Plugin::init();
+	WPD_Service_Account::register();
+	WPD_Classic_Editor::register();
+	WPD_Slider_Transitions::register();
+	WPD_Masonry::register();
+	WPD_Composer_Parity::register();
+	WPD_Gutenberg_Parity::register();
+	WPD_Shapes::register();
+}
+
+add_action( 'plugins_loaded', 'wpd_bootstrap_plugin' );

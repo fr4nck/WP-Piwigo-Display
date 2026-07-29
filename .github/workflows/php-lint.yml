@@ -66,6 +66,9 @@ jobs:
       - name: Check PHP compatibility
         run: composer compatibility
 
-      - name: Audit WordPress Coding Standards
+      - name: Check bootstrap WordPress Coding Standards
+        run: composer standards:bootstrap
+
+      - name: Audit remaining WordPress Coding Standards
         continue-on-error: true
         run: composer standards:report
