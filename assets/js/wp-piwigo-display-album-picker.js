@@ -32,13 +32,18 @@
         var expanded = {};
         var selectedId = String($(input).val() || '');
         var childrenByParent = {};
+        var hierarchy = [];
 
         albums.forEach(function (album) {
             var id = String(album.id);
+            var depth = Number(album.depth || 0);
+            hierarchy[depth] = id;
+            hierarchy.length = depth + 1;
+            album.parentId = album.parentId || (depth > 0 ? hierarchy[depth - 1] : 0);
+            album.pathIds = album.pathIds || hierarchy.slice(0);
             var parentId = String(album.parentId || 0);
             if (!childrenByParent[parentId]) childrenByParent[parentId] = [];
             childrenByParent[parentId].push(album);
-            album._wpdId = id;
         });
 
         $picker.empty().removeAttr('hidden');
@@ -67,7 +72,7 @@
                 var id = String(album.id);
                 var parentId = String(album.parentId || 0);
                 var hasChildren = !!(childrenByParent[id] && childrenByParent[id].length);
-                var parentVisible = parentId === '0' || expanded[parentId];
+                var parentVisible = !parentId || parentId === '0' || expanded[parentId];
                 var visible = query ? !!searchVisible[id] : (Number(album.depth || 0) === 0 || parentVisible);
                 if (!visible) return;
                 count += 1;
