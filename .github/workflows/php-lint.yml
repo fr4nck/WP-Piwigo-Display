@@ -1,4 +1,4 @@
-name: PHP lint
+name: PHP quality
 
 on:
   pull_request:
@@ -6,13 +6,18 @@ on:
     branches:
       - main
       - '2.0.x'
+      - '3.x-dev'
 
 permissions:
   contents: read
 
+concurrency:
+  group: php-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
-    name: PHP ${{ matrix.php }}
+    name: Syntax PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -30,8 +35,37 @@ jobs:
           coverage: none
 
       - name: Lint PHP files
-        shell: bash
-        run: |
-          set -euo pipefail
-          find . -type f -name '*.php' -not -path './vendor/*' -print0 \
-            | xargs -0 -n1 php -l
+        run: composer lint
+
+  standards:
+    name: Standards PHP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install quality dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Check PHP compatibility
+        run: composer compatibility
+
+      - name: Audit WordPress Coding Standards
+        continue-on-error: true
+        run: composer standards:report
