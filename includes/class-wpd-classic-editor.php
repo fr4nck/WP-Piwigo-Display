@@ -62,6 +62,8 @@ final class WPD_Classic_Editor
                 <label><?php esc_html_e('Légende', 'wp-piwigo-display'); ?><select data-wpd="caption"><option value="default">Réglage global</option><option value="none">Aucune</option><option value="title">Titre</option><option value="description">Description</option><option value="title-description">Titre et description</option></select></label>
                 <label><?php esc_html_e('Style', 'wp-piwigo-display'); ?><select data-wpd="style"><option value="default">Réglage global</option><option value="theme">Thème WordPress</option><option value="minimal">Minimal</option><option value="none">Sans habillage</option></select></label>
                 <label><?php esc_html_e('Cadrage', 'wp-piwigo-display'); ?><select data-wpd="fit"><option value="contain">Image entière</option><option value="cover">Cadre rempli</option><option value="auto">Automatique</option><option value="raw">Brut</option></select></label>
+                <label><?php esc_html_e('Forme', 'wp-piwigo-display'); ?><select data-wpd="shape"><option value="rectangle">Rectangle</option><option value="rounded">Rectangle arrondi</option><option value="circle">Cercle</option><option value="oval">Ovale</option><option value="pill">Pilule</option><option value="star">Étoile</option><option value="hexagon">Hexagone</option><option value="diamond">Losange</option></select></label>
+                <label class="wpd-radius-option"><?php esc_html_e('Arrondi (%)', 'wp-piwigo-display'); ?><input type="number" min="0" max="50" data-wpd="radius" value="8"></label>
                 <label><?php esc_html_e('Hauteur (px)', 'wp-piwigo-display'); ?><input type="number" min="160" max="1200" data-wpd="height" placeholder="520"></label>
                 <label><?php esc_html_e('Tag unique', 'wp-piwigo-display'); ?><input type="text" data-wpd="tag"></label>
                 <label><?php esc_html_e('Plusieurs tags', 'wp-piwigo-display'); ?><input type="text" data-wpd="tags" placeholder="tag1,tag2"></label>
@@ -76,7 +78,7 @@ final class WPD_Classic_Editor
                 <label><input type="checkbox" data-wpd="recursive"> <?php esc_html_e('Inclure les sous-albums', 'wp-piwigo-display'); ?></label>
                 <label class="wpd-depth-option"><?php esc_html_e('Profondeur des sous-albums', 'wp-piwigo-display'); ?> <input type="number" min="1" max="10" value="10" data-wpd="depth" class="small-text"></label>
                 <label><input type="checkbox" data-wpd="lightbox" checked> <?php esc_html_e('Lightbox', 'wp-piwigo-display'); ?></label>
-                <label><input type="checkbox" data-wpd="rounded"> <?php esc_html_e('Coins arrondis', 'wp-piwigo-display'); ?></label>
+                <label><input type="checkbox" data-wpd="rounded"> <?php esc_html_e('Coins arrondis (compatibilité)', 'wp-piwigo-display'); ?></label>
                 <label class="wpd-slider-options"><input type="checkbox" data-wpd="autoplay" checked> <?php esc_html_e('Lecture automatique du diaporama', 'wp-piwigo-display'); ?></label>
                 <label class="wpd-slider-options"><input type="checkbox" data-wpd="thumbnails" checked> <?php esc_html_e('Miniatures (compatibilité)', 'wp-piwigo-display'); ?></label>
             </fieldset>
