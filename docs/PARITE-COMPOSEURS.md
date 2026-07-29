@@ -4,8 +4,8 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 
 | Fonction | Moteur | Administration | Classic Editor | Gutenberg |
 |---|---:|---:|---:|---:|
-| Album par identifiant, nom ou chemin | Oui | Oui | Oui | Identifiant |
-| Sélecteur visuel d’albums | Oui | Oui | Oui | À compléter |
+| Album par identifiant, nom ou chemin | Oui | Oui | Oui | Oui |
+| Sélecteur visuel d’albums | Oui | Oui | Oui | Oui |
 | Sous-albums et profondeur | Oui | Oui | Oui | Oui |
 | Galerie | Oui | Oui | Oui | Oui |
 | Diaporama | Oui | Oui | Oui | Oui |
@@ -23,9 +23,9 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 | Colonnes et espacement Masonry | Oui | Oui | Oui | Oui |
 | URL Piwigo spécifique | Oui | Oui | Oui | Oui |
 
-## Écart documenté
+## Parité atteinte
 
-Le sélecteur visuel d’albums n’est pas encore intégré au bloc Gutenberg. La saisie par identifiant reste disponible dans l’inspecteur. Les presets et l’URL Piwigo spécifique sont désormais exposés dans un panneau avancé.
+Les trois composeurs utilisent désormais le même socle fonctionnel. Gutenberg propose une saisie manuelle par identifiant, nom ou chemin ainsi qu’un sélecteur visuel chargé depuis l’endpoint sécurisé `wpd_get_albums`.
 
 ## Checklist de non-régression
 
@@ -38,5 +38,6 @@ Avant une version :
 5. vérifier `transition` avec `direction` ;
 6. vérifier `masonry_columns` avec `masonry_gap` ;
 7. vérifier `preset` et `url` dans Gutenberg ;
-8. tester la sélection visuelle d’un album dans l’administration et Classic Editor ;
-9. signaler explicitement toute validation WordPress non réalisée.
+8. tester la sélection visuelle d’un album dans l’administration, Classic Editor et Gutenberg ;
+9. vérifier que la saisie manuelle reste disponible lorsque l’API échoue ;
+10. signaler explicitement toute validation WordPress non réalisée.
