@@ -72,6 +72,12 @@
         var searchState = useState('');
         var search = searchState[0];
         var setSearch = searchState[1];
+        var expandedState = useState({});
+        var expanded = expandedState[0];
+        var setExpanded = expandedState[1];
+        var selectedState = useState(String(props.value || ''));
+        var selectedId = selectedState[0];
+        var setSelectedId = selectedState[1];
 
         function togglePicker() {
             if (open) {
@@ -94,8 +100,34 @@
         }
 
         var query = String(search || '').toLocaleLowerCase();
-        var matches = albums.filter(function (album) {
-            return !query || String(album.path || album.name || '').toLocaleLowerCase().indexOf(query) !== -1;
+        var childrenByParent = {};
+        var searchVisible = {};
+        var hierarchy = [];
+
+        albums.forEach(function (album) {
+            var depth = Number(album.depth || 0);
+            hierarchy[depth] = String(album.id);
+            hierarchy.length = depth + 1;
+            album.parentId = album.parentId || (depth > 0 ? hierarchy[depth - 1] : 0);
+            album.pathIds = album.pathIds || hierarchy.slice(0);
+            var parentId = String(album.parentId || 0);
+            if (!childrenByParent[parentId]) {
+                childrenByParent[parentId] = [];
+            }
+            childrenByParent[parentId].push(album);
+            if (query && String(album.path || album.name || '').toLocaleLowerCase().indexOf(query) !== -1) {
+                album.pathIds.forEach(function (id) {
+                    searchVisible[String(id)] = true;
+                });
+            }
+        });
+
+        var visibleAlbums = albums.filter(function (album) {
+            var parentId = String(album.parentId || 0);
+            if (query) {
+                return !!searchVisible[String(album.id)];
+            }
+            return Number(album.depth || 0) === 0 || !!expanded[parentId];
         });
 
         var children = [
@@ -104,7 +136,10 @@
                 label: __('Album', 'wp-piwigo-display'),
                 value: props.value || '',
                 help: __('Identifiant, nom ou chemin. La saisie manuelle reste disponible.', 'wp-piwigo-display'),
-                onChange: props.onChange
+                onChange: function (value) {
+                    setSelectedId(String(value || ''));
+                    props.onChange(value);
+                }
             }),
             createElement(Button, {
                 key: 'button',
@@ -129,27 +164,59 @@
 
                 children.push(createElement('div', {
                     key: 'list',
-                    role: 'listbox',
+                    role: 'tree',
                     style: { maxHeight: '320px', overflowY: 'auto', border: '1px solid #dcdcde', marginTop: '8px' }
-                }, matches.length ? matches.map(function (album) {
-                    return createElement(Button, {
-                        key: String(album.id),
-                        variant: 'tertiary',
-                        onClick: function () {
-                            props.onChange(String(album.id));
-                            setOpen(false);
-                        },
+                }, visibleAlbums.length ? visibleAlbums.map(function (album) {
+                    var id = String(album.id);
+                    var hasChildren = !!(childrenByParent[id] && childrenByParent[id].length);
+                    var isExpanded = query ? true : !!expanded[id];
+                    var isSelected = selectedId === id;
+
+                    return createElement('div', {
+                        key: id,
+                        role: 'treeitem',
+                        'aria-level': Number(album.depth || 0) + 1,
+                        'aria-expanded': hasChildren ? isExpanded : undefined,
+                        'aria-selected': isSelected,
                         style: {
-                            display: 'flex',
-                            width: '100%',
-                            justifyContent: 'space-between',
-                            paddingLeft: (12 + (Number(album.depth) || 0) * 16) + 'px',
+                            display: 'grid',
+                            gridTemplateColumns: '28px minmax(0, 1fr) auto',
+                            gap: '6px',
+                            alignItems: 'center',
+                            padding: '6px 6px 6px ' + (6 + (Number(album.depth) || 0) * 16) + 'px',
                             borderBottom: '1px solid #f0f0f1',
-                            textAlign: 'left'
+                            background: isSelected ? '#e7f3ff' : 'transparent'
                         }
                     },
+                    createElement(Button, {
+                        variant: 'tertiary',
+                        disabled: !hasChildren,
+                        icon: hasChildren ? (isExpanded ? 'arrow-down-alt2' : 'arrow-right-alt2') : undefined,
+                        label: isExpanded ? __('Fermer les sous-albums', 'wp-piwigo-display') : __('Ouvrir les sous-albums', 'wp-piwigo-display'),
+                        onClick: function () {
+                            var next = Object.assign({}, expanded);
+                            next[id] = !next[id];
+                            setExpanded(next);
+                        }
+                    }),
+                    createElement(Button, {
+                        variant: 'tertiary',
+                        onClick: function () {
+                            setSelectedId(id);
+                        },
+                        style: { justifyContent: 'flex-start', textAlign: 'left', minWidth: 0 }
+                    },
                     createElement('span', null, album.name),
-                    createElement('small', null, '#' + album.id + (album.images ? ' · ' + album.images : '')));
+                    createElement('small', { style: { marginLeft: '8px', color: '#646970' } }, '#' + album.id + (album.images ? ' · ' + album.images : ''))),
+                    createElement(Button, {
+                        variant: 'secondary',
+                        size: 'small',
+                        'aria-label': __('Choisir cet album', 'wp-piwigo-display') + ' : ' + album.name,
+                        onClick: function () {
+                            setSelectedId(id);
+                            props.onChange(id);
+                        }
+                    }, __('Valider', 'wp-piwigo-display')));
                 }) : createElement('p', { style: { padding: '12px', margin: 0 } }, __('Aucun album trouvé.', 'wp-piwigo-display'))));
             }
         }
