@@ -2,13 +2,16 @@
 
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
-## Version 2.0.0
+## Version stable — 2.0.0
+
+La version 2.0.0 est la référence distribuée tant que la recette complète de la branche `3.x-dev` n’est pas terminée.
+
+Elle comprend :
 
 - bloc Gutenberg dynamique ;
 - éditeur classique avec aperçu TinyMCE ;
 - composeur d’administration ;
 - galerie responsive et diaporama Splide ;
-- redimensionnement visuel des diaporamas dans Gutenberg ;
 - sélection d’album par identifiant, nom, chemin ou arborescence ;
 - sous-albums et profondeur configurable ;
 - tri, limites, orientations, tags, légendes et styles ;
@@ -18,14 +21,18 @@ Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans co
 
 ## Développement 3.x
 
-Les diaporamas acceptent désormais des transitions configurables :
+La branche `3.x-dev` conserve le socle 2.x et ajoute :
 
-- `transition="slide"` : glissement standard ;
-- `transition="fade"` : fondu natif Splide ;
-- `transition="none"` : changement immédiat sans animation ;
-- `direction="ltr"` ou `direction="rtl"` : sens horizontal du diaporama.
+- transitions `slide`, `fade` et `none` ;
+- direction horizontale `ltr` ou `rtl` ;
+- redimensionnement visuel des diaporamas ;
+- mode Masonry natif en colonnes CSS ;
+- réglage des colonnes et de l’espacement Masonry ;
+- presets et URL Piwigo spécifique dans Gutenberg ;
+- sélecteur visuel, hiérarchique et recherchable des albums dans Gutenberg ;
+- parité fonctionnelle entre le composeur d’administration, Classic Editor et Gutenberg.
 
-La durée d’affichage (`interval`) et la vitesse de transition (`speed`) restent deux réglages indépendants. Ces options sont disponibles dans Gutenberg, l’éditeur classique et le composeur.
+La durée d’affichage (`interval`) et la vitesse de transition (`speed`) restent deux réglages indépendants de l’effet et de la direction.
 
 Le mode Masonry utilise uniquement les colonnes CSS du navigateur :
 
@@ -34,6 +41,8 @@ Le mode Masonry utilise uniquement les colonnes CSS du navigateur :
 - `masonry_gap="16"` définit un espacement de 0 à 64 pixels ;
 - le nombre de colonnes diminue automatiquement sur tablette et mobile ;
 - la lightbox, les légendes, les styles et les albums privés restent compatibles.
+
+Le socle 3.x doit encore passer une recette WordPress réelle avant d’être présenté comme version stable. Le suivi est décrit dans `ROADMAP.md` et l’issue #46.
 
 ## Installation
 
@@ -84,6 +93,7 @@ Les identifiants restent côté serveur. Ils ne sont pas insérés dans le HTML,
 - [Shortcodes](docs/shortcodes.md)
 - [Compte de service](docs/COMPTE-DE-SERVICE.md)
 - [Recette V2](docs/RECETTE-V2.md)
+- [Parité des composeurs](docs/PARITE-COMPOSEURS.md)
 - [Architecture](docs/architecture.md)
 - [Feuille de route](ROADMAP.md)
 
