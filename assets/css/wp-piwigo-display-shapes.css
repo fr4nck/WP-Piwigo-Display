@@ -1,0 +1,74 @@
+.wp-piwigo-display[class*="wpd-shape-"] {
+    --wpd-shape-radius: 0%;
+}
+
+.wp-piwigo-display.wpd-shape-rounded .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-shape-rounded .splide__track,
+.wp-piwigo-display.wpd-shape-rounded .wp-piwigo-display-slider-track {
+    border-radius: var(--wpd-shape-radius);
+    overflow: hidden;
+}
+
+.wp-piwigo-display.wpd-shape-pill .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-shape-pill .splide__track,
+.wp-piwigo-display.wpd-shape-pill .wp-piwigo-display-slider-track {
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.wp-piwigo-display.wpd-shape-circle .wp-piwigo-display-item a {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.wp-piwigo-display.wpd-shape-circle .wp-piwigo-display-item img {
+    width: 100%;
+    height: 100%;
+}
+
+.wp-piwigo-display.wpd-shape-circle .splide__track,
+.wp-piwigo-display.wpd-shape-circle .wp-piwigo-display-slider-track {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.wp-piwigo-display.wpd-shape-oval .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-shape-oval .splide__track,
+.wp-piwigo-display.wpd-shape-oval .wp-piwigo-display-slider-track {
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.wp-piwigo-display.wpd-shape-star .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-shape-star .splide__track,
+.wp-piwigo-display.wpd-shape-star .wp-piwigo-display-slider-track {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 94%, 50% 72%, 21% 94%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.wp-piwigo-display.wpd-shape-hexagon .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-shape-hexagon .splide__track,
+.wp-piwigo-display.wpd-shape-hexagon .wp-piwigo-display-slider-track {
+    clip-path: polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0 50%);
+}
+
+.wp-piwigo-display.wpd-shape-diamond .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-shape-diamond .splide__track,
+.wp-piwigo-display.wpd-shape-diamond .wp-piwigo-display-slider-track {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0 50%);
+}
+
+@supports not (clip-path: polygon(0 0)) {
+    .wp-piwigo-display.wpd-shape-star .wp-piwigo-display-item a,
+    .wp-piwigo-display.wpd-shape-star .splide__track,
+    .wp-piwigo-display.wpd-shape-star .wp-piwigo-display-slider-track,
+    .wp-piwigo-display.wpd-shape-hexagon .wp-piwigo-display-item a,
+    .wp-piwigo-display.wpd-shape-hexagon .splide__track,
+    .wp-piwigo-display.wpd-shape-hexagon .wp-piwigo-display-slider-track,
+    .wp-piwigo-display.wpd-shape-diamond .wp-piwigo-display-item a,
+    .wp-piwigo-display.wpd-shape-diamond .splide__track,
+    .wp-piwigo-display.wpd-shape-diamond .wp-piwigo-display-slider-track {
+        clip-path: none;
+    }
+}

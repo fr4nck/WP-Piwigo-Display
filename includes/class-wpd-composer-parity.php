@@ -49,11 +49,19 @@ final class WPD_Composer_Parity
                 sliderRow.querySelector('td').appendChild(direction);
             }
 
+            if (!document.getElementById('wpd-c-shape')) {
+                const row = document.createElement('tr');
+                row.className = 'wpd-c-shape';
+                row.innerHTML = '<th>Forme</th><td><label>Forme <select id="wpd-c-shape"><option value="rectangle">Rectangle</option><option value="rounded">Rectangle arrondi</option><option value="circle">Cercle</option><option value="oval">Ovale</option><option value="pill">Pilule</option><option value="star">Étoile</option><option value="hexagon">Hexagone</option><option value="diamond">Losange</option></select></label> <label id="wpd-c-radius-wrap">Arrondi <input id="wpd-c-radius" class="small-text" type="number" min="0" max="50" value="8"> %</label></td>';
+                const outputRow = output.closest('tr');
+                outputRow.parentNode.insertBefore(row, outputRow);
+            }
+
             if (!document.getElementById('wpd-c-masonry-columns')) {
                 const row = document.createElement('tr');
                 row.className = 'wpd-c-masonry';
                 row.innerHTML = '<th>Masonry</th><td><label>Colonnes <input id="wpd-c-masonry-columns" class="small-text" type="number" min="2" max="6" value="4"></label> <label>Espacement <input id="wpd-c-masonry-gap" class="small-text" type="number" min="0" max="64" value="16"> px</label></td>';
-                const outputRow = document.getElementById('wpd-c-output').closest('tr');
+                const outputRow = output.closest('tr');
                 outputRow.parentNode.insertBefore(row, outputRow);
             }
 
@@ -70,10 +78,18 @@ final class WPD_Composer_Parity
                     row.style.display = type.value === 'masonry' ? 'table-row' : 'none';
                 });
 
+                const shape = document.getElementById('wpd-c-shape').value;
+                document.getElementById('wpd-c-radius-wrap').style.display = shape === 'rounded' ? 'inline' : 'none';
+
                 let shortcode = output.value;
-                ['transition','direction','masonry_columns','masonry_gap'].forEach(key => {
+                ['transition','direction','masonry_columns','masonry_gap','shape','radius'].forEach(key => {
                     shortcode = removeAttribute(shortcode, key);
                 });
+
+                shortcode = appendAttribute(shortcode, 'shape', shape);
+                if (shape === 'rounded') {
+                    shortcode = appendAttribute(shortcode, 'radius', clamp(document.getElementById('wpd-c-radius').value, 0, 50, 8));
+                }
 
                 if (type.value === 'slider') {
                     shortcode = appendAttribute(shortcode, 'transition', document.getElementById('wpd-c-transition').value);
