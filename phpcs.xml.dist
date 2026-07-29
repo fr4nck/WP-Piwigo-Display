@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<ruleset name="WP Piwigo Display">
+    <description>WordPress Coding Standards for WP Piwigo Display.</description>
+
+    <file>wp-piwigo-display.php</file>
+    <file>includes</file>
+    <file>tests</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/assets/vendor/*</exclude-pattern>
+    <exclude-pattern>*/blocks/*/build/*</exclude-pattern>
+
+    <arg name="basepath" value="." />
+    <arg name="colors" />
+    <arg value="sp" />
+
+    <config name="testVersion" value="8.1-" />
+    <config name="minimum_supported_wp_version" value="6.0" />
+
+    <rule ref="WordPress" />
+    <rule ref="WordPress-Extra" />
+    <rule ref="WordPress-Docs" />
+    <rule ref="PHPCompatibilityWP" />
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array" value="wp-piwigo-display" />
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.Files.FileName">
+        <properties>
+            <property name="strict_class_file_names" value="true" />
+        </properties>
+    </rule>
+</ruleset>
