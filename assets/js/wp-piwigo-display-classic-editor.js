@@ -122,12 +122,20 @@
                 add(parts, 'width', bounded('width', 20, 100, 100) + '%', true);
             }
 
+            if (type === 'masonry') {
+                add(parts, 'masonry_columns', bounded('masonry_columns', 2, 6, 4), true);
+                add(parts, 'masonry_gap', bounded('masonry_gap', 0, 64, 16), true);
+            }
+
             return '[piwigo ' + parts.join(' ') + ']';
         }
 
         function refresh() {
-            var slider = value('type') === 'slider';
+            var type = value('type');
+            var slider = type === 'slider';
+            var masonry = type === 'masonry';
             $dialog.find('.wpd-slider-options, .wpd-slider-layout-option').toggle(slider);
+            $dialog.find('.wpd-masonry-options').toggle(masonry);
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
@@ -141,9 +149,7 @@
 
             if (window.tinymce && tinymce.get(currentEditor) && !tinymce.get(currentEditor).isHidden()) {
                 var editor = tinymce.get(currentEditor);
-                if (editingNode && editingNode.parentNode) {
-                    editor.selection.select(editingNode);
-                }
+                if (editingNode && editingNode.parentNode) editor.selection.select(editingNode);
                 editor.execCommand('mceInsertContent', false, shortcode);
             } else if (window.QTags && typeof QTags.insertContent === 'function') {
                 QTags.insertContent(shortcode);
@@ -194,9 +200,7 @@
             $dialog.dialog('open');
         });
 
-        $dialog.on('input', '[data-wpd="height"]', function () {
-            editingLegacyHeight = '';
-        });
+        $dialog.on('input', '[data-wpd="height"]', function () { editingLegacyHeight = ''; });
         $dialog.on('change input', 'input, select', refresh);
     });
 })(jQuery);
