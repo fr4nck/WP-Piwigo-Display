@@ -33,44 +33,24 @@ final class WPD_Classic_Editor
 
         wp_enqueue_style('wp-jquery-ui-dialog');
         wp_enqueue_script('jquery-ui-dialog');
-        wp_enqueue_style(
-            'wpd-classic-editor',
-            WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-classic-editor.css',
-            [],
-            WPD_VERSION
-        );
-        wp_enqueue_script(
-            'wpd-classic-editor',
-            WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-classic-editor.js',
-            ['jquery', 'jquery-ui-dialog'],
-            WPD_VERSION,
-            true
-        );
+        wp_enqueue_style('wpd-classic-editor', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-classic-editor.css', [], WPD_VERSION);
+        wp_enqueue_script('wpd-classic-editor', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-classic-editor.js', ['jquery', 'jquery-ui-dialog'], WPD_VERSION, true);
     }
 
     public static function render_button(string $editor_id = 'content'): void
     {
-        if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) {
-            return;
-        }
-
-        printf(
-            '<button type="button" class="button wpd-open-builder" data-editor="%1$s"><span class="dashicons dashicons-format-gallery" aria-hidden="true"></span> %2$s</button>',
-            esc_attr($editor_id),
-            esc_html__('Insérer une galerie Piwigo', 'wp-piwigo-display')
-        );
+        if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) return;
+        printf('<button type="button" class="button wpd-open-builder" data-editor="%1$s"><span class="dashicons dashicons-format-gallery" aria-hidden="true"></span> %2$s</button>', esc_attr($editor_id), esc_html__('Insérer une galerie Piwigo', 'wp-piwigo-display'));
     }
 
     public static function render_modal(): void
     {
-        if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) {
-            return;
-        }
+        if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) return;
         ?>
         <div id="wpd-classic-builder" title="<?php echo esc_attr__('Galerie Piwigo', 'wp-piwigo-display'); ?>" style="display:none;">
             <div class="wpd-builder-grid">
                 <div class="wpd-album-field"><label><?php esc_html_e('Album Piwigo', 'wp-piwigo-display'); ?><input type="text" data-wpd="album" placeholder="154, nom ou chemin"></label><button type="button" class="button wpd-browse-albums"><?php esc_html_e('Choisir dans Piwigo', 'wp-piwigo-display'); ?></button><div class="wpd-album-picker" hidden></div></div>
-                <label><?php esc_html_e('Affichage', 'wp-piwigo-display'); ?><select data-wpd="type"><option value="gallery">Galerie</option><option value="slider">Diaporama</option></select></label>
+                <label><?php esc_html_e('Affichage', 'wp-piwigo-display'); ?><select data-wpd="type"><option value="gallery">Galerie</option><option value="slider">Diaporama</option><option value="masonry">Masonry</option></select></label>
                 <label><?php esc_html_e('Preset', 'wp-piwigo-display'); ?><select data-wpd="preset"><option value="">Aucun</option><option value="slider">Slider</option><option value="actualites">Actualités</option></select></label>
                 <label><?php esc_html_e('Tri', 'wp-piwigo-display'); ?><select data-wpd="sort"><option value="manual">Ordre Piwigo</option><option value="date">Date</option><option value="name">Nom</option><option value="id">Identifiant</option><option value="random">Aléatoire</option></select></label>
                 <label><?php esc_html_e('Ordre', 'wp-piwigo-display'); ?><select data-wpd="order"><option value="desc">Décroissant</option><option value="asc">Croissant</option></select></label>
@@ -89,6 +69,8 @@ final class WPD_Classic_Editor
                 <label><?php esc_html_e('URL Piwigo spécifique', 'wp-piwigo-display'); ?><input type="url" data-wpd="url" placeholder="https://phototheque.example.org"></label>
                 <label class="wpd-slider-layout-option"><?php esc_html_e('Largeur du diaporama (%)', 'wp-piwigo-display'); ?><input type="number" min="20" max="100" data-wpd="width" value="100"></label>
                 <label class="wpd-slider-layout-option"><?php esc_html_e('Alignement', 'wp-piwigo-display'); ?><select data-wpd="align"><option value="center">Centré</option><option value="left">À gauche, texte à droite</option><option value="right">À droite, texte à gauche</option></select></label>
+                <label class="wpd-masonry-options"><?php esc_html_e('Colonnes Masonry', 'wp-piwigo-display'); ?><input type="number" min="2" max="6" data-wpd="masonry_columns" value="4"></label>
+                <label class="wpd-masonry-options"><?php esc_html_e('Espacement Masonry (px)', 'wp-piwigo-display'); ?><input type="number" min="0" max="64" data-wpd="masonry_gap" value="16"></label>
             </div>
             <fieldset class="wpd-builder-checks">
                 <label><input type="checkbox" data-wpd="recursive"> <?php esc_html_e('Inclure les sous-albums', 'wp-piwigo-display'); ?></label>
