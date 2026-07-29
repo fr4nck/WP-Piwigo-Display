@@ -1,0 +1,27 @@
+{
+  "name": "fr4nck/wp-piwigo-display",
+  "description": "WordPress plugin for displaying Piwigo albums.",
+  "type": "wordpress-plugin",
+  "license": "GPL-3.0-or-later",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "squizlabs/php_codesniffer": "^3.13",
+    "wp-coding-standards/wpcs": "^3.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  },
+  "scripts": {
+    "lint": "find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+    "standards": "phpcs --standard=phpcs.xml.dist",
+    "standards:report": "phpcs --standard=phpcs.xml.dist --report=summary",
+    "standards:fix": "phpcbf --standard=phpcs.xml.dist"
+  }
+}
