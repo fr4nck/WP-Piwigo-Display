@@ -31,7 +31,8 @@ final class WPD_Block
     public static function attributes_to_shortcode(array $attributes): array
     {
         $map = [
-            'albumId' => 'album', 'displayType' => 'type', 'recursive' => 'recursive', 'depth' => 'depth',
+            'albumId' => 'album', 'displayType' => 'type', 'preset' => 'preset', 'piwigoUrl' => 'url',
+            'recursive' => 'recursive', 'depth' => 'depth',
             'limit' => 'limit', 'max' => 'max', 'latest' => 'latest', 'random' => 'random',
             'sort' => 'sort', 'order' => 'order', 'orientations' => 'orientation', 'caption' => 'caption',
             'lightbox' => 'lightbox', 'rounded' => 'rounded', 'style' => 'style', 'autoplay' => 'autoplay',
