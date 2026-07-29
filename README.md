@@ -27,6 +27,14 @@ Les diaporamas acceptent désormais des transitions configurables :
 
 La durée d’affichage (`interval`) et la vitesse de transition (`speed`) restent deux réglages indépendants. Ces options sont disponibles dans Gutenberg, l’éditeur classique et le composeur.
 
+Le mode Masonry utilise uniquement les colonnes CSS du navigateur :
+
+- `type="masonry"` active la disposition ;
+- `masonry_columns="4"` définit de 2 à 6 colonnes sur grand écran ;
+- `masonry_gap="16"` définit un espacement de 0 à 64 pixels ;
+- le nombre de colonnes diminue automatiquement sur tablette et mobile ;
+- la lightbox, les légendes, les styles et les albums privés restent compatibles.
+
 ## Installation
 
 1. Installer le ZIP depuis **Extensions > Ajouter une extension**.
@@ -57,6 +65,7 @@ Les identifiants restent côté serveur. Ils ne sont pas insérés dans le HTML,
 [piwigo album="154" type="slider" width="72%" height="480px"]
 [piwigo album="154" type="slider" transition="fade" speed="700"]
 [piwigo album="154" type="slider" transition="slide" direction="rtl"]
+[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
 [piwigo album="154" recursive="true" depth="2"]
 [piwigo album="154" sort="date" order="desc" limit="20"]
 [piwigo album="154" tags="nature,animaux" tag_mode="all"]
