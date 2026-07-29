@@ -22,7 +22,7 @@
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
     "compatibility": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --extensions=php --ignore=vendor .",
     "standards": "phpcs --standard=phpcs.xml.dist",
-    "standards:checked": "phpcs --standard=phpcs.xml.dist wp-piwigo-display.php includes/class-wpd-gutenberg-parity.php includes/class-wpd-shapes.php includes/class-wpd-slider-transitions.php",
+    "standards:checked": "phpcs --standard=phpcs.xml.dist wp-piwigo-display.php includes/class-wpd-gutenberg-parity.php includes/class-wpd-shapes.php includes/class-wpd-slider-transitions.php includes/class-wpd-classic-editor.php",
     "standards:report": "phpcs --standard=phpcs.xml.dist --report=summary",
     "standards:fix": "phpcbf --standard=phpcs.xml.dist"
   }
