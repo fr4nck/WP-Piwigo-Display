@@ -12,6 +12,19 @@ final class WPD_Block
         register_block_type(WPD_PLUGIN_DIR . 'blocks/piwigo', [
             'render_callback' => [self::class, 'render'],
         ]);
+
+        add_action('enqueue_block_editor_assets', [self::class, 'enqueue_editor_assets']);
+    }
+
+    public static function enqueue_editor_assets(): void
+    {
+        wp_enqueue_script(
+            'wpd-block-masonry-controls',
+            WPD_PLUGIN_URL . 'blocks/piwigo/masonry-controls.js',
+            ['wp-blocks', 'wp-block-editor', 'wp-components', 'wp-compose', 'wp-element', 'wp-hooks', 'wp-i18n'],
+            WPD_VERSION,
+            true
+        );
     }
 
     /** Convert block attributes into the exact attribute format accepted by [piwigo]. */
@@ -25,6 +38,7 @@ final class WPD_Block
             'interval' => 'interval', 'speed' => 'speed', 'transition' => 'transition', 'direction' => 'direction',
             'ratio' => 'ratio', 'width' => 'width', 'height' => 'height', 'align' => 'align',
             'fit' => 'fit', 'navigation' => 'navigation', 'tag' => 'tag', 'tags' => 'tags', 'tagMode' => 'tag_mode',
+            'masonryColumns' => 'masonry_columns', 'masonryGap' => 'masonry_gap',
         ];
         $atts = [];
         foreach ($map as $block_key => $shortcode_key) {
