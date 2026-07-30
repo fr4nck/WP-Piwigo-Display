@@ -28,11 +28,11 @@ final class WPD_Cache {
 	/**
 	 * Retrieves album images through the cache layer.
 	 *
-	 * @param int    $album_id  Piwigo album identifier.
-	 * @param int    $max       Maximum number of images. Zero means unlimited.
+	 * @param int    $album_id   Piwigo album identifier.
+	 * @param int    $max        Maximum number of images. Zero means unlimited.
 	 * @param string $piwigo_url Optional Piwigo base URL.
-	 * @param bool   $recursive Whether to include child albums.
-	 * @param int    $depth     Maximum recursion depth.
+	 * @param bool   $recursive  Whether to include child albums.
+	 * @param int    $depth      Maximum recursion depth.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public static function get_album_images( int $album_id, int $max = 0, string $piwigo_url = '', bool $recursive = false, int $depth = 10 ) {
@@ -55,12 +55,12 @@ final class WPD_Cache {
 	/**
 	 * Retrieves album images matching one or more tags.
 	 *
-	 * @param int                 $album_id  Piwigo album identifier.
-	 * @param array<int, string>  $tags      Requested tag names.
-	 * @param string              $tag_mode  Tag matching mode.
-	 * @param string              $piwigo_url Optional Piwigo base URL.
-	 * @param bool                $recursive Whether to include child albums.
-	 * @param int                 $depth     Maximum recursion depth.
+	 * @param int                $album_id   Piwigo album identifier.
+	 * @param array<int, string> $tags       Requested tag names.
+	 * @param string             $tag_mode   Tag matching mode.
+	 * @param string             $piwigo_url Optional Piwigo base URL.
+	 * @param bool               $recursive  Whether to include child albums.
+	 * @param int                $depth      Maximum recursion depth.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public static function get_album_images_by_tags( int $album_id, array $tags, string $tag_mode = 'any', string $piwigo_url = '', bool $recursive = false, int $depth = 10 ) {
@@ -132,7 +132,7 @@ final class WPD_Cache {
 
 		// The table name and WHERE fragments are generated internally; values remain prepared.
 		$names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 				'SELECT option_name FROM ' . $wpdb->options . ' WHERE ' . implode( ' OR ', $conditions ),
 				...$values
 			)
@@ -201,7 +201,7 @@ final class WPD_Cache {
 				return $value;
 			}
 
-			$duration                           = max( 60, WPD_Settings::get_cache_duration() );
+			$duration                          = max( 60, WPD_Settings::get_cache_duration() );
 			self::$request_cache[ $cache_key ] = $value;
 			set_transient( $cache_key, $value, $duration );
 			set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
