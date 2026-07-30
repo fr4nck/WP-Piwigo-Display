@@ -86,13 +86,13 @@ final class WPD_Shortcode {
 			return self::render_error( $album_id->get_error_message() );
 		}
 
-		$recursive                = filter_var( $atts['recursive'], FILTER_VALIDATE_BOOLEAN );
-		$depth                    = max( 0, absint( $atts['depth'] ) );
-		$tag_filter               = self::normalize_tag_filter( (string) ( $atts['tag'] ?? '' ), (string) ( $atts['tags'] ?? '' ) );
-		$has_tag_filter           = ! empty( $tag_filter );
-		$fetch_max                = 'all' === (string) $atts['orientation'] && ! $has_tag_filter ? absint( $atts['max'] ) : 0;
+		$recursive                 = filter_var( $atts['recursive'], FILTER_VALIDATE_BOOLEAN );
+		$depth                     = max( 0, absint( $atts['depth'] ) );
+		$tag_filter                = self::normalize_tag_filter( (string) ( $atts['tag'] ?? '' ), (string) ( $atts['tags'] ?? '' ) );
+		$has_tag_filter            = ! empty( $tag_filter );
+		$fetch_max                 = 'all' === (string) $atts['orientation'] && ! $has_tag_filter ? absint( $atts['max'] ) : 0;
 		$images_prefiltered_by_tag = false;
-		$images                   = WPD_Cache::get_album_images( absint( $album_id ), $fetch_max, $piwigo_url, $recursive, $depth );
+		$images                    = WPD_Cache::get_album_images( absint( $album_id ), $fetch_max, $piwigo_url, $recursive, $depth );
 
 		if ( is_wp_error( $images ) ) {
 			return self::render_error( $images->get_error_message() );
@@ -424,13 +424,13 @@ final class WPD_Shortcode {
 	/**
 	 * Sanitizes a value against an allow-list.
 	 *
-	 * @param string             $value   Raw value.
-	 * @param array<int, string> $allowed Allowed values.
-	 * @param string             $default Default value.
+	 * @param string             $value          Raw value.
+	 * @param array<int, string> $allowed        Allowed values.
+	 * @param string             $fallback_value Fallback value.
 	 * @return string Sanitized value.
 	 */
-	private static function sanitize_choice( string $value, array $allowed, string $default ): string {
-		return in_array( $value, $allowed, true ) ? $value : $default;
+	private static function sanitize_choice( string $value, array $allowed, string $fallback_value ): string {
+		return in_array( $value, $allowed, true ) ? $value : $fallback_value;
 	}
 
 	/**
@@ -507,10 +507,10 @@ final class WPD_Shortcode {
 	/**
 	 * Renders administrator-only debug information.
 	 *
-	 * @param int                  $album_id  Album ID.
+	 * @param int                  $album_id   Album ID.
 	 * @param string               $piwigo_url Piwigo URL.
-	 * @param array<string, mixed> $atts      Sanitized attributes.
-	 * @param int                  $count     Image count.
+	 * @param array<string, mixed> $atts       Sanitized attributes.
+	 * @param int                  $count      Image count.
 	 * @return string Debug HTML.
 	 */
 	private static function render_debug( int $album_id, string $piwigo_url, array $atts, int $count ): string {
@@ -519,11 +519,16 @@ final class WPD_Shortcode {
 		<details class="wp-piwigo-display-debug">
 			<summary><?php esc_html_e( 'Debug WP Piwigo Display', 'wp-piwigo-display' ); ?></summary>
 			<ul>
+				<?php /* translators: %d: Piwigo album ID. */ ?>
 				<li><?php echo esc_html( sprintf( __( 'Album : %d', 'wp-piwigo-display' ), $album_id ) ); ?></li>
+				<?php /* translators: %s: Piwigo gallery URL. */ ?>
 				<li><?php echo esc_html( sprintf( __( 'URL Piwigo : %s', 'wp-piwigo-display' ), $piwigo_url ) ); ?></li>
+				<?php /* translators: %d: Number of fetched images. */ ?>
 				<li><?php echo esc_html( sprintf( __( 'Images récupérées : %d', 'wp-piwigo-display' ), $count ) ); ?></li>
+				<?php /* translators: %s: Rendered display type. */ ?>
 				<li><?php echo esc_html( sprintf( __( 'Type : %s', 'wp-piwigo-display' ), (string) ( $atts['type'] ?? '' ) ) ); ?></li>
-				<li><?php echo esc_html( sprintf( __( 'Tri : %s / %s', 'wp-piwigo-display' ), (string) ( $atts['sort'] ?? '' ), (string) ( $atts['order'] ?? '' ) ) ); ?></li>
+				<?php /* translators: 1: Sort criterion. 2: Sort order. */ ?>
+				<li><?php echo esc_html( sprintf( __( 'Tri : %1$s / %2$s', 'wp-piwigo-display' ), (string) ( $atts['sort'] ?? '' ), (string) ( $atts['order'] ?? '' ) ) ); ?></li>
 			</ul>
 		</details>
 		<?php
