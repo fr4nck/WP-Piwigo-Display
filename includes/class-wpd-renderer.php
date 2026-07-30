@@ -138,7 +138,7 @@ final class WPD_Renderer {
 				}
 			)
 		);
-		$slider_id = 'wpd-slider-' . wp_generate_uuid4();
+		$slider_id      = 'wpd-slider-' . wp_generate_uuid4();
 
 		ob_start();
 		?>
@@ -179,6 +179,7 @@ final class WPD_Renderer {
 							$thumb_url = self::get_large_url( $image );
 						}
 						?>
+						<?php // translators: %d: Image position in the slider. ?>
 						<button type="button" class="wp-piwigo-display-slider-thumbnail<?php echo 0 === $index ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr( (string) $index ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Afficher l’image %d', 'wp-piwigo-display' ), $index + 1 ) ); ?>">
 							<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
 						</button>
@@ -572,14 +573,14 @@ final class WPD_Renderer {
 	/**
 	 * Sanitizes a CSS length.
 	 *
-	 * @param string $height  Requested height.
-	 * @param string $default Default value.
+	 * @param string $height   Requested height.
+	 * @param string $fallback Fallback value.
 	 * @return string
 	 */
-	private static function sanitize_height( string $height, string $default ): string {
+	private static function sanitize_height( string $height, string $fallback ): string {
 		$height = trim( $height );
 
-		return 1 === preg_match( '/^\d+(px|rem|em|vh|vw|%)$/', $height ) ? $height : $default;
+		return 1 === preg_match( '/^\d+(px|rem|em|vh|vw|%)$/', $height ) ? $height : $fallback;
 	}
 
 	/**
