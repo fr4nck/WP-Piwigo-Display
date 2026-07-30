@@ -32,6 +32,8 @@ final class WPD_Composer_Parity {
 			return;
 		}
 
+		// The page query argument only selects an administration screen and does not mutate data.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( 'wp-piwigo-display-compose' !== $page ) {
 			return;
