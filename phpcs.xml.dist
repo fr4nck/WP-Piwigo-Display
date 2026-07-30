@@ -34,4 +34,12 @@
             <property name="strict_class_file_names" value="true" />
         </properties>
     </rule>
+
+    <!-- The cache cleanup query builds only fixed internal LIKE fragments; values are still prepared. -->
+    <rule ref="WordPress.DB.PreparedSQL.NotPrepared">
+        <exclude-pattern>includes/class-wpd-cache.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare">
+        <exclude-pattern>includes/class-wpd-cache.php</exclude-pattern>
+    </rule>
 </ruleset>
