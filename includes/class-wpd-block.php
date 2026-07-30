@@ -116,6 +116,7 @@ final class WPD_Block {
 	 * @param WP_Block|null        $block      Parsed block instance, unused.
 	 * @return string Rendered block markup.
 	 */
+	// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- WordPress requires this callback signature.
 	public static function render( array $attributes = array(), string $content = '', ?WP_Block $block = null ): string {
 		$atts   = self::attributes_to_shortcode( $attributes );
 		$output = WPD_Shortcode::render( $atts );
