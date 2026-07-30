@@ -39,8 +39,8 @@ final class WPD_Api {
 	/**
 	 * Retrieves images from one album.
 	 *
-	 * @param int  $album_id Album identifier.
-	 * @param int  $max      Maximum number of images, or zero for unlimited.
+	 * @param int  $album_id  Album identifier.
+	 * @param int  $max       Maximum number of images, or zero for unlimited.
 	 * @param bool $recursive Whether Piwigo should include descendant albums.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
@@ -49,9 +49,10 @@ final class WPD_Api {
 			return new WP_Error( 'wpd_invalid_album', __( 'Identifiant d\'album invalide.', 'wp-piwigo-display' ) );
 		}
 
-		$images   = array();
-		$page     = 0;
-		$per_page = 500;
+		$images            = array();
+		$page              = 0;
+		$per_page          = 500;
+		$page_images_count = 0;
 
 		do {
 			$response = $this->request(
@@ -72,6 +73,7 @@ final class WPD_Api {
 			if ( ! is_array( $page_images ) ) {
 				$page_images = array();
 			}
+			$page_images_count = count( $page_images );
 
 			foreach ( $page_images as $image ) {
 				if ( ! is_array( $image ) ) {
@@ -85,7 +87,7 @@ final class WPD_Api {
 			}
 
 			++$page;
-		} while ( count( $page_images ) === $per_page && 1000 > $page );
+		} while ( $page_images_count === $per_page && 1000 > $page );
 
 		return array_values( $images );
 	}
@@ -103,9 +105,10 @@ final class WPD_Api {
 			return array();
 		}
 
-		$images   = array();
-		$page     = 0;
-		$per_page = 500;
+		$images            = array();
+		$page              = 0;
+		$per_page          = 500;
+		$page_images_count = 0;
 
 		do {
 			$response = $this->request(
@@ -126,6 +129,7 @@ final class WPD_Api {
 			if ( ! is_array( $page_images ) ) {
 				$page_images = array();
 			}
+			$page_images_count = count( $page_images );
 
 			foreach ( $page_images as $image ) {
 				if ( is_array( $image ) ) {
@@ -134,7 +138,7 @@ final class WPD_Api {
 			}
 
 			++$page;
-		} while ( count( $page_images ) === $per_page && 1000 > $page );
+		} while ( $page_images_count === $per_page && 1000 > $page );
 
 		return array_values( $images );
 	}
