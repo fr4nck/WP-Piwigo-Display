@@ -581,6 +581,7 @@ final class WPD_Settings {
 						printf(
 							/* translators: %d: number of deleted cache entries. */
 							esc_html__( 'Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display' ),
+							// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect.
 							absint( wp_unslash( $_GET['wpd_cache_cleared'] ) )
 						);
 						?>
@@ -697,7 +698,7 @@ final class WPD_Settings {
 	 * @param string $type Input type.
 	 * @param string $key Option key.
 	 * @param string $value Input value.
-	 * @param string $class CSS class.
+	 * @param string $css_class CSS class.
 	 * @param string $placeholder Input placeholder.
 	 * @param array  $attrs Additional attributes.
 	 */
@@ -746,7 +747,7 @@ final class WPD_Settings {
 	 *
 	 * @param string $value Input value.
 	 * @param array  $allowed Allowed values.
-	 * @param string $default Fallback value.
+	 * @param string $fallback Fallback value.
 	 * @return string Sanitized value.
 	 */
 	private static function sanitize_choice( string $value, array $allowed, string $fallback ): string {
