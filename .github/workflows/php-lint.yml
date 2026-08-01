@@ -48,8 +48,8 @@ jobs:
       - name: Check PHP 8.1 syntax
         run: composer lint
 
-      - name: Check privileged entry points
-        run: composer security:entrypoints
+      - name: Check security invariants
+        run: composer security
 
       - name: Check PHP compatibility
         run: composer compatibility
