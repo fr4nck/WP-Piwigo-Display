@@ -76,6 +76,18 @@ jobs:
             --exclude 'AUDIT.md' \
             --exclude 'CODEX.md' \
             --exclude '*.zip'
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('build/plugin-check/piwigo-display')
+          allowed = {'.php', '.js', '.json', '.txt', '.md'}
+          for path in root.rglob('*'):
+              if path.is_file() and path.suffix.lower() in allowed:
+                  text = path.read_text(encoding='utf-8')
+                  updated = text.replace('wp-piwigo-display', 'piwigo-display')
+                  if updated != text:
+                      path.write_text(updated, encoding='utf-8')
+          PY
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
@@ -128,6 +140,18 @@ jobs:
             --exclude 'AUDIT.md' \
             --exclude 'CODEX.md' \
             --exclude '*.zip'
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('build/piwigo-display')
+          allowed = {'.php', '.js', '.json', '.txt', '.md'}
+          for path in root.rglob('*'):
+              if path.is_file() and path.suffix.lower() in allowed:
+                  text = path.read_text(encoding='utf-8')
+                  updated = text.replace('wp-piwigo-display', 'piwigo-display')
+                  if updated != text:
+                      path.write_text(updated, encoding='utf-8')
+          PY
 
       - name: Create ZIP
         run: |
