@@ -26,6 +26,11 @@ $checks = array(
         "class=\"screen-reader-text",
         "trigger('focus')",
     ),
+    'assets/js/wp-piwigo-display-slider.js' => array(
+        "matchMedia('(prefers-reduced-motion: reduce)')",
+        'var autoplay = !reducedMotion',
+        "var speed = reducedMotion || transition === 'none' ? 0",
+    ),
     'assets/css/wp-piwigo-display-album-picker.css' => array(
         ':focus-visible',
         '@media(forced-colors:active)',
