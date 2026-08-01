@@ -1,13 +1,24 @@
 <?php
+/**
+ * WP Piwigo Display settings.
+ *
+ * @package WP_Piwigo_Display
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Settings and administration screens.
+ */
 final class WPD_Settings {
 
 	public const OPTION_NAME = 'wp_piwigo_display_options';
 
+	/**
+	 * Registers plugin settings and fields.
+	 */
 	public static function register(): void {
 		register_setting(
 			'wp_piwigo_display',
@@ -44,6 +55,9 @@ final class WPD_Settings {
 		add_settings_field( 'debug_mode', __( 'Mode debug', 'wp-piwigo-display' ), array( self::class, 'render_debug_mode_field' ), 'wp-piwigo-display', 'wp_piwigo_display_advanced' );
 	}
 
+	/**
+	 * Registers the plugin administration pages.
+	 */
 	public static function register_page(): void {
 		add_menu_page(
 			__( 'WP Piwigo Display', 'wp-piwigo-display' ),
@@ -60,6 +74,9 @@ final class WPD_Settings {
 		add_submenu_page( 'wp-piwigo-display', __( 'Réglages', 'wp-piwigo-display' ), __( 'Réglages', 'wp-piwigo-display' ), 'manage_options', 'wp-piwigo-display-settings', array( self::class, 'render_page' ) );
 	}
 
+	/**
+	 * Renders the plugin dashboard page.
+	 */
 	public static function render_dashboard_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -71,7 +88,7 @@ final class WPD_Settings {
 			<p><?php esc_html_e( 'Accès rapide aux outils du plugin.', 'wp-piwigo-display' ); ?></p>
 			<div class="card" style="max-width:900px">
 				<h2><?php esc_html_e( 'État', 'wp-piwigo-display' ); ?></h2>
-				<p><strong><?php esc_html_e( 'Galerie Piwigo :', 'wp-piwigo-display' ); ?></strong> <?php echo $url !== '' ? esc_html( $url ) : esc_html__( 'non configurée', 'wp-piwigo-display' ); ?></p>
+				<p><strong><?php esc_html_e( 'Galerie Piwigo :', 'wp-piwigo-display' ); ?></strong> <?php echo '' !== $url ? esc_html( $url ) : esc_html__( 'non configurée', 'wp-piwigo-display' ); ?></p>
 				<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=wp-piwigo-display-compose' ) ); ?>"><?php esc_html_e( 'Composer une galerie ou un diaporama', 'wp-piwigo-display' ); ?></a>
 				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=wp-piwigo-display-settings' ) ); ?>"><?php esc_html_e( 'Réglages', 'wp-piwigo-display' ); ?></a>
 				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=wp-piwigo-display-diagnostic' ) ); ?>"><?php esc_html_e( 'Diagnostic / debug', 'wp-piwigo-display' ); ?></a></p>
@@ -80,6 +97,9 @@ final class WPD_Settings {
 		<?php
 	}
 
+	/**
+	 * Renders the shortcode composer page.
+	 */
 	public static function render_composer_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -166,6 +186,11 @@ final class WPD_Settings {
 		<?php
 	}
 
+	/**
+	 * Returns the default plugin options.
+	 *
+	 * @return array Option values.
+	 */
 	public static function default_options(): array {
 		return array(
 			'piwigo_url'         => 'https://phototheque.pelemele.org/',
@@ -189,11 +214,21 @@ final class WPD_Settings {
 		);
 	}
 
+	/**
+	 * Returns the normalized plugin options.
+	 *
+	 * @return array Option values.
+	 */
 	public static function get_options(): array {
 		$options = get_option( self::OPTION_NAME, array() );
 		return wp_parse_args( is_array( $options ) ? $options : array(), self::default_options() );
 	}
 
+	/**
+	 * Returns defaults used by shortcodes.
+	 *
+	 * @return array Option values.
+	 */
 	public static function get_shortcode_defaults(): array {
 		$options = self::get_options();
 		return array(
@@ -209,23 +244,38 @@ final class WPD_Settings {
 			'caption'    => (string) $options['default_caption'],
 			'style'      => (string) $options['default_style'],
 			'navigation' => (string) $options['default_navigation'],
-			'thumbnails' => ( (string) $options['default_navigation'] === 'thumbnails' ) ? 'true' : 'false',
+			'thumbnails' => ( 'thumbnails' === (string) $options['default_navigation'] ) ? 'true' : 'false',
 			'sort'       => (string) $options['default_sort'],
 			'order'      => (string) $options['default_order'],
 			'limit'      => (string) $options['default_limit'],
 		);
 	}
 
+	/**
+	 * Returns the configured Piwigo URL.
+	 *
+	 * @return string Sanitized value.
+	 */
 	public static function get_piwigo_url(): string {
 		$options = self::get_options();
 		return untrailingslashit( (string) $options['piwigo_url'] );
 	}
 
+	/**
+	 * Returns the configured cache duration.
+	 *
+	 * @return int Duration in seconds.
+	 */
 	public static function get_cache_duration(): int {
 		$options = self::get_options();
 		return max( 60, absint( $options['cache_duration'] ) );
 	}
 
+	/**
+	 * Returns the default caption mode.
+	 *
+	 * @return string Sanitized value.
+	 */
 	public static function get_default_caption(): string {
 		$options = self::get_options();
 		return self::sanitize_choice(
@@ -235,17 +285,28 @@ final class WPD_Settings {
 		);
 	}
 
+	/**
+	 * Returns whether debug mode is enabled.
+	 *
+	 * @return bool Whether the option is enabled.
+	 */
 	public static function get_debug_mode(): bool {
 		$options = self::get_options();
 		return filter_var( $options['debug_mode'] ?? 'false', FILTER_VALIDATE_BOOLEAN );
 	}
 
+	/**
+	 * Sanitizes plugin options.
+	 *
+	 * @param mixed $options Raw options.
+	 * @return array Option values.
+	 */
 	public static function sanitize_options( $options ): array {
 		$options   = is_array( $options ) ? $options : array();
 		$sanitized = self::default_options();
 		if ( isset( $options['piwigo_url'] ) ) {
 			$url                     = esc_url_raw( trim( (string) $options['piwigo_url'] ) );
-			$scheme                  = $url !== '' ? wp_parse_url( $url, PHP_URL_SCHEME ) : '';
+			$scheme                  = '' !== $url ? wp_parse_url( $url, PHP_URL_SCHEME ) : '';
 			$sanitized['piwigo_url'] = in_array( $scheme, array( 'http', 'https' ), true ) ? trailingslashit( $url ) : '';
 		}
 		if ( isset( $options['cache_duration'] ) ) {
@@ -278,19 +339,31 @@ final class WPD_Settings {
 		return $sanitized;
 	}
 
+	/**
+	 * Renders the defaults section description.
+	 */
 	public static function render_defaults_section(): void {
 		echo '<p>' . esc_html__( 'Ces valeurs sont utilisées par défaut. Un shortcode peut les remplacer.', 'wp-piwigo-display' ) . '</p>';
 	}
 
+	/**
+	 * Renders the advanced section description.
+	 */
 	public static function render_advanced_section(): void {
 		echo '<p>' . esc_html__( 'Options utiles pour tester ou diagnostiquer le plugin.', 'wp-piwigo-display' ) . '</p>';
 	}
 
+	/**
+	 * Renders the Piwigo URL field.
+	 */
 	public static function render_piwigo_url_field(): void {
 		$o = self::get_options();
 		self::input( 'url', 'piwigo_url', (string) $o['piwigo_url'], 'regular-text', 'https://phototheque.example.org/' );
 	}
 
+	/**
+	 * Renders the cache duration field.
+	 */
 	public static function render_cache_duration_field(): void {
 		$o = self::get_options();
 		self::input(
@@ -307,6 +380,9 @@ final class WPD_Settings {
 		echo ' <span>' . esc_html__( 'secondes', 'wp-piwigo-display' ) . '</span>';
 	}
 
+	/**
+	 * Renders the default display type field.
+	 */
 	public static function render_default_type_field(): void {
 		self::select(
 			'default_type',
@@ -315,6 +391,9 @@ final class WPD_Settings {
 				'slider'  => 'Diaporama',
 			)
 		); }
+	/**
+	 * Renders the default image fit field.
+	 */
 	public static function render_default_fit_field(): void {
 		self::select(
 			'default_fit',
@@ -325,16 +404,31 @@ final class WPD_Settings {
 				'raw'     => 'Brut',
 			)
 		); }
+	/**
+	 * Renders the default slider ratio field.
+	 */
 	public static function render_default_ratio_field(): void {
 		$o = self::get_options();
 		self::input( 'text', 'default_ratio', (string) $o['default_ratio'], 'small-text', '16/9' ); }
+	/**
+	 * Renders the default slider height field.
+	 */
 	public static function render_default_height_field(): void {
 		$o = self::get_options();
 		self::input( 'text', 'default_height', (string) $o['default_height'], 'small-text', 'ex : 520px' ); }
+	/**
+	 * Renders the autoplay field.
+	 */
 	public static function render_default_autoplay_field(): void {
 		self::select_bool( 'default_autoplay' ); }
+	/**
+	 * Renders the lightbox field.
+	 */
 	public static function render_default_lightbox_field(): void {
 		self::select_bool( 'default_lightbox' ); }
+	/**
+	 * Renders the default style field.
+	 */
 	public static function render_default_style_field(): void {
 		self::select(
 			'default_style',
@@ -348,6 +442,9 @@ final class WPD_Settings {
 		echo '<p class="description">' . esc_html__( 'Le mode Thème WordPress utilise les variables CSS du thème lorsqu’elles sont disponibles.', 'wp-piwigo-display' ) . '</p>';
 	}
 
+	/**
+	 * Renders the default caption field.
+	 */
 	public static function render_default_caption_field(): void {
 		self::select(
 			'default_caption',
@@ -360,6 +457,9 @@ final class WPD_Settings {
 		);
 		echo '<p class="description">' . esc_html__( 'Ce choix peut être remplacé dans chaque shortcode avec le paramètre caption.', 'wp-piwigo-display' ) . '</p>';
 	}
+	/**
+	 * Renders the navigation field.
+	 */
 	public static function render_default_navigation_field(): void {
 		self::select(
 			'default_navigation',
@@ -369,8 +469,14 @@ final class WPD_Settings {
 				'none'       => 'Aucune',
 			)
 		); }
+	/**
+	 * Renders the rounded corners field.
+	 */
 	public static function render_default_rounded_field(): void {
 		self::select_bool( 'default_rounded' ); }
+	/**
+	 * Renders the image sort field.
+	 */
 	public static function render_default_sort_field(): void {
 		self::select(
 			'default_sort',
@@ -382,6 +488,9 @@ final class WPD_Settings {
 				'random' => 'Aléatoire',
 			)
 		); }
+	/**
+	 * Renders the sort order field.
+	 */
 	public static function render_default_order_field(): void {
 		self::select(
 			'default_order',
@@ -390,6 +499,9 @@ final class WPD_Settings {
 				'desc' => 'Décroissant',
 			)
 		); }
+	/**
+	 * Renders the image limit field.
+	 */
 	public static function render_default_limit_field(): void {
 		$o = self::get_options();
 		self::input(
@@ -404,10 +516,16 @@ final class WPD_Settings {
 			)
 		);
 		echo ' <span>' . esc_html__( '0 = aucune limite', 'wp-piwigo-display' ) . '</span>'; }
+	/**
+	 * Renders the debug mode field.
+	 */
 	public static function render_debug_mode_field(): void {
 		self::select_bool( 'debug_mode' );
 		echo '<p class="description">' . esc_html__( 'Affiche un résumé technique sous les galeries pour les administrateurs connectés.', 'wp-piwigo-display' ) . '</p>'; }
 
+	/**
+	 * Renders the autoplay interval field.
+	 */
 	public static function render_default_interval_field(): void {
 		$o = self::get_options();
 		self::input(
@@ -424,6 +542,9 @@ final class WPD_Settings {
 		echo ' <span>ms</span>';
 	}
 
+	/**
+	 * Renders the transition speed field.
+	 */
 	public static function render_default_speed_field(): void {
 		$o = self::get_options();
 		self::input(
@@ -440,6 +561,9 @@ final class WPD_Settings {
 		echo ' <span>ms</span>';
 	}
 
+	/**
+	 * Renders the plugin settings page.
+	 */
 	public static function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -449,11 +573,13 @@ final class WPD_Settings {
 			<h1><?php esc_html_e( 'WP Piwigo Display', 'wp-piwigo-display' ); ?></h1>
 			<p><?php esc_html_e( 'Réglages de connexion, d’affichage, de diaporama, de cache et de diagnostic.', 'wp-piwigo-display' ); ?></p>
 
+			<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>
 			<?php if ( isset( $_GET['wpd_cache_cleared'] ) ) : ?>
 				<div class="notice notice-success is-dismissible">
 					<p>
 						<?php
 						printf(
+							/* translators: %d: number of deleted cache entries. */
 							esc_html__( 'Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display' ),
 							absint( wp_unslash( $_GET['wpd_cache_cleared'] ) )
 						);
@@ -462,14 +588,16 @@ final class WPD_Settings {
 				</div>
 			<?php endif; ?>
 
+			<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>
 			<?php if ( isset( $_GET['wpd_connection_test'] ) ) : ?>
+				<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>
 				<?php $connection_result = sanitize_key( (string) wp_unslash( $_GET['wpd_connection_test'] ) ); ?>
-				<div class="notice <?php echo $connection_result === 'success' ? 'notice-success' : 'notice-error'; ?> is-dismissible">
+				<div class="notice <?php echo 'success' === $connection_result ? 'notice-success' : 'notice-error'; ?> is-dismissible">
 					<p>
 						<?php
-						if ( $connection_result === 'success' ) {
+						if ( 'success' === $connection_result ) {
 							esc_html_e( 'Connexion Piwigo réussie.', 'wp-piwigo-display' );
-						} elseif ( $connection_result === 'missing_url' ) {
+						} elseif ( 'missing_url' === $connection_result ) {
 							esc_html_e( 'Impossible de tester la connexion : URL Piwigo manquante.', 'wp-piwigo-display' );
 						} else {
 							esc_html_e( 'L’API Piwigo n’a pas répondu correctement.', 'wp-piwigo-display' );
@@ -524,6 +652,9 @@ final class WPD_Settings {
 	}
 
 
+	/**
+	 * Renders shortcode examples.
+	 */
 	private static function render_shortcode_examples(): void {
 		$examples = array(
 			__( 'Galerie simple', 'wp-piwigo-display' )    => '[piwigo album="154"]',
@@ -560,14 +691,31 @@ final class WPD_Settings {
 		echo '</table>';
 	}
 
-	private static function input( string $type, string $key, string $value, string $class = '', string $placeholder = '', array $attrs = array() ): void {
+	/**
+	 * Renders an input field.
+	 *
+	 * @param string $type Input type.
+	 * @param string $key Option key.
+	 * @param string $value Input value.
+	 * @param string $class CSS class.
+	 * @param string $placeholder Input placeholder.
+	 * @param array  $attrs Additional attributes.
+	 */
+	private static function input( string $type, string $key, string $value, string $css_class = '', string $placeholder = '', array $attrs = array() ): void {
 		$attr_html = '';
 		foreach ( $attrs as $name => $attr_value ) {
 			$attr_html .= ' ' . esc_attr( $name ) . '="' . esc_attr( $attr_value ) . '"';
 		}
-		printf( '<input type="%1$s" name="%2$s[%3$s]" value="%4$s" class="%5$s" placeholder="%6$s"%7$s />', esc_attr( $type ), esc_attr( self::OPTION_NAME ), esc_attr( $key ), esc_attr( $value ), esc_attr( $class ), esc_attr( $placeholder ), $attr_html );
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute fragments are escaped when assembled above.
+		printf( '<input type="%1$s" name="%2$s[%3$s]" value="%4$s" class="%5$s" placeholder="%6$s"%7$s />', esc_attr( $type ), esc_attr( self::OPTION_NAME ), esc_attr( $key ), esc_attr( $value ), esc_attr( $css_class ), esc_attr( $placeholder ), $attr_html );
 	}
 
+	/**
+	 * Renders a select field.
+	 *
+	 * @param string $key Option key.
+	 * @param array  $choices Available choices.
+	 */
 	private static function select( string $key, array $choices ): void {
 		$options = self::get_options();
 		$current = (string) ( $options[ $key ] ?? '' );
@@ -578,6 +726,11 @@ final class WPD_Settings {
 		echo '</select>';
 	}
 
+	/**
+	 * Renders a boolean select field.
+	 *
+	 * @param string $key Option key.
+	 */
 	private static function select_bool( string $key ): void {
 		self::select(
 			$key,
@@ -588,12 +741,38 @@ final class WPD_Settings {
 		);
 	}
 
-	private static function sanitize_choice( string $value, array $allowed, string $default ): string {
-		return in_array( $value, $allowed, true ) ? $value : $default; }
+	/**
+	 * Sanitizes a value against allowed choices.
+	 *
+	 * @param string $value Input value.
+	 * @param array  $allowed Allowed values.
+	 * @param string $default Fallback value.
+	 * @return string Sanitized value.
+	 */
+	private static function sanitize_choice( string $value, array $allowed, string $fallback ): string {
+		return in_array( $value, $allowed, true ) ? $value : $fallback; }
+	/**
+	 * Sanitizes a boolean value.
+	 *
+	 * @param string $value Input value.
+	 * @return string Sanitized value.
+	 */
 	private static function sanitize_bool( $value ): string {
 		return filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false'; }
+	/**
+	 * Sanitizes a ratio value.
+	 *
+	 * @param string $ratio Ratio value.
+	 * @return string Sanitized value.
+	 */
 	private static function sanitize_ratio( string $ratio ): string {
 		return preg_match( '/^\d+\/\d+$/', $ratio ) === 1 ? $ratio : '16/9'; }
+	/**
+	 * Sanitizes a CSS height value.
+	 *
+	 * @param string $height Height value.
+	 * @return string Sanitized value.
+	 */
 	private static function sanitize_height( string $height ): string {
 		$height = trim( $height );
 		return preg_match( '/^\d+(px|rem|em|vh|vw|%)$/', $height ) === 1 ? $height : ''; }
