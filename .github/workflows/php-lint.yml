@@ -60,8 +60,8 @@ jobs:
 
       - name: Prepare Plugin Check distribution
         run: |
-          mkdir -p build/plugin-check/wp-piwigo-display
-          rsync -a ./ build/plugin-check/wp-piwigo-display/ \
+          mkdir -p build/plugin-check/piwigo-display
+          rsync -a ./ build/plugin-check/piwigo-display/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -80,7 +80,7 @@ jobs:
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/wp-piwigo-display'
+          build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
 
@@ -112,8 +112,8 @@ jobs:
 
       - name: Prepare plugin directory
         run: |
-          mkdir -p build/wp-piwigo-display
-          rsync -a ./ build/wp-piwigo-display/ \
+          mkdir -p build/piwigo-display
+          rsync -a ./ build/piwigo-display/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -132,12 +132,12 @@ jobs:
       - name: Create ZIP
         run: |
           cd build
-          zip -r "wp-piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
+          zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" piwigo-display
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: wp-piwigo-display-${{ steps.version.outputs.version }}
-          path: build/wp-piwigo-display-${{ steps.version.outputs.version }}.zip
+          name: piwigo-display-${{ steps.version.outputs.version }}
+          path: build/piwigo-display-${{ steps.version.outputs.version }}.zip
           if-no-files-found: error
           retention-days: 7
