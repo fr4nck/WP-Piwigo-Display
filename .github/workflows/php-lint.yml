@@ -57,6 +57,27 @@ jobs:
         continue-on-error: true
         run: composer standards:report
 
+      - name: Prepare Plugin Check distribution
+        run: |
+          mkdir -p build/plugin-check/wp-piwigo-display
+          rsync -a ./ build/plugin-check/wp-piwigo-display/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'build' \
+            --exclude 'vendor' \
+            --exclude 'tests' \
+            --exclude 'composer.json' \
+            --exclude 'composer.lock' \
+            --exclude 'phpcs.xml.dist' \
+            --exclude '*.zip'
+
+      - name: Run WordPress Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './build/plugin-check/wp-piwigo-display'
+          exclude-directories: 'vendor,tests,build'
+          strict: true
+
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
