@@ -122,21 +122,30 @@ final class WPD_Cache {
 			'_transient_wpd_lock_',
 			'_transient_timeout_wpd_lock_',
 		);
-		$conditions          = array();
-		$values              = array();
-
-		foreach ( $patterns as $pattern ) {
-			$conditions[] = 'option_name LIKE %s';
-			$values[]     = $wpdb->esc_like( $pattern ) . '%';
-		}
-
-		// The table name and WHERE fragments are generated internally; values remain prepared.
-		$names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-				'SELECT option_name FROM ' . $wpdb->options . ' WHERE ' . implode( ' OR ', $conditions ),
-				...$values
-			)
+		$values              = array_map(
+			static function ( string $pattern ) use ( $wpdb ): string {
+				return $wpdb->esc_like( $pattern ) . '%';
+			},
+			$patterns
 		);
+
+		$query = $wpdb->prepare(
+			"SELECT option_name FROM {$wpdb->options}
+			WHERE option_name LIKE %s
+			OR option_name LIKE %s
+			OR option_name LIKE %s
+			OR option_name LIKE %s
+			OR option_name LIKE %s
+			OR option_name LIKE %s",
+			$values[0],
+			$values[1],
+			$values[2],
+			$values[3],
+			$values[4],
+			$values[5]
+		);
+
+		$names = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared immediately above.
 
 		foreach ( $names as $name ) {
 			if ( str_starts_with( $name, '_transient_timeout_' ) ) {
