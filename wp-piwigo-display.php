@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WP Piwigo Display
+ * Plugin Name: Piwigo Display
  * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
  * Version: 2.0.0
  * Requires at least: 6.0
@@ -33,7 +33,7 @@ if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
 	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-$wpd_loaded_classes = array(
+$wp_piwigo_display_loaded_classes = array(
 	'WPD_Plugin',
 	'WPD_Settings',
 	'WPD_Service_Account',
@@ -52,13 +52,13 @@ $wpd_loaded_classes = array(
 	'WPD_Shapes',
 );
 
-foreach ( $wpd_loaded_classes as $wpd_class ) {
-	if ( class_exists( $wpd_class, false ) ) {
+foreach ( $wp_piwigo_display_loaded_classes as $wp_piwigo_display_class ) {
+	if ( class_exists( $wp_piwigo_display_class, false ) ) {
 		return;
 	}
 }
 
-unset( $wpd_class, $wpd_loaded_classes );
+unset( $wp_piwigo_display_class, $wp_piwigo_display_loaded_classes );
 
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
@@ -82,7 +82,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
  *
  * @return void
  */
-function wpd_bootstrap_plugin(): void {
+function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Plugin::init();
 	WPD_Service_Account::register();
 	WPD_Classic_Editor::register();
@@ -93,4 +93,4 @@ function wpd_bootstrap_plugin(): void {
 	WPD_Shapes::register();
 }
 
-add_action( 'plugins_loaded', 'wpd_bootstrap_plugin' );
+add_action( 'plugins_loaded', 'wp_piwigo_display_bootstrap_plugin' );

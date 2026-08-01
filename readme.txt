@@ -1,4 +1,4 @@
-=== WP Piwigo Display ===
+=== Piwigo Display ===
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
@@ -8,34 +8,34 @@ Stable tag: 2.0.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Affiche des albums Piwigo publics ou privés dans WordPress via l’API officielle.
+Display public or authorized private Piwigo albums in WordPress through the official API.
 
 == Description ==
 
-WP Piwigo Display conserve les images dans Piwigo et génère leur affichage dans WordPress.
+Piwigo Display keeps images in Piwigo and renders them inside WordPress without importing them into the media library.
 
-Fonctionnalités principales :
+Main features:
 
-* bloc Gutenberg dynamique ;
-* éditeur classique avec aperçu TinyMCE ;
-* composeur d’administration ;
-* galerie responsive, diaporama et lightbox ;
-* redimensionnement visuel des diaporamas ;
-* sélection d’album par identifiant, nom, chemin ou arborescence ;
-* sous-albums et profondeur configurable ;
-* tri, limites, orientations, tags, légendes et styles ;
-* cache WordPress et diagnostic ;
-* compte de service Piwigo côté serveur pour les albums privés autorisés.
+* dynamic Gutenberg block;
+* Classic Editor integration with TinyMCE preview;
+* administration gallery composer;
+* responsive galleries, sliders, and lightbox;
+* visual slider resizing;
+* album selection by ID, name, path, or tree;
+* sub-albums and configurable depth;
+* sorting, limits, orientation filters, tags, captions, and styles;
+* WordPress caching and diagnostics;
+* server-side Piwigo service account for authorized private albums.
 
-Le compte de service ne connecte pas les visiteurs à Piwigo. Un album privé publié sur une page publique WordPress devient toutefois visible sur cette page.
+The service account does not sign visitors into Piwigo. However, a private album published on a public WordPress page becomes visible on that page.
 
 == Installation ==
 
-1. Téléverser le ZIP depuis Extensions > Ajouter une extension.
-2. Activer WP Piwigo Display.
-3. Renseigner l’URL HTTPS de Piwigo dans les réglages.
-4. Insérer le bloc WP Piwigo Display ou utiliser `[piwigo album="154"]`.
-5. Pour les albums privés, créer un compte Piwigo dédié et configurer le compte de service dans les réglages ou dans wp-config.php.
+1. Upload the ZIP file from Plugins > Add New Plugin.
+2. Activate Piwigo Display.
+3. Enter the HTTPS Piwigo URL in the plugin settings.
+4. Insert the Piwigo Display block or use `[piwigo album="154"]`.
+5. For private albums, create a dedicated Piwigo account and configure the service account in the plugin settings or in wp-config.php.
 
 == Shortcodes ==
 
@@ -47,30 +47,30 @@ Le compte de service ne connecte pas les visiteurs à Piwigo. Un album privé pu
 
 `[piwigo album="154" sort="date" order="desc" limit="20"]`
 
-`[piwigo album="154" tags="nature,animaux" tag_mode="all"]`
+`[piwigo album="154" tags="nature,animals" tag_mode="all"]`
 
 == Frequently Asked Questions ==
 
-= Les images sont-elles copiées dans WordPress ? =
+= Are images copied into WordPress? =
 
-Non. Elles restent dans Piwigo.
+No. They remain stored in Piwigo.
 
-= Comment afficher un album privé ? =
+= How can I display a private album? =
 
-Créez un compte Piwigo dédié, limitez ses droits aux albums à publier, puis activez le compte de service dans WordPress. HTTPS est obligatoire.
+Create a dedicated Piwigo account, restrict it to the albums that may be published, and enable the service account in WordPress. HTTPS is required.
 
-= Les visiteurs voient-ils les identifiants Piwigo ? =
+= Can visitors see the Piwigo credentials? =
 
-Non. L’authentification et les cookies de session restent côté serveur.
+No. Authentication and session cookies remain server-side.
 
 == Changelog ==
 
 = 2.0.0 =
 
-* Ajout du compte de service Piwigo pour les albums privés autorisés.
-* Authentification et cookies de session limités aux requêtes serveur.
-* Séparation des caches anonyme et authentifié.
-* Sélecteur d’albums avec recherche et arborescence.
-* Redimensionnement visuel des diaporamas dans Gutenberg.
-* Compatibilité Gutenberg, éditeur classique et composeur.
-* CI PHP 8.1 à 8.4 et génération automatique du ZIP installable.
+* Added a Piwigo service account for authorized private albums.
+* Kept authentication and session cookies server-side.
+* Separated anonymous and authenticated caches.
+* Added album search and tree selection.
+* Added visual slider resizing in Gutenberg.
+* Maintained parity across Gutenberg, Classic Editor, and the administration composer.
+* Added CI coverage for PHP 8.1 through PHP 8.4 and automatic installable ZIP generation.

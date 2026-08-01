@@ -38,7 +38,6 @@ final class WPD_Plugin {
 	 * Registers plugin hooks.
 	 */
 	private function __construct() {
-		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'init', array( $this, 'register_shortcodes' ) );
 		add_action( 'init', array( $this, 'register_block' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
@@ -49,19 +48,6 @@ final class WPD_Plugin {
 		add_action( 'admin_post_wpd_clear_cache', array( $this, 'clear_cache' ) );
 		add_action( 'admin_post_wpd_test_connection', array( $this, 'test_connection' ) );
 		add_action( 'admin_post_wpd_export_diagnostic', array( WPD_Diagnostic::class, 'export' ) );
-	}
-
-	/**
-	 * Loads the plugin text domain.
-	 *
-	 * @return void
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain(
-			'wp-piwigo-display',
-			false,
-			dirname( plugin_basename( WPD_PLUGIN_FILE ) ) . '/languages'
-		);
 	}
 
 	/**
@@ -90,8 +76,8 @@ final class WPD_Plugin {
 	public function register_assets(): void {
 		wp_register_style( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display.css', array(), WPD_VERSION );
 		wp_add_inline_style( 'wp-piwigo-display', '.wpd-slider-layout{width:var(--wpd-slider-width,100%);max-width:100%;box-sizing:border-box}.wpd-slider-layout.wpd-slider-align-left{float:left;margin:0 1.5rem 1rem 0}.wpd-slider-layout.wpd-slider-align-right{float:right;margin:0 0 1rem 1.5rem}.wpd-slider-layout.wpd-slider-align-center{margin-left:auto;margin-right:auto}@media(max-width:782px){.wpd-slider-layout{float:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}}' );
-		wp_register_style( 'wpd-splide', 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css', array(), '4.1.4' );
-		wp_register_script( 'wpd-splide', 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js', array(), '4.1.4', true );
+		wp_register_style( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.css', array(), '4.1.4' );
+		wp_register_script( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.js', array(), '4.1.4', true );
 		wp_register_script( 'wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', array( 'wpd-splide' ), WPD_VERSION, true );
 		wp_register_script( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', array(), WPD_VERSION, true );
 	}
