@@ -1,0 +1,185 @@
+name: Finalize settings WPCS
+
+on:
+  push:
+    branches:
+      - refactor/wpcs-settings
+    paths:
+      - .github/workflows/wpcs-settings-finalize.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/wpcs-settings
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          coverage: none
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Add documentation and focused WPCS corrections
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('includes/class-wpd-settings.php')
+          text = path.read_text()
+
+          if 'WP Piwigo Display settings.' not in text:
+              text = text.replace('<?php\n', "<?php\n/**\n * WP Piwigo Display settings.\n *\n * @package WP_Piwigo_Display\n */\n", 1)
+
+          if 'Settings and administration screens.' not in text:
+              text = text.replace('final class WPD_Settings {', "/**\n * Settings and administration screens.\n */\nfinal class WPD_Settings {")
+
+          summaries = {
+              'register': 'Registers plugin settings and fields.',
+              'register_page': 'Registers the plugin administration pages.',
+              'render_dashboard_page': 'Renders the plugin dashboard page.',
+              'render_composer_page': 'Renders the shortcode composer page.',
+              'default_options': 'Returns the default plugin options.',
+              'get_options': 'Returns the normalized plugin options.',
+              'get_shortcode_defaults': 'Returns defaults used by shortcodes.',
+              'get_piwigo_url': 'Returns the configured Piwigo URL.',
+              'get_cache_duration': 'Returns the configured cache duration.',
+              'get_default_caption': 'Returns the default caption mode.',
+              'get_debug_mode': 'Returns whether debug mode is enabled.',
+              'sanitize_options': 'Sanitizes plugin options.',
+              'render_defaults_section': 'Renders the defaults section description.',
+              'render_advanced_section': 'Renders the advanced section description.',
+              'render_piwigo_url_field': 'Renders the Piwigo URL field.',
+              'render_cache_duration_field': 'Renders the cache duration field.',
+              'render_default_type_field': 'Renders the default display type field.',
+              'render_default_fit_field': 'Renders the default image fit field.',
+              'render_default_ratio_field': 'Renders the default slider ratio field.',
+              'render_default_height_field': 'Renders the default slider height field.',
+              'render_default_autoplay_field': 'Renders the autoplay field.',
+              'render_default_lightbox_field': 'Renders the lightbox field.',
+              'render_default_style_field': 'Renders the default style field.',
+              'render_default_caption_field': 'Renders the default caption field.',
+              'render_default_navigation_field': 'Renders the navigation field.',
+              'render_default_rounded_field': 'Renders the rounded corners field.',
+              'render_default_sort_field': 'Renders the image sort field.',
+              'render_default_order_field': 'Renders the sort order field.',
+              'render_default_limit_field': 'Renders the image limit field.',
+              'render_debug_mode_field': 'Renders the debug mode field.',
+              'render_default_interval_field': 'Renders the autoplay interval field.',
+              'render_default_speed_field': 'Renders the transition speed field.',
+              'render_page': 'Renders the plugin settings page.',
+              'render_shortcode_examples': 'Renders shortcode examples.',
+              'input': 'Renders an input field.',
+              'select': 'Renders a select field.',
+              'select_bool': 'Renders a boolean select field.',
+              'sanitize_choice': 'Sanitizes a value against allowed choices.',
+              'sanitize_bool': 'Sanitizes a boolean value.',
+              'sanitize_ratio': 'Sanitizes a ratio value.',
+              'sanitize_height': 'Sanitizes a CSS height value.',
+          }
+
+          param_docs = {
+              'options': ('mixed', 'Raw options.'),
+              'type': ('string', 'Input type.'),
+              'key': ('string', 'Option key.'),
+              'value': ('string', 'Input value.'),
+              'class': ('string', 'CSS class.'),
+              'placeholder': ('string', 'Input placeholder.'),
+              'attrs': ('array', 'Additional attributes.'),
+              'choices': ('array', 'Available choices.'),
+              'allowed': ('array', 'Allowed values.'),
+              'default': ('string', 'Fallback value.'),
+              'ratio': ('string', 'Ratio value.'),
+              'height': ('string', 'Height value.'),
+          }
+
+          return_docs = {
+              'array': 'Option values.',
+              'string': 'Sanitized value.',
+              'int': 'Duration in seconds.',
+              'bool': 'Whether the option is enabled.',
+              'void': 'Nothing.',
+          }
+
+          pattern = re.compile(r'(?m)^(\t)(public|private) static function (\w+)\(([^\n]*)\): (\w+) \{')
+          def add_doc(match):
+              start = match.start()
+              before = text[max(0, start - 10):start]
+              if '*/' in before:
+                  return match.group(0)
+              indent, visibility, name, params, ret = match.groups()
+              lines = [indent + '/**', indent + ' * ' + summaries.get(name, 'Handles this settings operation.')]
+              if params.strip():
+                  lines.append(indent + ' *')
+                  for raw in re.split(r',\s*(?![^()]*\))', params):
+                      found = re.search(r'\$(\w+)', raw)
+                      if not found:
+                          continue
+                      pname = found.group(1)
+                      ptype, desc = param_docs.get(pname, ('mixed', 'Parameter value.'))
+                      lines.append(f"{indent} * @param {ptype} ${pname} {desc}")
+              if ret != 'void':
+                  lines.append(indent + ' * @return ' + ret + ' ' + return_docs.get(ret, 'Return value.'))
+              lines.append(indent + ' */')
+              return '\n'.join(lines) + '\n' + match.group(0)
+
+          text = pattern.sub(add_doc, text)
+
+          replacements = {
+              "$url !== ''": "'' !== $url",
+              "(string) $options['default_navigation'] === 'thumbnails'": "'thumbnails' === (string) $options['default_navigation']",
+              "$connection_result === 'success'": "'success' === $connection_result",
+              "$connection_result === 'missing_url'": "'missing_url' === $connection_result",
+              'string $class =': 'string $css_class =',
+              'esc_attr( $class )': 'esc_attr( $css_class )',
+              'string $default )': 'string $fallback )',
+              '? $value : $default;': '? $value : $fallback;',
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+
+          text = text.replace(
+              "\t\t\t<?php if ( isset( $_GET['wpd_cache_cleared'] ) ) : ?>",
+              "\t\t\t<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>\n\t\t\t<?php if ( isset( $_GET['wpd_cache_cleared'] ) ) : ?>"
+          )
+          text = text.replace(
+              "\t\t\t<?php if ( isset( $_GET['wpd_connection_test'] ) ) : ?>",
+              "\t\t\t<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>\n\t\t\t<?php if ( isset( $_GET['wpd_connection_test'] ) ) : ?>"
+          )
+          text = text.replace(
+              "\t\t\t\t<?php $connection_result = sanitize_key( (string) wp_unslash( $_GET['wpd_connection_test'] ) ); ?>",
+              "\t\t\t\t<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>\n\t\t\t\t<?php $connection_result = sanitize_key( (string) wp_unslash( $_GET['wpd_connection_test'] ) ); ?>"
+          )
+          text = text.replace(
+              "\t\t\t\t\t\t\tesc_html__( 'Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display' ),",
+              "\t\t\t\t\t\t\t/* translators: %d: number of deleted cache entries. */\n\t\t\t\t\t\t\tesc_html__( 'Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display' ),"
+          )
+          text = text.replace(
+              "\t\tprintf( '<input type=",
+              "\t\t// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute fragments are escaped when assembled above.\n\t\tprintf( '<input type="
+          )
+          # Repair the quote duplicated by the replacement prefix.
+          text = text.replace("printf( '<input type=\"\"", "printf( '<input type=\"")
+
+          path.write_text(text)
+          PY
+
+      - name: Apply remaining automatic fixes
+        run: vendor/bin/phpcbf --standard=phpcs.xml.dist includes/class-wpd-settings.php || test $? -eq 1
+
+      - name: Remove temporary workflow and commit
+        run: |
+          rm .github/workflows/wpcs-settings-finalize.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add includes/class-wpd-settings.php .github/workflows/wpcs-settings-finalize.yml
+          git commit -m "style: complete settings WPCS documentation"
+          git push origin HEAD:refactor/wpcs-settings
