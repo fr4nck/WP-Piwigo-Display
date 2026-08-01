@@ -1,13 +1,16 @@
 name: Apply public plugin slug
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - audit/plugin-check-wordpress-org
 
 permissions:
   contents: write
 
 jobs:
   migrate:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +36,7 @@ jobs:
               text = path.read_text(encoding='utf-8')
               original = text
 
-              # Public brand only; technical handles/options remain unchanged.
               text = text.replace('WP Piwigo Display', 'Piwigo Display')
-
-              # Translation-domain arguments in PHP and JavaScript.
               text = re.sub(r"([,\(]\s*)'wp-piwigo-display'(\s*\))", r"\1'piwigo-display'\2", text)
               text = re.sub(r'([,\(]\s*)"wp-piwigo-display"(\s*\))', r'\1"piwigo-display"\2', text)
               text = text.replace('Text Domain: wp-piwigo-display', 'Text Domain: piwigo-display')
