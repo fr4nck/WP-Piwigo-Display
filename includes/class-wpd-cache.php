@@ -137,10 +137,15 @@ final class WPD_Cache {
 			OR option_name LIKE %s
 			OR option_name LIKE %s
 			OR option_name LIKE %s",
-			...$values
+			$values[0],
+			$values[1],
+			$values[2],
+			$values[3],
+			$values[4],
+			$values[5]
 		);
 
-		$names = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$names = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared immediately above.
 
 		foreach ( $names as $name ) {
 			if ( str_starts_with( $name, '_transient_timeout_' ) ) {
