@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: plugin-ci-${{ github.ref }}
@@ -69,6 +70,11 @@ jobs:
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
             --exclude 'phpcs.xml.dist' \
+            --exclude 'AGENTS.md' \
+            --exclude 'ROADMAP.md' \
+            --exclude 'ARCHITECTURE.md' \
+            --exclude 'AUDIT.md' \
+            --exclude 'CODEX.md' \
             --exclude '*.zip'
 
       - name: Run WordPress Plugin Check
@@ -112,7 +118,15 @@ jobs:
             --exclude '.github' \
             --exclude 'build' \
             --exclude 'vendor' \
+            --exclude 'tests' \
+            --exclude 'composer.json' \
             --exclude 'composer.lock' \
+            --exclude 'phpcs.xml.dist' \
+            --exclude 'AGENTS.md' \
+            --exclude 'ROADMAP.md' \
+            --exclude 'ARCHITECTURE.md' \
+            --exclude 'AUDIT.md' \
+            --exclude 'CODEX.md' \
             --exclude '*.zip'
 
       - name: Create ZIP
