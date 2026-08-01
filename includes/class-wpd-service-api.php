@@ -383,9 +383,9 @@ final class WPD_Service_Api {
 	 * @return void
 	 */
 	private function add_unique_image( array &$images, array $image ): void {
-		$id           = absint( $image['id'] ?? 0 );
-		$encoded_image = wp_json_encode( $image );
-		$key          = 0 < $id ? (string) $id : md5( (string) $encoded_image );
+		$id             = absint( $image['id'] ?? 0 );
+		$encoded_image  = wp_json_encode( $image );
+		$key            = 0 < $id ? (string) $id : md5( (string) $encoded_image );
 		$images[ $key ] = $image;
 	}
 
