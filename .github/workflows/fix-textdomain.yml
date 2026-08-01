@@ -1,0 +1,44 @@
+name: Fix text domain
+
+on:
+  push:
+    branches:
+      - audit/plugin-check-wordpress-org
+    paths:
+      - '.github/workflows/fix-textdomain.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/plugin-check-wordpress-org
+          fetch-depth: 0
+      - name: Replace legacy text domain
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          allowed = {'.php', '.js', '.json', '.txt', '.md', '.yml', '.yaml'}
+          for path in Path('.').rglob('*'):
+              if not path.is_file() or '.git' in path.parts or 'vendor' in path.parts or 'build' in path.parts:
+                  continue
+              if path.suffix.lower() not in allowed:
+                  continue
+              text = path.read_text(encoding='utf-8')
+              updated = text.replace('wp-piwigo-display', 'piwigo-display')
+              if updated != text:
+                  path.write_text(updated, encoding='utf-8')
+          PY
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix: aligne le domaine de traduction sur le slug"
+          git rm .github/workflows/fix-textdomain.yml
+          git commit -m "ci: retire le correctif ponctuel du textdomain"
+          git push origin HEAD:audit/plugin-check-wordpress-org
