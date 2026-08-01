@@ -205,6 +205,13 @@
             $picker.attr('id', pickerId);
         }
 
+        function closePicker(restoreFocus) {
+            if ($picker.attr('hidden')) return;
+            $picker.attr('hidden', 'hidden').empty();
+            $button.attr('aria-expanded', 'false');
+            if (restoreFocus) $button.trigger('focus');
+        }
+
         $button.attr({
             'aria-controls': pickerId,
             'aria-expanded': 'false',
@@ -213,8 +220,7 @@
 
         $button.on('click', function () {
             if (!$picker.attr('hidden')) {
-                $picker.attr('hidden', 'hidden').empty();
-                $button.attr('aria-expanded', 'false').trigger('focus');
+                closePicker(true);
                 return;
             }
             $button.attr('aria-expanded', 'true');
@@ -225,6 +231,14 @@
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
                         .html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Impossible de charger les albums.'));
                 });
+        });
+
+        $picker.on('keydown', function (event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                closePicker(true);
+            }
         });
     }
 
