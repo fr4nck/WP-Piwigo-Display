@@ -412,8 +412,8 @@ final class WPD_Service_Api {
 	 * @return string Valid HTTPS URL or an empty string.
 	 */
 	private static function sanitize_service_url( string $base_url ): string {
-		$url = untrailingslashit( esc_url_raw( trim( $base_url ) ) );
-		if ( '' === $url || 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) ) {
+		$url = untrailingslashit( esc_url_raw( trim( $base_url ), array( 'https' ) ) );
+		if ( '' === $url || 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) || ! wp_http_validate_url( $url ) ) {
 			return '';
 		}
 
