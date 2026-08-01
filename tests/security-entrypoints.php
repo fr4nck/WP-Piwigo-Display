@@ -46,7 +46,7 @@ $checks = array(
     ),
     'includes/class-wpd-service-api.php' => array(
         'wp_safe_remote_post(',
-        "'https' !== wp_parse_url( $url, PHP_URL_SCHEME )",
+        "'https' !== wp_parse_url( \$url, PHP_URL_SCHEME )",
         "'timeout'     => 10",
         "'redirection' => 0",
         "'sslverify'   => true",
@@ -84,10 +84,9 @@ foreach ($forbidden as $relativePath => $needles) {
     }
 
     foreach ($needles as $needle) {
-        $unsafeNeedle = str_replace('wp_remote_', 'wp_remote_', $needle);
         $safeNeedle = str_replace('wp_remote_', 'wp_safe_remote_', $needle);
         $withoutSafeCalls = str_replace($safeNeedle, '', $contents);
-        if (false !== strpos($withoutSafeCalls, $unsafeNeedle)) {
+        if (false !== strpos($withoutSafeCalls, $needle)) {
             $failures[] = sprintf('Unsafe HTTP call in %s: %s', $relativePath, $needle);
         }
     }
