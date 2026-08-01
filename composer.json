@@ -27,6 +27,7 @@
       "@security:entrypoints",
       "@security:dataflows"
     ],
+    "accessibility": "php tests/accessibility-ui.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
     "standards:settings": "phpcs --standard=phpcs.xml.dist includes/class-wpd-settings.php",
     "standards:diagnostic": "phpcs --standard=phpcs.xml.dist includes/class-wpd-diagnostic.php",
