@@ -1,6 +1,6 @@
 <?php
 /**
- * Security regression checks for privileged WordPress entry points.
+ * Security regression checks for privileged entry points and remote requests.
  *
  * @package WP_Piwigo_Display
  */
@@ -32,7 +32,31 @@ $checks = array(
         "check_admin_referer( 'wpd_export_diagnostic' )",
         'sanitize_file_name(',
         'nocache_headers(',
+        'wp_safe_remote_get(',
+        "'timeout'     => 10",
+        "'redirection' => 3",
     ),
+    'includes/class-wpd-api.php' => array(
+        'esc_url_raw(',
+        'wp_http_validate_url(',
+        'wp_safe_remote_post(',
+        "array( 'http', 'https' )",
+        "'timeout'     => 10",
+        "'redirection' => 3",
+    ),
+    'includes/class-wpd-service-api.php' => array(
+        'wp_safe_remote_post(',
+        "'https' !== wp_parse_url( $url, PHP_URL_SCHEME )",
+        "'timeout'     => 10",
+        "'redirection' => 0",
+        "'sslverify'   => true",
+    ),
+);
+
+$forbidden = array(
+    'includes/class-wpd-api.php'         => array('wp_remote_post('),
+    'includes/class-wpd-service-api.php' => array('wp_remote_post('),
+    'includes/class-wpd-diagnostic.php'  => array('wp_remote_get('),
 );
 
 $failures = array();
@@ -53,9 +77,25 @@ foreach ($checks as $relativePath => $needles) {
     }
 }
 
+foreach ($forbidden as $relativePath => $needles) {
+    $contents = file_get_contents($root . '/' . $relativePath);
+    if (false === $contents) {
+        continue;
+    }
+
+    foreach ($needles as $needle) {
+        $unsafeNeedle = str_replace('wp_remote_', 'wp_remote_', $needle);
+        $safeNeedle = str_replace('wp_remote_', 'wp_safe_remote_', $needle);
+        $withoutSafeCalls = str_replace($safeNeedle, '', $contents);
+        if (false !== strpos($withoutSafeCalls, $unsafeNeedle)) {
+            $failures[] = sprintf('Unsafe HTTP call in %s: %s', $relativePath, $needle);
+        }
+    }
+}
+
 if (array() !== $failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);
 }
 
-echo "Security entry-point checks passed.\n";
+echo "Security entry-point and HTTP checks passed.\n";
