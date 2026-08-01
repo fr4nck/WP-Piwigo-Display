@@ -1,4 +1,4 @@
-=== WP Piwigo Display ===
+=== Piwigo Display ===
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
@@ -12,7 +12,7 @@ Display public or authorized private Piwigo albums in WordPress through the offi
 
 == Description ==
 
-WP Piwigo Display keeps images in Piwigo and renders them inside WordPress without importing them into the media library.
+Piwigo Display keeps images in Piwigo and renders them inside WordPress without importing them into the media library.
 
 Main features:
 
@@ -32,9 +32,9 @@ The service account does not sign visitors into Piwigo. However, a private album
 == Installation ==
 
 1. Upload the ZIP file from Plugins > Add New Plugin.
-2. Activate WP Piwigo Display.
+2. Activate Piwigo Display.
 3. Enter the HTTPS Piwigo URL in the plugin settings.
-4. Insert the WP Piwigo Display block or use `[piwigo album="154"]`.
+4. Insert the Piwigo Display block or use `[piwigo album="154"]`.
 5. For private albums, create a dedicated Piwigo account and configure the service account in the plugin settings or in wp-config.php.
 
 == Shortcodes ==
