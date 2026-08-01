@@ -25,7 +25,9 @@
 
     <rule ref="WordPress.WP.I18n">
         <properties>
-            <property name="text_domain" type="array" value="wp-piwigo-display" />
+            <property name="text_domain" type="array">
+                <element value="wp-piwigo-display" />
+            </property>
         </properties>
     </rule>
 
