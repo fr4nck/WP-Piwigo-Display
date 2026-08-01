@@ -193,9 +193,9 @@ final class WPD_Service_Account {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'                   => 'wp-piwigo-display-settings',
-					'wpd_service_test'       => $result,
-					'wpd_service_test_notice'=> $notice_nonce,
+					'page'                    => 'wp-piwigo-display-settings',
+					'wpd_service_test'        => $result,
+					'wpd_service_test_notice' => $notice_nonce,
 				),
 				admin_url( 'admin.php' )
 			)
