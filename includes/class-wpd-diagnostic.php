@@ -148,7 +148,7 @@ final class WPD_Diagnostic {
 			);
 		}
 
-		$endpoint = add_query_arg(
+		$endpoint   = add_query_arg(
 			array(
 				'format' => 'json',
 				'method' => 'pwg.session.getStatus',
