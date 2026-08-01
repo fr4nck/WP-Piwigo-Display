@@ -115,20 +115,21 @@ final class WPD_Diagnostic {
 	private static function collect(): array {
 		$api        = self::probe_api();
 		$piwigo_url = WPD_Settings::get_piwigo_url();
+		$diagnostic = array();
 
-		return array(
-			__( 'Version du plugin', 'wp-piwigo-display' ) => (string) WPD_VERSION,
-			__( 'Version de WordPress', 'wp-piwigo-display' ) => (string) get_bloginfo( 'version' ),
-			__( 'Version de PHP', 'wp-piwigo-display' ) => PHP_VERSION,
-			__( 'Version de Piwigo détectée', 'wp-piwigo-display' ) => $api['piwigo_version'],
-			__( 'URL de l’API', 'wp-piwigo-display' ) => self::safe_api_url( $piwigo_url ),
-			__( 'État de la connexion API', 'wp-piwigo-display' ) => $api['status'],
-			__( 'Temps de réponse de l’API', 'wp-piwigo-display' ) => $api['response_time'],
-			__( 'État du cache mémoire', 'wp-piwigo-display' ) => self::memory_cache_status(),
-			__( 'État des transients', 'wp-piwigo-display' ) => self::transients_status(),
-			__( 'Configuration SSL', 'wp-piwigo-display' ) => self::ssl_status( $piwigo_url ),
-			__( 'Extensions PHP nécessaires', 'wp-piwigo-display' ) => self::extensions_status(),
-		);
+		$diagnostic[ __( 'Version du plugin', 'wp-piwigo-display' ) ]          = (string) WPD_VERSION;
+		$diagnostic[ __( 'Version de WordPress', 'wp-piwigo-display' ) ]       = (string) get_bloginfo( 'version' );
+		$diagnostic[ __( 'Version de PHP', 'wp-piwigo-display' ) ]             = PHP_VERSION;
+		$diagnostic[ __( 'Version de Piwigo détectée', 'wp-piwigo-display' ) ] = $api['piwigo_version'];
+		$diagnostic[ __( 'URL de l’API', 'wp-piwigo-display' ) ]               = self::safe_api_url( $piwigo_url );
+		$diagnostic[ __( 'État de la connexion API', 'wp-piwigo-display' ) ]   = $api['status'];
+		$diagnostic[ __( 'Temps de réponse de l’API', 'wp-piwigo-display' ) ]  = $api['response_time'];
+		$diagnostic[ __( 'État du cache mémoire', 'wp-piwigo-display' ) ]      = self::memory_cache_status();
+		$diagnostic[ __( 'État des transients', 'wp-piwigo-display' ) ]        = self::transients_status();
+		$diagnostic[ __( 'Configuration SSL', 'wp-piwigo-display' ) ]          = self::ssl_status( $piwigo_url );
+		$diagnostic[ __( 'Extensions PHP nécessaires', 'wp-piwigo-display' ) ] = self::extensions_status();
+
+		return $diagnostic;
 	}
 
 	/**
@@ -154,8 +155,8 @@ final class WPD_Diagnostic {
 			),
 			untrailingslashit( $piwigo_url ) . '/ws.php'
 		);
-		$start    = microtime( true );
-		$response = wp_safe_remote_get(
+		$start      = microtime( true );
+		$response   = wp_safe_remote_get(
 			$endpoint,
 			array(
 				'timeout'     => 10,
