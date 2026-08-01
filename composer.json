@@ -21,6 +21,7 @@
   "scripts": {
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
     "compatibility": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --extensions=php --ignore=vendor .",
+    "security:entrypoints": "php tests/security-entrypoints.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
     "standards:settings": "phpcs --standard=phpcs.xml.dist includes/class-wpd-settings.php",
     "standards:diagnostic": "phpcs --standard=phpcs.xml.dist includes/class-wpd-diagnostic.php",
