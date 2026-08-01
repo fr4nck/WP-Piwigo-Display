@@ -117,16 +117,16 @@ final class WPD_Diagnostic {
 		$piwigo_url = WPD_Settings::get_piwigo_url();
 
 		return array(
-			__( 'Version du plugin', 'wp-piwigo-display' )          => (string) WPD_VERSION,
-			__( 'Version de WordPress', 'wp-piwigo-display' )       => (string) get_bloginfo( 'version' ),
-			__( 'Version de PHP', 'wp-piwigo-display' )             => PHP_VERSION,
+			__( 'Version du plugin', 'wp-piwigo-display' ) => (string) WPD_VERSION,
+			__( 'Version de WordPress', 'wp-piwigo-display' ) => (string) get_bloginfo( 'version' ),
+			__( 'Version de PHP', 'wp-piwigo-display' ) => PHP_VERSION,
 			__( 'Version de Piwigo détectée', 'wp-piwigo-display' ) => $api['piwigo_version'],
-			__( 'URL de l’API', 'wp-piwigo-display' )               => self::safe_api_url( $piwigo_url ),
-			__( 'État de la connexion API', 'wp-piwigo-display' )   => $api['status'],
-			__( 'Temps de réponse de l’API', 'wp-piwigo-display' )  => $api['response_time'],
-			__( 'État du cache mémoire', 'wp-piwigo-display' )      => self::memory_cache_status(),
-			__( 'État des transients', 'wp-piwigo-display' )        => self::transients_status(),
-			__( 'Configuration SSL', 'wp-piwigo-display' )          => self::ssl_status( $piwigo_url ),
+			__( 'URL de l’API', 'wp-piwigo-display' ) => self::safe_api_url( $piwigo_url ),
+			__( 'État de la connexion API', 'wp-piwigo-display' ) => $api['status'],
+			__( 'Temps de réponse de l’API', 'wp-piwigo-display' ) => $api['response_time'],
+			__( 'État du cache mémoire', 'wp-piwigo-display' ) => self::memory_cache_status(),
+			__( 'État des transients', 'wp-piwigo-display' ) => self::transients_status(),
+			__( 'Configuration SSL', 'wp-piwigo-display' ) => self::ssl_status( $piwigo_url ),
 			__( 'Extensions PHP nécessaires', 'wp-piwigo-display' ) => self::extensions_status(),
 		);
 	}
