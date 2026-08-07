@@ -26,19 +26,74 @@ L’identifiant numérique reste le choix le plus robuste dans un shortcode écr
 [piwigo url="https://autre-galerie.example.org" album="154"]
 ```
 
-## Type d’affichage
+## Modes d’affichage
 
-`type` accepte :
+Le paramètre `type` détermine la façon dont les photos sont présentées. Les trois modes utilisent les mêmes sources Piwigo et peuvent partager les filtres, légendes et options générales ; le choix dépend surtout de l’usage éditorial recherché.
 
-- `gallery` : galerie responsive ;
-- `slider` : diaporama Splide ;
-- `masonry` : disposition en colonnes CSS.
+### Galerie — `gallery`
+
+La galerie est le mode polyvalent. Les images sont présentées dans une grille responsive régulière qui s’adapte à la largeur disponible.
+
+À choisir pour :
+
+- une page d’album classique ;
+- présenter un ensemble de photos de façon homogène ;
+- une consultation rapide avec plusieurs images visibles simultanément ;
+- le choix par défaut lorsqu’aucune mise en scène particulière n’est nécessaire.
 
 ```text
 [piwigo album="154" type="gallery"]
-[piwigo album="154" type="slider"]
-[piwigo album="154" type="masonry"]
 ```
+
+La lightbox peut ensuite permettre d’ouvrir les images en grand sans quitter la page.
+
+### Slider — `slider`
+
+Le slider présente principalement une image à la fois sous forme de diaporama. Il convient davantage à une sélection éditoriale qu’à la consultation rapide d’un grand nombre de photos.
+
+À choisir pour :
+
+- mettre en avant quelques photos fortes ;
+- une bannière ou une zone visuelle importante ;
+- un diaporama d’actualité ou de séjour ;
+- une présentation avec navigation par points ou miniatures ;
+- un défilement automatique facultatif.
+
+```text
+[piwigo album="154" type="slider" navigation="thumbnails"]
+```
+
+Le slider dispose de réglages spécifiques : navigation, autoplay, intervalle, vitesse, transition, direction et dimensions. Les préférences système de réduction des mouvements sont respectées : l’autoplay et les animations sont réduits ou désactivés lorsque nécessaire.
+
+### Masonry — `masonry`
+
+Masonry organise les photos en colonnes en conservant davantage leurs proportions naturelles. Contrairement à une grille régulière, les lignes ne sont pas forcées à avoir la même hauteur.
+
+À choisir pour :
+
+- mélanger agréablement portraits et paysages ;
+- obtenir une présentation de type photothèque ou portfolio ;
+- afficher beaucoup d’images sans imposer un recadrage visuel uniforme ;
+- privilégier la variété des formats originaux.
+
+```text
+[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
+```
+
+Le nombre de colonnes diminue automatiquement sur les écrans plus étroits.
+
+### Quel mode choisir ?
+
+| Besoin | Mode conseillé |
+| --- | --- |
+| Album photo standard et lisible | `gallery` |
+| Mettre quelques photos en avant | `slider` |
+| Mélanger portraits et paysages avec leurs proportions | `masonry` |
+| Afficher rapidement beaucoup de photos | `gallery` ou `masonry` |
+| Diaporama automatique | `slider` |
+| Présentation type portfolio / photothèque | `masonry` |
+
+Le mode peut être changé sans modifier l’album Piwigo : seule sa présentation dans WordPress change.
 
 ## Masonry
 
@@ -49,8 +104,6 @@ L’identifiant numérique reste le choix le plus robuste dans un shortcode écr
 ```text
 [piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
 ```
-
-Le nombre de colonnes diminue automatiquement sur les écrans plus étroits.
 
 ## Sous-albums
 
@@ -203,9 +256,9 @@ Les alias `landscape`, `square` et `carre` restent acceptés.
 
 `transition` accepte :
 
-- `slide` ;
-- `fade` ;
-- `none`.
+- `slide` : déplacement horizontal classique ;
+- `fade` : fondu entre les images ;
+- `none` : changement immédiat, sans animation de transition.
 
 ```text
 [piwigo album="154" type="slider" transition="fade" speed="700"]
@@ -215,8 +268,8 @@ Les alias `landscape`, `square` et `carre` restent acceptés.
 
 `direction` accepte :
 
-- `ltr` ;
-- `rtl`.
+- `ltr` : progression de gauche à droite ;
+- `rtl` : progression de droite à gauche.
 
 ```text
 [piwigo album="154" type="slider" transition="slide" direction="rtl"]
@@ -255,7 +308,7 @@ Lorsque l’utilisateur a activé `prefers-reduced-motion: reduce` dans son syst
 Galerie de 20 dernières images dans une arborescence :
 
 ```text
-[piwigo album="154" recursive="true" depth="2" sort="date" order="desc" limit="20"]
+[piwigo album="154" type="gallery" recursive="true" depth="2" sort="date" order="desc" limit="20"]
 ```
 
 Slider avec fondu, miniatures et légende :
