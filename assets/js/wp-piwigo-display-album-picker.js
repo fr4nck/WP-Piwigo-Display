@@ -3,6 +3,7 @@
 
     var cache = null;
     var pending = null;
+    var pickerSequence = 0;
 
     function labels() {
         return (window.WPDAlbumPickerConfig && WPDAlbumPickerConfig.labels) || {};
@@ -33,6 +34,7 @@
         var selectedId = String($(input).val() || '');
         var childrenByParent = {};
         var hierarchy = [];
+        var pickerId = $picker.attr('id');
 
         albums.forEach(function (album) {
             var id = String(album.id);
@@ -46,10 +48,33 @@
             childrenByParent[parentId].push(album);
         });
 
-        $picker.empty().removeAttr('hidden');
-        var $search = $('<input type="search" class="wpd-album-search">').attr('placeholder', l.search || 'Rechercher un album…');
-        var $list = $('<div class="wpd-album-list" role="tree"></div>');
-        $picker.append($search, $list);
+        $picker.empty().removeAttr('hidden').attr({
+            role: 'region',
+            'aria-label': l.picker || 'Sélecteur d’albums Piwigo'
+        });
+
+        var searchId = pickerId + '-search';
+        var statusId = pickerId + '-status';
+        var listId = pickerId + '-list';
+        var $searchLabel = $('<label class="screen-reader-text"></label>')
+            .attr('for', searchId)
+            .text(l.search || 'Rechercher un album…');
+        var $search = $('<input type="search" class="wpd-album-search">')
+            .attr({
+                id: searchId,
+                placeholder: l.search || 'Rechercher un album…',
+                'aria-controls': listId,
+                autocomplete: 'off'
+            });
+        var $status = $('<p class="screen-reader-text wpd-album-status" role="status" aria-live="polite"></p>')
+            .attr('id', statusId);
+        var $list = $('<div class="wpd-album-list" role="tree"></div>')
+            .attr({
+                id: listId,
+                'aria-label': l.results || 'Résultats des albums',
+                'aria-describedby': statusId
+            });
+        $picker.append($searchLabel, $search, $status, $list);
 
         function matchingIds(query) {
             var visible = {};
@@ -62,7 +87,15 @@
             return visible;
         }
 
-        function draw(query) {
+        function focusRelative(current, direction) {
+            var $buttons = $list.find('.wpd-album-name:visible');
+            var index = $buttons.index(current);
+            if (!$buttons.length || index < 0) return;
+            var next = Math.max(0, Math.min($buttons.length - 1, index + direction));
+            $buttons.eq(next).trigger('focus');
+        }
+
+        function draw(query, restoreFocusId) {
             query = String(query || '').toLocaleLowerCase();
             var searchVisible = matchingIds(query);
             $list.empty();
@@ -77,27 +110,55 @@
                 if (!visible) return;
                 count += 1;
 
+                var rowId = pickerId + '-album-' + id;
                 var $row = $('<div class="wpd-album-row" role="treeitem"></div>');
-                $row.css('--wpd-depth', album.depth || 0).attr('aria-level', Number(album.depth || 0) + 1);
+                $row.css('--wpd-depth', album.depth || 0).attr({
+                    id: rowId,
+                    'aria-level': Number(album.depth || 0) + 1,
+                    'aria-selected': selectedId === id ? 'true' : 'false'
+                });
                 if (hasChildren) $row.attr('aria-expanded', query ? 'true' : (expanded[id] ? 'true' : 'false'));
-                if (selectedId === id) $row.addClass('is-selected').attr('aria-selected', 'true');
+                if (selectedId === id) $row.addClass('is-selected');
 
                 var $toggle = $('<button type="button" class="wpd-album-toggle"></button>');
                 if (hasChildren) {
-                    $toggle.attr('aria-label', expanded[id] ? 'Fermer les sous-albums' : 'Ouvrir les sous-albums');
+                    $toggle.attr({
+                        'aria-label': expanded[id] ? 'Fermer les sous-albums de ' + album.name : 'Ouvrir les sous-albums de ' + album.name,
+                        'aria-controls': rowId,
+                        'aria-expanded': query ? 'true' : (expanded[id] ? 'true' : 'false')
+                    });
                     $toggle.append($('<span class="dashicons" aria-hidden="true"></span>').addClass(query || expanded[id] ? 'dashicons-arrow-down-alt2' : 'dashicons-arrow-right-alt2'));
                     $toggle.on('click', function () {
                         expanded[id] = !expanded[id];
-                        draw($search.val());
+                        draw($search.val(), id);
                     });
                 } else {
-                    $toggle.attr('aria-hidden', 'true').prop('disabled', true);
+                    $toggle.attr({ 'aria-hidden': 'true', tabindex: '-1' }).prop('disabled', true);
                 }
 
-                var $name = $('<button type="button" class="wpd-album-name"></button>').text(album.name);
+                var $name = $('<button type="button" class="wpd-album-name"></button>')
+                    .attr({
+                        'data-album-id': id,
+                        'aria-label': album.name + ', album ' + album.id
+                    })
+                    .text(album.name);
                 $name.on('click', function () {
                     selectedId = id;
-                    draw($search.val());
+                    draw($search.val(), id);
+                }).on('keydown', function (event) {
+                    if (event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        focusRelative(this, 1);
+                    } else if (event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        focusRelative(this, -1);
+                    } else if (event.key === 'Home') {
+                        event.preventDefault();
+                        $list.find('.wpd-album-name:visible').first().trigger('focus');
+                    } else if (event.key === 'End') {
+                        event.preventDefault();
+                        $list.find('.wpd-album-name:visible').last().trigger('focus');
+                    }
                 });
 
                 var $meta = $('<span class="wpd-album-option-meta"></span>').text('#' + album.id + (album.images ? ' · ' + album.images + ' photo(s)' : ''));
@@ -106,7 +167,7 @@
                     .text(l.validate || 'Valider');
                 $confirm.on('click', function () {
                     selectedId = id;
-                    $(input).val(album.id).trigger('input').trigger('change');
+                    $(input).val(album.id).trigger('input').trigger('change').trigger('focus');
                     draw($search.val());
                 });
 
@@ -116,6 +177,11 @@
 
             if (!count) {
                 $list.append($('<p class="wpd-album-empty"></p>').text(l.empty || 'Aucun album trouvé.'));
+            }
+
+            $status.text(count + (count > 1 ? ' albums affichés.' : ' album affiché.'));
+            if (restoreFocusId) {
+                $list.find('.wpd-album-name[data-album-id="' + restoreFocusId + '"]').trigger('focus');
             }
         }
 
@@ -131,16 +197,48 @@
         $root.data('wpd-picker-ready', true);
         var $button = $root.find('.wpd-browse-albums');
         var $picker = $root.find('.wpd-album-picker');
+        var pickerId = $picker.attr('id');
+
+        if (!pickerId) {
+            pickerSequence += 1;
+            pickerId = 'wpd-album-picker-' + pickerSequence;
+            $picker.attr('id', pickerId);
+        }
+
+        function closePicker(restoreFocus) {
+            if ($picker.attr('hidden')) return;
+            $picker.attr('hidden', 'hidden').empty();
+            $button.attr('aria-expanded', 'false');
+            if (restoreFocus) $button.trigger('focus');
+        }
+
+        $button.attr({
+            'aria-controls': pickerId,
+            'aria-expanded': 'false',
+            'aria-haspopup': 'dialog'
+        });
+
         $button.on('click', function () {
             if (!$picker.attr('hidden')) {
-                $picker.attr('hidden', 'hidden').empty();
+                closePicker(true);
                 return;
             }
-            $picker.removeAttr('hidden').html('<p class="wpd-album-loading">' + (labels().loading || 'Chargement des albums…') + '</p>');
+            $button.attr('aria-expanded', 'true');
+            $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
+                .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Chargement des albums…'));
             loadAlbums().done(function (albums) { render($picker, albums, $input); })
                 .fail(function (message) {
-                    $picker.removeAttr('hidden').html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Impossible de charger les albums.'));
+                    $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
+                        .html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Impossible de charger les albums.'));
                 });
+        });
+
+        $picker.on('keydown', function (event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                closePicker(true);
+            }
         });
     }
 

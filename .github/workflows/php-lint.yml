@@ -51,6 +51,9 @@ jobs:
       - name: Check security invariants
         run: composer security
 
+      - name: Check accessibility invariants
+        run: composer accessibility
+
       - name: Check PHP compatibility
         run: composer compatibility
 
