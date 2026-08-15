@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Piwigo Display
  * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
- * Version: 2.0.0
+ * Version: 3.0.0-rc.1
  * Requires at least: 6.0
  * Requires PHP: 8.1
  * Author: Franck Bellardie
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'WPD_VERSION' ) ) {
-	define( 'WPD_VERSION', '2.0.0' );
+	define( 'WPD_VERSION', '3.0.0-rc.1' );
 }
 
 if ( ! defined( 'WPD_PLUGIN_FILE' ) ) {

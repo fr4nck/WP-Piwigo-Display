@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 2.0.0
+Stable tag: 3.0.0-rc.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -14,7 +14,7 @@ Display public or authorized private Piwigo albums in WordPress through the offi
 
 Piwigo Display keeps images in Piwigo and renders them inside WordPress without copying them into the WordPress media library.
 
-The currently distributed stable version remains 2.0.0 while the 3.x branch is being finalized as a Release Candidate. The 3.x code base adds and stabilizes:
+Version 3.0.0-rc.1 is the first Release Candidate of the 3.x code base. It includes:
 
 * dynamic Gutenberg block;
 * Classic Editor integration with TinyMCE preview;
@@ -98,8 +98,9 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 
 == Changelog ==
 
-= 3.0.0 - Release Candidate preparation =
+= 3.0.0-rc.1 =
 
+* First 3.x Release Candidate.
 * Refactored the plugin architecture for the 3.x code base.
 * Added CSS-column Masonry with configurable columns and gaps.
 * Added `slide`, `fade`, and `none` slider transitions.

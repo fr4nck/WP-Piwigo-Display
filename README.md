@@ -4,9 +4,9 @@ Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans co
 
 ## État du projet
 
-La version stable distribuée reste **2.0.0** tant que la recette réelle de la branche `3.x-dev` n’est pas terminée. Le socle V3 est désormais en phase **pré-Release Candidate** : architecture, sécurité, CI, Plugin Check, WPCS et principaux travaux d’accessibilité ont été validés.
+La branche `release/3.0.0-rc.1` porte la première **Release Candidate V3**. Le code, la documentation et les métadonnées de version sont synchronisés en **3.0.0-rc.1**.
 
-Le numéro de version ne passera en 3.0.0 qu’au moment de la création effective de la RC, afin que code, ZIP, documentation et changelog restent synchronisés.
+La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
 
 ## Fonctionnalités principales
 
@@ -83,13 +83,7 @@ Le mode Masonry utilise les colonnes CSS natives du navigateur :
 
 La durée d’affichage (`interval`) et la vitesse de transition (`speed`) sont deux réglages indépendants.
 
-Les transitions disponibles sont :
-
-- `slide` ;
-- `fade` ;
-- `none`.
-
-La direction peut être `ltr` ou `rtl`.
+Les transitions disponibles sont `slide`, `fade` et `none`. La direction peut être `ltr` ou `rtl`.
 
 Lorsque l’utilisateur demande une réduction des animations via son système (`prefers-reduced-motion`), l’autoplay est neutralisé et les transitions sont supprimées ou réduites.
 
