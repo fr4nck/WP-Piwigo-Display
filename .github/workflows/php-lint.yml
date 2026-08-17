@@ -54,6 +54,9 @@ jobs:
       - name: Check accessibility invariants
         run: composer accessibility
 
+      - name: Check frontend rendering resilience
+        run: composer test:frontend
+
       - name: Check PHP compatibility
         run: composer compatibility
 

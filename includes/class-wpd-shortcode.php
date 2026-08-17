@@ -98,6 +98,8 @@ final class WPD_Shortcode {
 			return self::render_error( $images->get_error_message() );
 		}
 
+		$images = self::normalize_images( $images );
+
 		if ( empty( $images ) ) {
 			return self::render_error( __( 'Aucune image n’a été trouvée dans cet album Piwigo.', 'wp-piwigo-display' ) );
 		}
@@ -151,6 +153,20 @@ final class WPD_Shortcode {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * Removes malformed records before typed frontend filters process images.
+	 *
+	 * Cached values can outlive a plugin upgrade and remote API payloads are not
+	 * guaranteed to contain only image objects. PHP 8.1 turns a scalar passed to
+	 * an array-typed callback into a fatal TypeError.
+	 *
+	 * @param array<int|string, mixed> $images Images returned by the cache layer.
+	 * @return array<int, array<string, mixed>> Valid image records.
+	 */
+	private static function normalize_images( array $images ): array {
+		return array_values( array_filter( $images, 'is_array' ) );
 	}
 
 	/**

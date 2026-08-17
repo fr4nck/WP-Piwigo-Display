@@ -178,6 +178,7 @@ final class WPD_Cache {
 
 		$cached = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
+			$cached = self::normalize_images( $cached );
 			self::$request_cache[ $cache_key ] = $cached;
 
 			return $cached;
@@ -189,6 +190,7 @@ final class WPD_Cache {
 		$lock_acquired = self::acquire_lock( $lock_key );
 
 		if ( ! $lock_acquired && is_array( $stale ) ) {
+			$stale = self::normalize_images( $stale );
 			self::$request_cache[ $cache_key ] = $stale;
 
 			return $stale;
@@ -198,6 +200,7 @@ final class WPD_Cache {
 			$value = $loader();
 			if ( is_wp_error( $value ) ) {
 				if ( is_array( $stale ) ) {
+					$stale = self::normalize_images( $stale );
 					self::$request_cache[ $cache_key ] = $stale;
 
 					return $stale;
@@ -210,6 +213,8 @@ final class WPD_Cache {
 				return $value;
 			}
 
+			$value = self::normalize_images( $value );
+
 			$duration                          = max( 60, WPD_Settings::get_cache_duration() );
 			self::$request_cache[ $cache_key ] = $value;
 			set_transient( $cache_key, $value, $duration );
@@ -221,6 +226,16 @@ final class WPD_Cache {
 				self::release_lock( $lock_key );
 			}
 		}
+	}
+
+	/**
+	 * Keeps only image-shaped cache entries before frontend typed callbacks run.
+	 *
+	 * @param array<int|string, mixed> $images Cached image records.
+	 * @return array<int, array<string, mixed>> Valid image records.
+	 */
+	private static function normalize_images( array $images ): array {
+		return array_values( array_filter( $images, 'is_array' ) );
 	}
 
 	/**

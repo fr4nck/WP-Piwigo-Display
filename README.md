@@ -1,10 +1,10 @@
-# Piwigo Display
+# WP Piwigo Display
 
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
 ## État du projet
 
-La branche `release/3.0.0-rc.1` porte la première **Release Candidate V3**. Le code, la documentation et les métadonnées de version sont synchronisés en **3.0.0-rc.1**.
+La branche `3.x-dev` prépare **3.0.0-rc.2**, version corrective de la Release Candidate V3. Elle durcit le rendu frontend contre les données d’image malformées provenant d’un cache hérité ou d’une réponse API inattendue.
 
 La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
 
@@ -33,7 +33,7 @@ La version 2.0.0 reste la dernière version stable distribuée tant que cette RC
 ## Installation
 
 1. Installer le ZIP depuis **Extensions > Ajouter une extension > Téléverser une extension**.
-2. Activer **Piwigo Display**.
+2. Activer **WP Piwigo Display**.
 3. Ouvrir les réglages du plugin et renseigner l’URL HTTPS de Piwigo.
 4. Tester la connexion.
 5. Insérer le bloc Gutenberg, utiliser le composeur ou saisir un shortcode tel que `[piwigo album="154"]`.

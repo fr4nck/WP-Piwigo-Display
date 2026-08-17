@@ -130,6 +130,10 @@ final class WPD_Service_Api {
 			$page_images = is_array( $page_images ) ? $page_images : array();
 
 			foreach ( $page_images as $image ) {
+				if ( ! is_array( $image ) ) {
+					continue;
+				}
+
 				$this->add_unique_image( $images, $image );
 
 				if ( 0 < $max && count( $images ) >= $max ) {
@@ -243,7 +247,9 @@ final class WPD_Service_Api {
 			$page_images = is_array( $page_images ) ? $page_images : array();
 
 			foreach ( $page_images as $image ) {
-				$this->add_unique_image( $images, $image );
+				if ( is_array( $image ) ) {
+					$this->add_unique_image( $images, $image );
+				}
 			}
 
 			++$page;

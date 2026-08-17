@@ -21,6 +21,7 @@ final class WPD_Renderer {
 	 * @return string
 	 */
 	public static function render( array $images, array $atts ): string {
+		$images = array_values( array_filter( $images, 'is_array' ) );
 		$images = self::prepare_images( $images, $atts );
 		$type   = isset( $atts['type'] ) ? sanitize_key( (string) $atts['type'] ) : 'gallery';
 

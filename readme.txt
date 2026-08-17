@@ -1,10 +1,10 @@
-=== Piwigo Display ===
+=== WP Piwigo Display ===
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 3.0.0-rc.1
+Stable tag: 3.0.0-rc.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -14,7 +14,7 @@ Display public or authorized private Piwigo albums in WordPress through the offi
 
 Piwigo Display keeps images in Piwigo and renders them inside WordPress without copying them into the WordPress media library.
 
-Version 3.0.0-rc.1 is the first Release Candidate of the 3.x code base. It includes:
+Version 3.0.0-rc.2 fixes a blocking frontend rendering failure found during real-world testing of the 3.x Release Candidate. It includes:
 
 * dynamic Gutenberg block;
 * Classic Editor integration with TinyMCE preview;
@@ -38,7 +38,7 @@ The service account does not sign visitors into Piwigo. A private album rendered
 == Installation ==
 
 1. Upload the ZIP file from Plugins > Add New Plugin > Upload Plugin.
-2. Activate Piwigo Display.
+2. Activate WP Piwigo Display.
 3. Open the plugin settings and enter the Piwigo HTTPS URL.
 4. Test the connection.
 5. Insert the Piwigo Display block, use the administration composer, or use a shortcode such as `[piwigo album="154"]`.
@@ -97,6 +97,12 @@ No. Authentication and session cookies remain server-side.
 Yes. When the operating system requests reduced motion, autoplay is disabled and transitions are removed or reduced.
 
 == Changelog ==
+
+= 3.0.0-rc.2 =
+
+* Prevented malformed legacy cache or API records from causing a PHP 8.1 frontend TypeError.
+* Added a frontend rendering regression test for mixed image payloads.
+* Restored the visible plugin name to WP Piwigo Display.
 
 = 3.0.0-rc.1 =
 

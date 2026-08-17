@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 3.0.0-rc.2 — 17 août 2026
+
+- Correction d’une erreur fatale PHP 8.1 dans le rendu frontend lorsqu’un cache hérité ou une réponse API contient une entrée qui n’est pas une image tabulaire.
+- Normalisation des données aux frontières du cache, du shortcode et du moteur de rendu.
+- Durcissement du client Piwigo authentifié contre les enregistrements inattendus.
+- Ajout d’un test de non-régression du rendu avec une liste d’images mixte.
+- Restauration du nom visible « WP Piwigo Display ».
+
 ## 2.0.0 — 28 juillet 2026
 
 - Ajout d’un compte de service Piwigo dédié à WordPress pour récupérer les albums privés explicitement autorisés.
