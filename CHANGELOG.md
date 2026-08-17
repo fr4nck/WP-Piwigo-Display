@@ -2,10 +2,9 @@
 
 ## 3.0.0-rc.2 — 17 août 2026
 
-- Correction d’une erreur fatale PHP 8.1 dans le rendu frontend lorsqu’un cache hérité ou une réponse API contient une entrée qui n’est pas une image tabulaire.
-- Normalisation des données aux frontières du cache, du shortcode et du moteur de rendu.
-- Durcissement du client Piwigo authentifié contre les enregistrements inattendus.
-- Ajout d’un test de non-régression du rendu avec une liste d’images mixte.
+- Correction de l’erreur fatale PHP 8.1 lorsque le filtre Masonry recevait la valeur initiale `null` du moteur de rendu, notamment sur les diaporamas.
+- Le filtre Masonry accepte désormais cette valeur nullable et laisse le moteur standard poursuivre le rendu hors du mode Masonry.
+- Ajout d’un test de non-régression reproduisant exactement l’appel fatal observé dans le journal WordPress.
 - Restauration du nom visible « WP Piwigo Display ».
 
 ## 2.0.0 — 28 juillet 2026

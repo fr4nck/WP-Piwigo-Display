@@ -73,13 +73,13 @@ final class WPD_Masonry {
 	/**
 	 * Renders a gallery using the Masonry layout when requested.
 	 *
-	 * @param string              $html   Existing renderer output.
+	 * @param string|null         $html   Existing renderer output.
 	 * @param array<int, mixed>   $images Piwigo image records.
 	 * @param array<string,mixed> $atts   Normalized shortcode attributes.
 	 * @param string              $type   Requested display type, unused.
-	 * @return string Rendered Masonry markup or the original output.
+	 * @return string|null Rendered Masonry markup or the original output.
 	 */
-	public static function render( string $html, array $images, array $atts, string $type ): string {
+	public static function render( ?string $html, array $images, array $atts, string $type ): ?string {
 		unset( $type );
 
 		if ( ( $atts['layout'] ?? '' ) !== 'masonry' ) {

@@ -100,8 +100,8 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 
 = 3.0.0-rc.2 =
 
-* Prevented malformed legacy cache or API records from causing a PHP 8.1 frontend TypeError.
-* Added a frontend rendering regression test for mixed image payloads.
+* Fixed the PHP 8.1 fatal error caused when the Masonry render filter received the renderer's initial null value, including on sliders.
+* Added a regression test reproducing the exact nullable filter call found in the WordPress debug log.
 * Restored the visible plugin name to WP Piwigo Display.
 
 = 3.0.0-rc.1 =
