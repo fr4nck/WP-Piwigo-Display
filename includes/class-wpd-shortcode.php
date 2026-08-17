@@ -52,9 +52,11 @@ final class WPD_Shortcode {
 				'width'       => '100%',
 				'align'       => 'center',
 			),
-			WPD_Settings::get_shortcode_defaults()
+			WPD_Settings::get_shortcode_defaults(),
+			array(
+				'transparent_background' => 'false',
+			)
 		);
-		$defaults['transparent_background'] = 'false';
 
 		/**
 		 * Filters the default shortcode attributes.

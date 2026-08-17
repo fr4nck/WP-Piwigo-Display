@@ -21,7 +21,7 @@ $assert = static function ( bool $condition, string $message ): void {
 	}
 };
 
-$assert( false !== strpos( $shortcode, "\$defaults['transparent_background'] = 'false'" ), 'Le shortcode doit désactiver le fond transparent par défaut.' );
+$assert( false !== strpos( $shortcode, "'transparent_background' => 'false'" ), 'Le shortcode doit désactiver le fond transparent par défaut.' );
 $assert( false !== strpos( $renderer, 'wp-piwigo-display-transparent-background' ), 'Le rendu doit exposer une classe de fond transparent.' );
 $assert( false !== strpos( $css, '.wp-piwigo-display-slider.wp-piwigo-display-transparent-background .splide__track' ), 'Le fond transparent doit cibler uniquement la piste du diaporama.' );
 $assert( false !== strpos( $css, 'background: transparent;' ), 'Le fond transparent doit utiliser une vraie transparence CSS.' );
