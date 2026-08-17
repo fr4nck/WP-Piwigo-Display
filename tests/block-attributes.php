@@ -5,6 +5,7 @@ define('WPD_PLUGIN_DIR', dirname(__DIR__) . '/');
 
 function sanitize_text_field($value): string { return trim(strip_tags((string) $value)); }
 function register_block_type($path, array $settings): void { $GLOBALS['wpd_registered_block'] = [$path, $settings]; }
+function add_action($hook, $callback): void { unset($hook, $callback); }
 
 require_once __DIR__ . '/../includes/class-wpd-block.php';
 
@@ -24,7 +25,7 @@ $atts = WPD_Block::attributes_to_shortcode([
     'albumId' => '154', 'displayType' => 'slider', 'recursive' => true, 'depth' => 2,
     'orientations' => ['portrait', 'paysage', 'carré'], 'lightbox' => false,
     'autoplay' => true, 'tagMode' => 'all', 'limit' => -4, 'width' => '72%',
-    'height' => '480px', 'align' => 'right', 'unknown' => 'ignored',
+    'height' => '480px', 'align' => 'right', 'transparentBackground' => true, 'unknown' => 'ignored',
 ]);
 wpd_block_assert_same('154', $atts['album'], 'L’album doit être transmis au shortcode.');
 wpd_block_assert_same('slider', $atts['type'], 'Le diaporama doit être transmis au shortcode.');
@@ -35,4 +36,5 @@ wpd_block_assert_same('all', $atts['tag_mode'], 'Le mode de tags doit être tran
 wpd_block_assert_same('72%', $atts['width'], 'La largeur du diaporama doit être transmise.');
 wpd_block_assert_same('480px', $atts['height'], 'La hauteur du diaporama doit être transmise.');
 wpd_block_assert_same('right', $atts['align'], 'L’alignement du diaporama doit être transmis.');
+wpd_block_assert_same('true', $atts['transparent_background'], 'Le fond transparent doit être transmis.');
 wpd_block_assert_same(false, isset($atts['unknown']), 'Les attributs inconnus ne doivent pas être transmis.');

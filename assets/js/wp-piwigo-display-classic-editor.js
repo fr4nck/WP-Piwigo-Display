@@ -117,6 +117,7 @@
             parts.push('rounded="' + (checked('rounded') ? 'true' : 'false') + '"');
 
             if (type === 'slider') {
+                parts.push('transparent_background="' + (checked('transparent_background') ? 'true' : 'false') + '"');
                 parts.push('autoplay="' + (checked('autoplay') ? 'true' : 'false') + '"');
                 parts.push('thumbnails="' + (checked('thumbnails') ? 'true' : 'false') + '"');
                 ['interval', 'speed', 'transition', 'direction', 'ratio', 'navigation', 'align'].forEach(function (key) {

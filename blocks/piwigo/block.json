@@ -15,7 +15,7 @@
     "preset":{"type":"string","default":""}, "piwigoUrl":{"type":"string","default":""},
     "recursive":{"type":"boolean"}, "depth":{"type":"number"}, "limit":{"type":"number"}, "max":{"type":"number"}, "latest":{"type":"number"}, "random":{"type":"number"},
     "sort":{"type":"string"}, "order":{"type":"string"}, "orientations":{"type":"array"},
-    "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "style":{"type":"string"},
+    "caption":{"type":"string"}, "lightbox":{"type":"boolean"}, "rounded":{"type":"boolean"}, "transparentBackground":{"type":"boolean","default":false}, "style":{"type":"string"},
     "shape":{"type":"string","default":"rectangle"}, "radius":{"type":"number","default":0},
     "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "transition":{"type":"string","default":"slide"}, "direction":{"type":"string","default":"ltr"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
     "masonryColumns":{"type":"number","default":4}, "masonryGap":{"type":"number","default":16},

@@ -126,6 +126,7 @@ final class WPD_Renderer {
 		$speed          = max( 0, absint( $atts['speed'] ?? 500 ) );
 		$rounded_class  = self::is_enabled( $atts['rounded'] ?? 'false' ) ? ' wp-piwigo-display-rounded' : '';
 		$lightbox_class = self::is_enabled( $atts['lightbox'] ?? 'true' ) ? ' wp-piwigo-display-lightbox-enabled' : '';
+		$clear_class    = self::is_enabled( $atts['transparent_background'] ?? 'false' ) ? ' wp-piwigo-display-transparent-background' : '';
 		$style_class    = ' wp-piwigo-display-style-' . self::sanitize_style( (string) ( $atts['style'] ?? 'default' ) );
 		$navigation     = self::sanitize_navigation( (string) ( $atts['navigation'] ?? 'thumbnails' ) );
 		$thumbnails     = 'thumbnails' === $navigation;
@@ -143,7 +144,7 @@ final class WPD_Renderer {
 		ob_start();
 		?>
 		<div id="<?php echo esc_attr( $slider_id ); ?>"
-			class="wp-piwigo-display wp-piwigo-display-slider splide<?php echo esc_attr( $rounded_class . $lightbox_class . $style_class ); ?>"
+			class="wp-piwigo-display wp-piwigo-display-slider splide<?php echo esc_attr( $rounded_class . $lightbox_class . $clear_class . $style_class ); ?>"
 			style="--wpd-slider-height: <?php echo esc_attr( $height ); ?>; --wpd-slider-ratio: <?php echo esc_attr( $ratio ); ?>; --wpd-image-fit: <?php echo esc_attr( $fit ); ?>;"
 			data-autoplay="<?php echo esc_attr( $autoplay ? 'true' : 'false' ); ?>"
 			data-interval="<?php echo esc_attr( (string) $interval ); ?>"

@@ -86,6 +86,7 @@ final class WPD_Block {
 			'masonryColumns' => 'masonry_columns',
 			'masonryGap'     => 'masonry_gap',
 		);
+		$map['transparentBackground'] = 'transparent_background';
 		$atts = array();
 
 		foreach ( $map as $block_key => $shortcode_key ) {

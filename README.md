@@ -24,6 +24,7 @@ La version 2.0.0 reste la dernière version stable distribuée tant que cette RC
 - tri, limites, orientations, tags, légendes et styles ;
 - transitions de slider `slide`, `fade` et `none` ;
 - direction `ltr` ou `rtl` ;
+- fond de diaporama transparent, indépendamment du style visuel ;
 - largeur, hauteur, ratio, vitesse et intervalle configurables ;
 - cache WordPress séparé par contexte d’accès ;
 - diagnostic et purge du cache ;

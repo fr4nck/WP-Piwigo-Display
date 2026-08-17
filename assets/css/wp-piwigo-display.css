@@ -483,6 +483,10 @@
     overflow: hidden;
 }
 
+.wp-piwigo-display-slider.wp-piwigo-display-transparent-background .splide__track {
+    background: transparent;
+}
+
 .wp-piwigo-display-slider.splide[style*="--wpd-slider-height: 1"] .splide__track,
 .wp-piwigo-display-slider.splide[style*="--wpd-slider-height: 2"] .splide__track,
 .wp-piwigo-display-slider.splide[style*="--wpd-slider-height: 3"] .splide__track,

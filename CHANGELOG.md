@@ -7,6 +7,7 @@
 - Ajout d’un test de non-régression reproduisant exactement l’appel fatal observé dans le journal WordPress.
 - Correction du paquet ZIP qui réécrivait les chemins des fichiers CSS et JavaScript sans renommer les fichiers correspondants, ce qui masquait le diaporama.
 - Ajout d’un contrôle vérifiant que chaque ressource frontend enregistrée existe dans le paquet final.
+- Ajout d’une option « Fond transparent » propre au diaporama, indépendante du style, des arrondis et des ombres.
 - Restauration du nom visible « WP Piwigo Display ».
 
 ## 2.0.0 — 28 juillet 2026

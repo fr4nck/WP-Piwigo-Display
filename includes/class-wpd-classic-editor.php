@@ -130,6 +130,7 @@ final class WPD_Classic_Editor {
 				<label class="wpd-depth-option"><?php esc_html_e( 'Profondeur des sous-albums', 'wp-piwigo-display' ); ?> <input type="number" min="1" max="10" value="10" data-wpd="depth" class="small-text"></label>
 				<label><input type="checkbox" data-wpd="lightbox" checked> <?php esc_html_e( 'Lightbox', 'wp-piwigo-display' ); ?></label>
 				<label><input type="checkbox" data-wpd="rounded"> <?php esc_html_e( 'Coins arrondis (compatibilité)', 'wp-piwigo-display' ); ?></label>
+				<label class="wpd-slider-options"><input type="checkbox" data-wpd="transparent_background"> <?php esc_html_e( 'Fond transparent', 'wp-piwigo-display' ); ?></label>
 				<label class="wpd-slider-options"><input type="checkbox" data-wpd="autoplay" checked> <?php esc_html_e( 'Lecture automatique du diaporama', 'wp-piwigo-display' ); ?></label>
 				<label class="wpd-slider-options"><input type="checkbox" data-wpd="thumbnails" checked> <?php esc_html_e( 'Miniatures (compatibilité)', 'wp-piwigo-display' ); ?></label>
 			</fieldset>
