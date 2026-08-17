@@ -30,7 +30,8 @@
     "accessibility": "php tests/accessibility-ui.php",
     "test:frontend": [
       "php tests/frontend-render-resilience.php",
-      "php tests/transparent-background.php"
+      "php tests/transparent-background.php",
+      "node tests/tinymce-preview.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",

@@ -105,6 +105,7 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Fixed the release ZIP process so registered CSS and JavaScript paths keep matching their packaged files.
 * Added an automated packaged-asset integrity check.
 * Added an independent transparent slider background option that preserves the selected visual style.
+* Fixed Classic Editor shortcode previews leaking HTML attributes into the article during double-click editing.
 * Restored the visible plugin name to WP Piwigo Display.
 
 = 3.0.0-rc.1 =

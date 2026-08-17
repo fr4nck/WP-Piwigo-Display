@@ -45,6 +45,8 @@ wpd_resize_assert_same(true, strpos($editor, "openGeneralSidebar('edit-post/bloc
 
 $tinymce = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-tinymce.js');
 wpd_resize_assert_same(true, strpos($tinymce, 'WPD_SHORTCODE_') !== false, 'TinyMCE doit restaurer le shortcode après la sérialisation HTML.');
+wpd_resize_assert_same(true, strpos($tinymce, 'encodeURIComponent') !== false, 'TinyMCE doit protéger les guillemets du shortcode dans son attribut HTML.');
+wpd_resize_assert_same(true, strpos($tinymce, 'decodeURIComponent') !== false, 'TinyMCE doit restituer le shortcode avant modification et sauvegarde.');
 wpd_resize_assert_same(true, strpos($tinymce, "editor.on('dblclick'") !== false, 'L’aperçu TinyMCE doit être modifiable par double-clic.');
 wpd_resize_assert_same(true, strpos($tinymce, 'wpd:edit-shortcode') !== false, 'TinyMCE doit transmettre le shortcode au composeur.');
 
