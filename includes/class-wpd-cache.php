@@ -178,7 +178,7 @@ final class WPD_Cache {
 
 		$cached = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
-			$cached = self::normalize_images( $cached );
+			$cached                            = self::normalize_images( $cached );
 			self::$request_cache[ $cache_key ] = $cached;
 
 			return $cached;
@@ -190,7 +190,7 @@ final class WPD_Cache {
 		$lock_acquired = self::acquire_lock( $lock_key );
 
 		if ( ! $lock_acquired && is_array( $stale ) ) {
-			$stale = self::normalize_images( $stale );
+			$stale                             = self::normalize_images( $stale );
 			self::$request_cache[ $cache_key ] = $stale;
 
 			return $stale;
@@ -200,7 +200,7 @@ final class WPD_Cache {
 			$value = $loader();
 			if ( is_wp_error( $value ) ) {
 				if ( is_array( $stale ) ) {
-					$stale = self::normalize_images( $stale );
+					$stale                             = self::normalize_images( $stale );
 					self::$request_cache[ $cache_key ] = $stale;
 
 					return $stale;
