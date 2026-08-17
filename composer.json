@@ -29,6 +29,7 @@
     ],
     "accessibility": "php tests/accessibility-ui.php",
     "test:frontend": "php tests/frontend-render-resilience.php",
+    "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
     "standards:settings": "phpcs --standard=phpcs.xml.dist includes/class-wpd-settings.php",
     "standards:diagnostic": "phpcs --standard=phpcs.xml.dist includes/class-wpd-diagnostic.php",

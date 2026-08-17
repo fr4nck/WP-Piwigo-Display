@@ -4,7 +4,7 @@ Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans co
 
 ## État du projet
 
-La branche `3.x-dev` prépare **3.0.0-rc.2**, version corrective de la Release Candidate V3. Elle corrige l’incompatibilité PHP 8.1 entre le filtre de rendu Masonry et la valeur initiale `null` utilisée par le moteur de rendu.
+La branche `3.x-dev` prépare **3.0.0-rc.2**, version corrective de la Release Candidate V3. Elle corrige l’incompatibilité PHP 8.1 entre le filtre de rendu Masonry et la valeur initiale `null` utilisée par le moteur de rendu, ainsi que les chemins CSS et JavaScript incorrectement réécrits dans le premier paquet de test.
 
 La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
 

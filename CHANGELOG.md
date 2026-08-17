@@ -5,6 +5,8 @@
 - Correction de l’erreur fatale PHP 8.1 lorsque le filtre Masonry recevait la valeur initiale `null` du moteur de rendu, notamment sur les diaporamas.
 - Le filtre Masonry accepte désormais cette valeur nullable et laisse le moteur standard poursuivre le rendu hors du mode Masonry.
 - Ajout d’un test de non-régression reproduisant exactement l’appel fatal observé dans le journal WordPress.
+- Correction du paquet ZIP qui réécrivait les chemins des fichiers CSS et JavaScript sans renommer les fichiers correspondants, ce qui masquait le diaporama.
+- Ajout d’un contrôle vérifiant que chaque ressource frontend enregistrée existe dans le paquet final.
 - Restauration du nom visible « WP Piwigo Display ».
 
 ## 2.0.0 — 28 juillet 2026

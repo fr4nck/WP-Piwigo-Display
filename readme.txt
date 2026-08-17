@@ -102,6 +102,8 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 
 * Fixed the PHP 8.1 fatal error caused when the Masonry render filter received the renderer's initial null value, including on sliders.
 * Added a regression test reproducing the exact nullable filter call found in the WordPress debug log.
+* Fixed the release ZIP process so registered CSS and JavaScript paths keep matching their packaged files.
+* Added an automated packaged-asset integrity check.
 * Restored the visible plugin name to WP Piwigo Display.
 
 = 3.0.0-rc.1 =
