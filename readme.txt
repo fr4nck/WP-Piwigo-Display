@@ -14,7 +14,11 @@ Affiche vos albums Piwigo dans votre site sans copier les photos dans la médiat
 
 Piwigo Display est l’extension WordPress de la famille Piwigo Display. Elle conserve les images dans Piwigo et les affiche dans votre site sans les copier dans la médiathèque.
 
-Le nom complet du projet reste **Piwigo Display pour WordPress**. Pour satisfaire les contraintes du répertoire WordPress.org, le nom déclaré dans les métadonnées distribuées est simplement **Piwigo Display**. Il s’agit toujours du même plugin, historiquement nommé **WP Piwigo Display** ; son fonctionnement, son historique, son slug `wp-piwigo-display`, son domaine de traduction et le dépôt `WP-Piwigo-Display` restent inchangés.
+**Piwigo Display pour WordPress — distribution GitHub, README en français, CI maison et zéro bénédiction pontificale de WordPress.org.**
+
+Le nom complet du projet reste **Piwigo Display pour WordPress**. Le nom déclaré dans les métadonnées distribuées est simplement **Piwigo Display**. Il s’agit toujours du même plugin, historiquement nommé **WP Piwigo Display** ; son fonctionnement, son historique, son slug `wp-piwigo-display`, son domaine de traduction et le dépôt `WP-Piwigo-Display` restent inchangés.
+
+Le projet est actuellement distribué directement via GitHub. Le contrôle spécifique à une publication sur le répertoire officiel WordPress.org est conservé dans la CI mais désactivé ; il pourra être réactivé si une publication officielle est décidée ultérieurement.
 
 La version 3.0.0-rc.1 est la première Release Candidate de la branche 3.x. Elle comprend notamment :
 
@@ -112,7 +116,7 @@ Oui. Lorsque le système demande une réduction des animations, la lecture autom
 * Prise en charge de la réduction des animations.
 * Renforcement des actions privilégiées, requêtes HTTP, validation des URL du compte de service et autres invariants de sécurité.
 * Ajout de contrôles de régression d’accessibilité et de sécurité au workflow CI unique.
-* Compatibilité PHP 8.1 à PHP 8.4 et validation Plugin Check conservées dans la CI.
+* Compatibilité PHP 8.1 à PHP 8.4 ; contrôle WordPress.org conservé mais désactivé tant que la distribution reste assurée via GitHub.
 
 = 2.0.0 =
 
