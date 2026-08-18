@@ -66,43 +66,34 @@ jobs:
         continue-on-error: true
         run: composer standards:report
 
-      - name: Prepare Plugin Check distribution
-        run: |
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a ./ build/plugin-check/piwigo-display/ \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'build' \
-            --exclude 'vendor' \
-            --exclude 'tests' \
-            --exclude 'composer.json' \
-            --exclude 'composer.lock' \
-            --exclude 'phpcs.xml.dist' \
-            --exclude 'AGENTS.md' \
-            --exclude 'ROADMAP.md' \
-            --exclude 'ARCHITECTURE.md' \
-            --exclude 'AUDIT.md' \
-            --exclude 'CODEX.md' \
-            --exclude '*.zip'
-          python3 - <<'PY'
-          from pathlib import Path
-
-          root = Path('build/plugin-check/piwigo-display')
-          allowed = {'.php', '.js', '.json', '.txt', '.md'}
-          for path in root.rglob('*'):
-              if path.is_file() and path.suffix.lower() in allowed:
-                  text = path.read_text(encoding='utf-8')
-                  updated = text.replace('wp-piwigo-display', 'piwigo-display')
-                  if updated != text:
-                      path.write_text(updated, encoding='utf-8')
-          PY
-
-      - name: Run WordPress Plugin Check
-        uses: wordpress/plugin-check-action@v1
-        with:
-          build-dir: './build/plugin-check/piwigo-display'
-          exclude-directories: 'vendor,tests,build'
-          strict: true
+      # WordPress.org Plugin Check est volontairement désactivé pour le moment.
+      # Le projet est distribué via GitHub et conserve sa documentation française.
+      # Réactiver ces deux étapes si une publication sur WordPress.org est décidée.
+      # - name: Prepare Plugin Check distribution
+      #   run: |
+      #     mkdir -p build/plugin-check/piwigo-display
+      #     rsync -a ./ build/plugin-check/piwigo-display/ \
+      #       --exclude '.git' \
+      #       --exclude '.github' \
+      #       --exclude 'build' \
+      #       --exclude 'vendor' \
+      #       --exclude 'tests' \
+      #       --exclude 'composer.json' \
+      #       --exclude 'composer.lock' \
+      #       --exclude 'phpcs.xml.dist' \
+      #       --exclude 'AGENTS.md' \
+      #       --exclude 'ROADMAP.md' \
+      #       --exclude 'ARCHITECTURE.md' \
+      #       --exclude 'AUDIT.md' \
+      #       --exclude 'CODEX.md' \
+      #       --exclude '*.zip'
+      #
+      # - name: Run WordPress Plugin Check
+      #   uses: wordpress/plugin-check-action@v1
+      #   with:
+      #     build-dir: './build/plugin-check/piwigo-display'
+      #     exclude-directories: 'vendor,tests,build'
+      #     strict: true
 
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
