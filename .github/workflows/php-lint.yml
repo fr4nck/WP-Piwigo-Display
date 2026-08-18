@@ -2,6 +2,8 @@ name: Plugin CI
 
 on:
   pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -15,7 +17,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: plugin-ci-${{ github.ref }}
+  group: plugin-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
