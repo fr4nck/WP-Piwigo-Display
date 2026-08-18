@@ -50,6 +50,7 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Composer_Parity',
 	'WPD_Gutenberg_Parity',
 	'WPD_Shapes',
+	'WPD_Piwigo_Response_Compat',
 );
 
 foreach ( $wp_piwigo_display_loaded_classes as $wp_piwigo_display_class ) {
@@ -76,6 +77,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-masonry.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
 
 /**
  * Registers the plugin components after all plugins are loaded.
@@ -91,6 +93,7 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Composer_Parity::register();
 	WPD_Gutenberg_Parity::register();
 	WPD_Shapes::register();
+	WPD_Piwigo_Response_Compat::register();
 }
 
 add_action( 'plugins_loaded', 'wp_piwigo_display_bootstrap_plugin' );
