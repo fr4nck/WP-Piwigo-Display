@@ -1,4 +1,4 @@
-=== Piwigo Display pour WordPress ===
+=== Piwigo Display ===
 Contributors: fr4nck
 Tags: piwigo, galerie, photos, shortcode, diaporama
 Requires at least: 6.0
@@ -8,19 +8,13 @@ Stable tag: 3.0.0-rc.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Affiche dans WordPress des albums Piwigo publics ou privés autorisés via l’API officielle, sans importer les images dans la médiathèque.
+Affiche vos albums Piwigo dans votre site sans copier les photos dans la médiathèque.
 
 == Description ==
 
-Piwigo Display pour WordPress conserve les images dans Piwigo et les affiche dans WordPress sans les copier dans la médiathèque WordPress.
+Piwigo Display est l’extension WordPress de la famille Piwigo Display. Elle conserve les images dans Piwigo et les affiche dans votre site sans les copier dans la médiathèque.
 
-=== À propos du nom du plugin ===
-
-À partir de la version 3, le nom public de **WP Piwigo Display** devient **Piwigo Display pour WordPress** afin de répondre aux règles de nommage et aux contrôles de distribution de WordPress.org.
-
-Pas d’inquiétude : seul le nom affiché change. Le plugin, son fonctionnement, son historique, son slug `wp-piwigo-display`, son domaine de traduction et le dépôt `WP-Piwigo-Display` restent les mêmes.
-
-Cette petite concession permet simplement de ménager la sensibilité des contrôles automatisés de WordPress.org. 😉
+Le nom complet du projet reste **Piwigo Display pour WordPress**. Pour satisfaire les contraintes du répertoire WordPress.org, le nom déclaré dans les métadonnées distribuées est simplement **Piwigo Display**. Il s’agit toujours du même plugin, historiquement nommé **WP Piwigo Display** ; son fonctionnement, son historique, son slug `wp-piwigo-display`, son domaine de traduction et le dépôt `WP-Piwigo-Display` restent inchangés.
 
 La version 3.0.0-rc.1 est la première Release Candidate de la branche 3.x. Elle comprend notamment :
 
@@ -41,11 +35,11 @@ La version 3.0.0-rc.1 est la première Release Candidate de la branche 3.x. Elle
 * un compte de service Piwigo côté serveur pour les albums privés autorisés ;
 * navigation clavier, focus visible et prise en charge de la préférence de réduction des animations.
 
-Le compte de service ne connecte pas les visiteurs à Piwigo. Un album privé affiché sur une page WordPress publique devient visible sur cette page : le compte dédié doit donc être limité aux seuls albums destinés à être publiés.
+Le compte de service ne connecte pas les visiteurs à Piwigo. Un album privé affiché sur une page publique devient visible sur cette page : le compte dédié doit donc être limité aux seuls albums destinés à être publiés.
 
 == Installation ==
 
-1. Dans WordPress, ouvrez Extensions > Ajouter une extension > Téléverser une extension.
+1. Dans l’administration, ouvrez Extensions > Ajouter une extension > Téléverser une extension.
 2. Sélectionnez le fichier ZIP de Piwigo Display pour WordPress puis activez le plugin.
 3. Ouvrez les réglages du plugin et renseignez l’adresse HTTPS de votre installation Piwigo.
 4. Testez la connexion.
@@ -88,13 +82,13 @@ Tags :
 
 == Questions fréquentes ==
 
-= Les images sont-elles copiées dans WordPress ? =
+= Les images sont-elles copiées dans la médiathèque ? =
 
 Non. Elles restent stockées dans Piwigo.
 
 = Comment afficher un album privé ? =
 
-Créez un compte Piwigo dédié, limitez-le aux albums pouvant être publiés puis activez le compte de service dans WordPress. HTTPS est requis.
+Créez un compte Piwigo dédié, limitez-le aux albums pouvant être publiés puis activez le compte de service dans les réglages. HTTPS est requis.
 
 = Les visiteurs peuvent-ils voir les identifiants Piwigo ? =
 
