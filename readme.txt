@@ -1,6 +1,6 @@
-=== Piwigo Display ===
+=== Piwigo Display pour WordPress ===
 Contributors: fr4nck
-Tags: piwigo, gallery, photos, shortcode, slider
+Tags: piwigo, galerie, photos, shortcode, diaporama
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -8,116 +8,124 @@ Stable tag: 3.0.0-rc.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Display public or authorized private Piwigo albums in WordPress through the official API without importing images into the media library.
+Affiche dans WordPress des albums Piwigo publics ou privés autorisés via l’API officielle, sans importer les images dans la médiathèque.
 
 == Description ==
 
-Piwigo Display keeps images in Piwigo and renders them inside WordPress without copying them into the WordPress media library.
+Piwigo Display pour WordPress conserve les images dans Piwigo et les affiche dans WordPress sans les copier dans la médiathèque WordPress.
 
-Version 3.0.0-rc.1 is the first Release Candidate of the 3.x code base. It includes:
+=== À propos du nom du plugin ===
 
-* dynamic Gutenberg block;
-* Classic Editor integration with TinyMCE preview;
-* administration gallery composer;
-* functional parity between Gutenberg, Classic Editor, and the administration composer;
-* responsive galleries, Splide sliders, lightbox, and CSS-column Masonry;
-* visual, hierarchical, searchable album picker;
-* album selection by ID, name, path, or tree;
-* sub-albums and configurable depth;
-* sorting, limits, orientation filters, tags, captions, and visual styles;
-* slider transitions (`slide`, `fade`, `none`) and `ltr` / `rtl` direction;
-* independent interval and transition-speed controls;
-* visual slider sizing;
-* WordPress caching separated by access context;
-* diagnostics and cache purge;
-* server-side Piwigo service account for authorized private albums;
-* keyboard navigation, visible focus, and reduced-motion support.
+À partir de la version 3, le nom public de **WP Piwigo Display** devient **Piwigo Display pour WordPress** afin de répondre aux règles de nommage et aux contrôles de distribution de WordPress.org.
 
-The service account does not sign visitors into Piwigo. A private album rendered on a public WordPress page becomes visible on that page, so the dedicated account must only have access to albums intended for publication.
+Pas d’inquiétude : seul le nom affiché change. Le plugin, son fonctionnement, son historique, son slug `wp-piwigo-display`, son domaine de traduction et le dépôt `WP-Piwigo-Display` restent les mêmes.
+
+Cette petite concession permet simplement de ménager la sensibilité des contrôles automatisés de WordPress.org. 😉
+
+La version 3.0.0-rc.1 est la première Release Candidate de la branche 3.x. Elle comprend notamment :
+
+* un bloc Gutenberg dynamique ;
+* une intégration à l’éditeur classique avec aperçu TinyMCE ;
+* un composeur de galerie dans l’administration ;
+* la parité fonctionnelle entre Gutenberg, l’éditeur classique et le composeur d’administration ;
+* des galeries responsives, diaporamas Splide, lightbox et affichage Masonry en colonnes CSS ;
+* un sélecteur visuel, hiérarchique et recherchable des albums ;
+* la sélection d’un album par identifiant, nom, chemin ou arborescence ;
+* les sous-albums et une profondeur configurable ;
+* tris, limites, filtres d’orientation, tags, légendes et styles visuels ;
+* les transitions de diaporama `slide`, `fade` et `none`, avec direction `ltr` / `rtl` ;
+* des réglages distincts pour la durée d’affichage et la vitesse de transition ;
+* le dimensionnement visuel des diaporamas ;
+* un cache WordPress séparé selon le contexte d’accès ;
+* diagnostic et purge du cache ;
+* un compte de service Piwigo côté serveur pour les albums privés autorisés ;
+* navigation clavier, focus visible et prise en charge de la préférence de réduction des animations.
+
+Le compte de service ne connecte pas les visiteurs à Piwigo. Un album privé affiché sur une page WordPress publique devient visible sur cette page : le compte dédié doit donc être limité aux seuls albums destinés à être publiés.
 
 == Installation ==
 
-1. Upload the ZIP file from Plugins > Add New Plugin > Upload Plugin.
-2. Activate Piwigo Display.
-3. Open the plugin settings and enter the Piwigo HTTPS URL.
-4. Test the connection.
-5. Insert the Piwigo Display block, use the administration composer, or use a shortcode such as `[piwigo album="154"]`.
-6. For private albums, configure a dedicated Piwigo service account restricted to the albums that may be published.
+1. Dans WordPress, ouvrez Extensions > Ajouter une extension > Téléverser une extension.
+2. Sélectionnez le fichier ZIP de Piwigo Display pour WordPress puis activez le plugin.
+3. Ouvrez les réglages du plugin et renseignez l’adresse HTTPS de votre installation Piwigo.
+4. Testez la connexion.
+5. Insérez le bloc Piwigo Display, utilisez le composeur d’administration ou un shortcode tel que `[piwigo album="154"]`.
+6. Pour les albums privés, configurez un compte Piwigo dédié et limité aux albums pouvant être publiés.
 
 == Shortcodes ==
 
-Basic gallery:
+Galerie simple :
 
 `[piwigo album="154"]`
 
-Slider:
+Diaporama :
 
 `[piwigo album="154" type="slider" width="72%" height="480px"]`
 
-Slider with fade transition:
+Diaporama avec fondu :
 
 `[piwigo album="154" type="slider" transition="fade" speed="700"]`
 
-Right-to-left slider:
+Diaporama de droite à gauche :
 
 `[piwigo album="154" type="slider" transition="slide" direction="rtl"]`
 
-Masonry:
+Masonry :
 
 `[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]`
 
-Recursive albums:
+Sous-albums récursifs :
 
 `[piwigo album="154" recursive="true" depth="2"]`
 
-Sorting and limits:
+Tri et limite :
 
 `[piwigo album="154" sort="date" order="desc" limit="20"]`
 
-Tags:
+Tags :
 
-`[piwigo album="154" tags="nature,animals" tag_mode="all"]`
+`[piwigo album="154" tags="nature,animaux" tag_mode="all"]`
 
-== Frequently Asked Questions ==
+== Questions fréquentes ==
 
-= Are images copied into WordPress? =
+= Les images sont-elles copiées dans WordPress ? =
 
-No. They remain stored in Piwigo.
+Non. Elles restent stockées dans Piwigo.
 
-= How can I display a private album? =
+= Comment afficher un album privé ? =
 
-Create a dedicated Piwigo account, restrict it to the albums that may be published, and enable the service account in WordPress. HTTPS is required.
+Créez un compte Piwigo dédié, limitez-le aux albums pouvant être publiés puis activez le compte de service dans WordPress. HTTPS est requis.
 
-= Can visitors see the Piwigo credentials? =
+= Les visiteurs peuvent-ils voir les identifiants Piwigo ? =
 
-No. Authentication and session cookies remain server-side.
+Non. L’authentification et les cookies de session restent côté serveur.
 
-= Does the slider respect reduced-motion preferences? =
+= Le diaporama respecte-t-il la préférence de réduction des animations ? =
 
-Yes. When the operating system requests reduced motion, autoplay is disabled and transitions are removed or reduced.
+Oui. Lorsque le système demande une réduction des animations, la lecture automatique est désactivée et les transitions sont supprimées ou réduites.
 
 == Changelog ==
 
 = 3.0.0-rc.1 =
 
-* First 3.x Release Candidate.
-* Refactored the plugin architecture for the 3.x code base.
-* Added CSS-column Masonry with configurable columns and gaps.
-* Added `slide`, `fade`, and `none` slider transitions.
-* Added `ltr` and `rtl` slider direction.
-* Improved functional parity between Gutenberg, Classic Editor, and the administration composer.
-* Improved the visual hierarchical album picker and keyboard navigation.
-* Added reduced-motion handling for sliders.
-* Hardened privileged actions, HTTP requests, service-account URL validation, and other security invariants.
-* Added accessibility and security regression checks to the single CI workflow.
-* Kept PHP 8.1 through PHP 8.4 compatibility and Plugin Check validation in CI.
+* Première Release Candidate de la branche 3.x.
+* Refonte de l’architecture du plugin pour la branche 3.x.
+* Ajout du Masonry CSS avec colonnes et espacements configurables.
+* Ajout des transitions `slide`, `fade` et `none`.
+* Ajout des directions `ltr` et `rtl` pour les diaporamas.
+* Amélioration de la parité entre Gutenberg, l’éditeur classique et le composeur d’administration.
+* Amélioration du sélecteur hiérarchique d’albums et de la navigation clavier.
+* Prise en charge de la réduction des animations.
+* Renforcement des actions privilégiées, requêtes HTTP, validation des URL du compte de service et autres invariants de sécurité.
+* Ajout de contrôles de régression d’accessibilité et de sécurité au workflow CI unique.
+* Compatibilité PHP 8.1 à PHP 8.4 et validation Plugin Check conservées dans la CI.
 
 = 2.0.0 =
 
-* Added a Piwigo service account for authorized private albums.
-* Kept authentication and session cookies server-side.
-* Separated anonymous and authenticated caches.
-* Added album search and tree selection.
-* Added visual slider resizing in Gutenberg.
-* Maintained parity across Gutenberg, Classic Editor, and the administration composer.
-* Added CI coverage for PHP 8.1 through PHP 8.4 and automatic installable ZIP generation.
+* Ajout d’un compte de service Piwigo pour les albums privés autorisés.
+* Authentification et cookies de session conservés côté serveur.
+* Séparation des caches anonymes et authentifiés.
+* Ajout de la recherche et de la sélection arborescente des albums.
+* Ajout du redimensionnement visuel des diaporamas dans Gutenberg.
+* Maintien de la parité entre Gutenberg, l’éditeur classique et le composeur d’administration.
+* Ajout de la CI PHP 8.1 à PHP 8.4 et de la génération automatique d’un ZIP installable.
