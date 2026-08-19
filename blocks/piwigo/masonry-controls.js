@@ -48,6 +48,9 @@
             var collageSize = Math.min(420, Math.max(120, parseInt(attributes.collageSize || 220, 10)));
             var collageVariation = Math.min(50, Math.max(0, parseInt(attributes.collageVariation || 20, 10)));
             var photoTextWeight = Math.min(900, Math.max(100, parseInt(attributes.photoTextWeight || 800, 10)));
+            var photoTextSize = Math.min(300, Math.max(120, parseInt(attributes.photoTextSize || 230, 10)));
+            var photoTextLetterSpacing = Math.min(80, Math.max(-20, parseInt(attributes.photoTextLetterSpacing || 0, 10)));
+            var photoTextMaxWidth = Math.min(100, Math.max(20, parseInt(attributes.photoTextMaxWidth || 100, 10)));
             var photoTextOutlineWidth = Math.min(12, Math.max(0, parseInt(attributes.photoTextOutlineWidth || 3, 10)));
             var photoTextMaxImages = Math.min(40, Math.max(1, parseInt(attributes.photoTextMaxImages || 20, 10)));
 
@@ -75,6 +78,14 @@
                     displayType === 'photo-text' && el(TextControl, {label: __('Graine de composition', 'wp-piwigo-display'), value: attributes.photoTextSeed || '0', help: __('Même graine + mêmes photos = même remplissage.', 'wp-piwigo-display'), onChange: function (value) { setAttributes({photoTextSeed: value}); }}),
                     displayType === 'photo-text' && el(SelectControl, {label: __('Police', 'wp-piwigo-display'), value: attributes.photoTextFont || 'inherit', options: photoTextFontOptions(), onChange: function (value) { setAttributes({photoTextFont: value}); }}),
                     displayType === 'photo-text' && el(RangeControl, {label: __('Graisse', 'wp-piwigo-display'), value: photoTextWeight, min: 100, max: 900, step: 100, onChange: function (value) { setAttributes({photoTextWeight: value}); }}),
+                    displayType === 'photo-text' && el(RangeControl, {label: __('Taille du texte', 'wp-piwigo-display'), value: photoTextSize, min: 120, max: 300, onChange: function (value) { setAttributes({photoTextSize: value}); }}),
+                    displayType === 'photo-text' && el(RangeControl, {label: __('Interlettrage', 'wp-piwigo-display'), value: photoTextLetterSpacing, min: -20, max: 80, onChange: function (value) { setAttributes({photoTextLetterSpacing: value}); }}),
+                    displayType === 'photo-text' && el(RangeControl, {label: __('Largeur maximale (%)', 'wp-piwigo-display'), value: photoTextMaxWidth, min: 20, max: 100, onChange: function (value) { setAttributes({photoTextMaxWidth: value}); }}),
+                    displayType === 'photo-text' && el(SelectControl, {label: __('Alignement', 'wp-piwigo-display'), value: attributes.photoTextAlign || 'center', options: [
+                        {label: __('Gauche', 'wp-piwigo-display'), value: 'left'},
+                        {label: __('Centre', 'wp-piwigo-display'), value: 'center'},
+                        {label: __('Droite', 'wp-piwigo-display'), value: 'right'}
+                    ], onChange: function (value) { setAttributes({photoTextAlign: value}); }}),
                     displayType === 'photo-text' && el(RangeControl, {label: __('Nombre maximal de photos', 'wp-piwigo-display'), value: photoTextMaxImages, min: 1, max: 40, onChange: function (value) { setAttributes({photoTextMaxImages: value}); }}),
                     displayType === 'photo-text' && el(ToggleControl, {label: __('Afficher un contour', 'wp-piwigo-display'), checked: attributes.photoTextOutline !== false, onChange: function (value) { setAttributes({photoTextOutline: value}); }}),
                     displayType === 'photo-text' && attributes.photoTextOutline !== false && el(RangeControl, {label: __('Épaisseur du contour', 'wp-piwigo-display'), value: photoTextOutlineWidth, min: 0, max: 12, onChange: function (value) { setAttributes({photoTextOutlineWidth: value}); }}),
