@@ -28,6 +28,7 @@
       "php tests/justified-layout.php",
       "php tests/collage-layout.php",
       "php tests/photo-text-layout.php",
+      "php tests/user-fonts.php",
       "php tests/svg-mask-sanitizer.php",
       "php tests/custom-svg-masks.php",
       "php tests/shapes.php",
@@ -40,7 +41,7 @@
     "standards:service-api": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-api.php",
     "standards:service-account": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-account.php",
     "standards:services": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-api.php includes/class-wpd-service-account.php",
-    "standards:checked": "phpcs --standard=phpcs.xml.dist wp-piwigo-display.php includes/class-wpd-gutenberg-parity.php includes/class-wpd-shapes.php includes/class-wpd-svg-mask-sanitizer.php includes/class-wpd-custom-svg-masks.php includes/class-wpd-slider-transitions.php includes/class-wpd-classic-editor.php includes/class-wpd-block.php includes/class-wpd-masonry.php includes/class-wpd-justified.php includes/class-wpd-collage.php includes/class-wpd-photo-text.php includes/class-wpd-composer-parity.php includes/class-wpd-cache.php includes/class-wpd-api-metrics.php includes/class-wpd-renderer.php includes/class-wpd-api.php includes/class-wpd-shortcode.php includes/class-wpd-settings.php includes/class-wpd-diagnostic.php includes/class-wpd-service-api.php includes/class-wpd-service-account.php includes/class-wpd-plugin.php",
+    "standards:checked": "phpcs --standard=phpcs.xml.dist wp-piwigo-display.php includes/class-wpd-gutenberg-parity.php includes/class-wpd-shapes.php includes/class-wpd-svg-mask-sanitizer.php includes/class-wpd-custom-svg-masks.php includes/class-wpd-user-fonts.php includes/class-wpd-slider-transitions.php includes/class-wpd-classic-editor.php includes/class-wpd-block.php includes/class-wpd-masonry.php includes/class-wpd-justified.php includes/class-wpd-collage.php includes/class-wpd-photo-text.php includes/class-wpd-composer-parity.php includes/class-wpd-cache.php includes/class-wpd-api-metrics.php includes/class-wpd-renderer.php includes/class-wpd-api.php includes/class-wpd-shortcode.php includes/class-wpd-settings.php includes/class-wpd-diagnostic.php includes/class-wpd-service-api.php includes/class-wpd-service-account.php includes/class-wpd-plugin.php",
     "standards:report": "phpcs --standard=phpcs.xml.dist --report=summary",
     "standards:fix": "phpcbf --standard=phpcs.xml.dist"
   }
