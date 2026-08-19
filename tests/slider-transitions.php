@@ -53,6 +53,7 @@ $assert_same( true, false !== strpos( $injected, 'data-direction="rtl"' ), 'Le r
 $assert_same( $output, WPD_Slider_Transitions::inject_slider_attributes( $output, 'piwigo', array( 'type' => 'gallery' ), array() ), 'Une galerie ne doit pas recevoir les attributs du slider.' );
 
 $slider = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-slider.js' );
+$plugin = file_get_contents( __DIR__ . '/../includes/class-wpd-plugin.php' );
 $assert_same( true, false !== strpos( (string) $slider, "transition === 'none' ? 0" ), 'Le mode sans animation doit forcer une vitesse nulle.' );
 $assert_same( true, false !== strpos( (string) $slider, "type: isFade ? 'fade' : 'loop'" ), 'Le fondu doit utiliser le type fade de Splide.' );
 $assert_same( true, false !== strpos( (string) $slider, 'direction: direction' ), 'La direction doit être fournie à Splide.' );
@@ -61,6 +62,10 @@ $assert_same( true, false !== strpos( (string) $slider, "if (!slides.length)" ),
 $assert_same( true, false !== strpos( (string) $slider, 'wpd-native-slider-controls' ), 'Le fallback doit créer des commandes précédent/suivant même sans miniatures.' );
 $assert_same( true, false !== strpos( (string) $slider, "navigation === 'dots'" ), 'Le fallback doit recréer une pagination lorsque la navigation par points est demandée.' );
 $assert_same( true, false !== strpos( (string) $slider, 'removeNativeFallbackControls(slider)' ), 'Les commandes de secours doivent être retirées quand Splide devient disponible.' );
+$assert_same( true, false !== strpos( (string) $slider, 'window.WPDSliderI18n' ), 'Le fallback doit lire ses libellés depuis la configuration traduisible WordPress.' );
+$assert_same( true, false !== strpos( (string) $plugin, "'WPDSliderI18n'" ), 'Le plugin doit localiser les libellés du fallback slider.' );
+$assert_same( true, false !== strpos( (string) $plugin, "__( 'Image précédente', 'wp-piwigo-display' )" ), 'Le libellé précédent doit passer par le système de traduction WordPress.' );
+$assert_same( true, false !== strpos( (string) $plugin, "__( 'Afficher l’image %d', 'wp-piwigo-display' )" ), 'Le libellé des points de navigation doit passer par le système de traduction WordPress.' );
 
 $block = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
 $assert_same( true, false !== strpos( (string) $block, '"transition"' ), 'Gutenberg doit exposer le réglage de transition.' );
