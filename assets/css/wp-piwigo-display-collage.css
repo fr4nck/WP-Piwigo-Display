@@ -1,0 +1,58 @@
+.wp-piwigo-display-collage {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0;
+	padding: 2.5rem max(1rem, 4vw);
+	overflow: hidden;
+}
+
+.wp-piwigo-display-collage-item {
+	position: relative;
+	z-index: var(--wpd-collage-z, 1);
+	width: min(var(--wpd-collage-size, 220px), 42vw);
+	margin: calc(var(--wpd-collage-overlap, 12px) * -0.5);
+	transform: translate(var(--wpd-collage-x, 0), var(--wpd-collage-y, 0)) rotate(var(--wpd-collage-rotate, 0deg));
+	transition: transform 160ms ease, z-index 0s;
+}
+
+.wp-piwigo-display-collage-item a {
+	display: block;
+	padding: 5px;
+	background: #fff;
+	box-shadow: 0 4px 14px rgb(0 0 0 / 20%);
+}
+
+.wp-piwigo-display-collage-item img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.wp-piwigo-display-collage-item:focus-within,
+.wp-piwigo-display-collage-item:hover {
+	z-index: 30;
+	transform: translate(var(--wpd-collage-x, 0), var(--wpd-collage-y, 0)) rotate(0deg) scale(1.03);
+}
+
+.wp-piwigo-display-collage-item a:focus-visible {
+	outline: 3px solid currentColor;
+	outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+	.wp-piwigo-display-collage {
+		padding: 1.5rem 0.75rem;
+	}
+	.wp-piwigo-display-collage-item {
+		width: min(var(--wpd-collage-size, 220px), 58vw);
+		--wpd-collage-x: 0 !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wp-piwigo-display-collage-item {
+		transition: none;
+	}
+}
