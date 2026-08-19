@@ -4,11 +4,13 @@ Cette checklist doit être remplie avant de présenter **3.0.0** comme version s
 
 La Release Candidate courante est **3.0.0-rc.3**. La dernière stable publique avant la V3 est **1.8.0** ; la ligne 2.0.0 n’a jamais été publiée comme release publique.
 
-## 1. Préparation
+## 1. Préparation et paquet
 
-- [ ] récupérer le ZIP produit par GitHub Actions pour le commit à tester ;
-- [ ] vérifier que le ZIP contient un seul dossier racine `piwigo-display` ;
+- [ ] récupérer le ZIP `piwigo-display-3.0.0-rc.3.zip` produit par GitHub Actions pour le commit à tester ;
+- [ ] vérifier que le ZIP contient un seul dossier racine `wp-piwigo-display` ;
+- [ ] vérifier que ce dossier contient `wp-piwigo-display.php` et non un fichier principal renommé ;
 - [ ] installer le ZIP sur un WordPress de recette sans reprendre les fichiers du dépôt ;
+- [ ] vérifier qu’une mise à jour depuis une installation historique conserve la même extension et ses réglages ;
 - [ ] relever les versions WordPress, PHP, navigateur et Piwigo utilisées ;
 - [ ] activer `WP_DEBUG` et conserver les erreurs éventuelles.
 
@@ -18,6 +20,7 @@ La Release Candidate courante est **3.0.0-rc.3**. La dernière stable publique a
 - [ ] présence du menu principal Piwigo Display ;
 - [ ] présence des écrans Tableau de bord, Composer, Réglages et Diagnostic ;
 - [ ] sauvegarde et relecture de l’URL Piwigo ;
+- [ ] une installation neuve ne contient aucune URL Piwigo préconfigurée ;
 - [ ] test de connexion concluant avec une instance valide ;
 - [ ] message explicite avec une URL absente, incorrecte ou indisponible ;
 - [ ] export du diagnostic exploitable ;
@@ -40,13 +43,16 @@ La Release Candidate courante est **3.0.0-rc.3**. La dernière stable publique a
 
 À contrôler dans le composeur d’administration, Classic Editor et Gutenberg :
 
+- [ ] **sans compte de service configuré**, l’explorateur public charge bien les albums ;
+- [ ] avec compte de service configuré, l’explorateur peut charger les albums autorisés à ce compte ;
 - [ ] chargement de l’arborescence des albums ;
 - [ ] respect des niveaux parent/enfant ;
 - [ ] recherche par nom et chemin ;
 - [ ] sélection au clic et report correct de la valeur ;
 - [ ] saisie manuelle par identifiant ;
 - [ ] saisie manuelle par nom ;
-- [ ] saisie manuelle par chemin ;
+- [ ] saisie manuelle par chemin, par exemple `/ALSH/Été 2026/Séjour voile` ;
+- [ ] deux albums de même nom restent distinguables par leur chemin ;
 - [ ] saisie manuelle encore utilisable lorsque l’API échoue ;
 - [ ] navigation clavier et focus visibles dans le sélecteur.
 
@@ -70,7 +76,16 @@ Pour chaque interface, vérifier la génération et le rendu des options suivant
 
 La matrice de référence est `docs/PARITE-COMPOSEURS.md`.
 
-## 6. Compatibilité historique
+## 6. Compte de service et URL personnalisée
+
+- [ ] le compte de service fonctionne sur l’URL Piwigo configurée dans les réglages ;
+- [ ] les albums privés autorisés s’affichent avec le compte dédié ;
+- [ ] le HTML et le JavaScript publics ne contiennent jamais le nom d’utilisateur ni le mot de passe ;
+- [ ] un shortcode utilisant `url="https://autre-galerie.example.org"` reste **anonyme**, même lorsqu’un compte de service est configuré ;
+- [ ] les données mises en cache pour le compte de service et les données anonymes ne partagent pas le même contexte ;
+- [ ] désactiver le compte de service rend à nouveau l’explorateur public normalement utilisable.
+
+## 7. Compatibilité historique
 
 - [ ] `[piwigo album="154"]` ;
 - [ ] galerie historique sans nouveaux attributs ;
@@ -78,14 +93,19 @@ La matrice de référence est `docs/PARITE-COMPOSEURS.md`.
 - [ ] shortcode avec récursivité ;
 - [ ] shortcode avec tri et limite ;
 - [ ] contenu enregistré avec la dernière version publique 1.x utilisée en production ;
-- [ ] absence de modification silencieuse du shortcode lors d’une réouverture dans un composeur.
+- [ ] absence de modification silencieuse du shortcode lors d’une réouverture dans un composeur ;
+- [ ] les hooks historiques `wp_piwigo_display_*` restent disponibles.
 
-## 7. Rendu et responsive
+## 8. Rendu, slider et responsive
 
 Sur ordinateur, tablette et mobile :
 
 - [ ] galerie responsive sans débordement horizontal ;
 - [ ] diaporama stable et commandes utilisables ;
+- [ ] miniatures du slider synchronisées avec la diapositive active ;
+- [ ] transitions `slide`, `fade` et `none` ;
+- [ ] autoplay et intervalle ;
+- [ ] fonctionnement du fallback natif si Splide tarde ou ne se charge pas ;
 - [ ] largeur et alignement respectés sur grand écran ;
 - [ ] retour automatique à 100 % sur mobile ;
 - [ ] Masonry réduit progressivement son nombre de colonnes ;
@@ -94,7 +114,7 @@ Sur ordinateur, tablette et mobile :
 - [ ] lightbox utilisable au clavier ;
 - [ ] aucune image déformée de manière inattendue.
 
-## 8. Redimensionnement visuel
+## 9. Redimensionnement visuel
 
 - [ ] poignée visible lorsque le bloc ou le diaporama est sélectionné ;
 - [ ] redimensionnement à la souris ;
@@ -103,29 +123,31 @@ Sur ordinateur, tablette et mobile :
 - [ ] aucune largeur invalide ou supérieure au conteneur ;
 - [ ] maintien du comportement mobile.
 
-## 9. Cache et indisponibilité
+## 10. Cache, indisponibilité et réponses Piwigo polluées
 
 - [ ] deux chargements identiques utilisent le cache attendu ;
 - [ ] les contextes d’accès ne partagent pas indûment leurs données ;
 - [ ] la purge force un nouvel appel Piwigo ;
 - [ ] une indisponibilité Piwigo n’efface pas les réglages ni les shortcodes ;
 - [ ] les erreurs côté administration sont compréhensibles ;
-- [ ] le rendu public échoue proprement sans casser la page WordPress.
+- [ ] le rendu public échoue proprement sans casser la page WordPress ;
+- [ ] sur une instance affectée par un plugin Piwigo qui ajoute du HTML/JavaScript autour de `ws.php?format=json`, la réponse API reste récupérable ;
+- [ ] cette compatibilité ne modifie pas les réponses HTTP étrangères à l’API Piwigo.
 
-## 10. Contrôle technique
+## 11. Contrôle technique
 
 - [ ] PHP lint réussi sur toutes les versions annoncées ;
-- [ ] tests statiques réussis ;
+- [ ] tous les tests PHP de non-régression du dossier `tests/` sont réellement exécutés ;
 - [ ] sécurité et accessibilité automatisées réussies ;
 - [ ] WPCS contrôlé sur les fichiers normalisés ;
-- [ ] WordPress Plugin Check réussi ;
+- [ ] WordPress Plugin Check réussi **sur l’arborescence réellement installable**, sans réécriture artificielle du slug/text-domain ;
 - [ ] intégrité du paquet frontend vérifiée ;
 - [ ] cohérence entre l’en-tête du plugin, `WPD_VERSION`, README et `readme.txt` ;
 - [ ] aucun secret ni identifiant Piwigo dans le HTML ou JavaScript public ;
 - [ ] aucune erreur JavaScript dans les trois composeurs ;
 - [ ] aucun avertissement PHP dans les scénarios nominaux.
 
-## 11. Décision de release
+## 12. Décision de release
 
 Renseigner avant création d’un tag ou d’un ZIP présenté comme release stable :
 
