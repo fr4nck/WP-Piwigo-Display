@@ -282,6 +282,9 @@ final class WPD_Api {
 	/**
 	 * Resolves an album name, path or numeric identifier.
 	 *
+	 * Private album names and paths are resolved through the service account when
+	 * and only when this client points to the configured Piwigo URL.
+	 *
 	 * @param string $album Album name, path or identifier.
 	 * @return int|WP_Error
 	 */
@@ -295,7 +298,7 @@ final class WPD_Api {
 			return absint( $album );
 		}
 
-		$categories = $this->get_all_categories();
+		$categories = $this->get_categories_for_resolution();
 		if ( is_wp_error( $categories ) ) {
 			return $categories;
 		}
@@ -338,6 +341,25 @@ final class WPD_Api {
 				$album
 			)
 		);
+	}
+
+	/**
+	 * Retrieves visible categories with the appropriate authentication context.
+	 *
+	 * @return array<int, array<string, mixed>>|WP_Error
+	 */
+	private function get_categories_for_resolution() {
+		$configured_url = untrailingslashit( trim( WPD_Settings::get_piwigo_url() ) );
+		if (
+			'' !== $configured_url
+			&& $this->base_url === $configured_url
+			&& WPD_Service_Account::is_configured()
+		) {
+			$service_api = new WPD_Service_Api( $this->base_url );
+			return $service_api->get_all_categories();
+		}
+
+		return $this->get_all_categories();
 	}
 
 	/**
