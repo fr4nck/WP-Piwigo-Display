@@ -2,6 +2,7 @@
 
 $bootstrap = file_get_contents( __DIR__ . '/../wp-piwigo-display.php' );
 $module    = file_get_contents( __DIR__ . '/../includes/class-wpd-photo-text.php' );
+$fonts     = file_get_contents( __DIR__ . '/../includes/class-wpd-user-fonts.php' );
 $css       = file_get_contents( __DIR__ . '/../assets/css/wp-piwigo-display-photo-text.css' );
 $block     = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
 $controls  = file_get_contents( __DIR__ . '/../blocks/piwigo/masonry-controls.js' );
@@ -18,13 +19,16 @@ $assert = static function ( bool $condition, string $message ): void {
 
 $assert( false !== strpos( $bootstrap, 'class-wpd-photo-text.php' ), 'Le moteur Texte rempli de photos doit être chargé.' );
 $assert( false !== strpos( $bootstrap, 'WPD_Photo_Text::register()' ), 'Le moteur Texte rempli de photos doit être enregistré.' );
+$assert( false !== strpos( $bootstrap, 'class-wpd-user-fonts.php' ), 'Le résolveur de polices locales doit être chargé.' );
 $assert( false !== strpos( $module, "=== 'photo-text'" ), 'type=photo-text doit activer le layout photo-text.' );
 $assert( false !== strpos( $module, '<clipPath' ) && false !== strpos( $module, '<image href=' ), 'Le rendu doit utiliser un masque SVG contenant plusieurs photos.' );
 $assert( false !== strpos( $module, 'wpd-photo-text-semantic' ), 'Le texte doit rester présent sous forme sémantique.' );
 $assert( false !== strpos( $module, 'aria-hidden="true"' ), 'Le SVG décoratif doit être masqué aux technologies d’assistance.' );
 $assert( false !== strpos( $module, 'seeded_urls' ) && false !== strpos( $module, 'crc32( $seed )' ), 'La composition doit rester déterministe pour une même graine.' );
-$assert( false !== strpos( $module, "'system' => 'system-ui" ), 'Une pile système locale doit être disponible.' );
-$assert( false === strpos( $module, 'fonts.googleapis.com' ) && false === strpos( $module, 'use.typekit.net' ), 'Aucune police distante tierce ne doit être chargée.' );
+$assert( false !== strpos( $module, 'WPD_User_Fonts::font_stack' ), 'Le moteur Texte-photo doit déléguer la résolution des polices.' );
+$assert( false !== strpos( $fonts, "'system' => 'system-ui" ), 'Une pile système locale doit être disponible.' );
+$assert( false !== strpos( $fonts, "'serif'  => 'Georgia" ) && false !== strpos( $fonts, "'mono'   => 'ui-monospace" ), 'Les piles serif et monospace locales doivent rester disponibles.' );
+$assert( false === strpos( $module, 'fonts.googleapis.com' ) && false === strpos( $module, 'use.typekit.net' ) && false === strpos( $fonts, 'fonts.googleapis.com' ) && false === strpos( $fonts, 'use.typekit.net' ), 'Aucune police distante tierce ne doit être chargée.' );
 $assert( false !== strpos( $css, '.wpd-photo-text-semantic' ), 'Le texte sémantique doit disposer d’un masquage visuel accessible.' );
 $assert( false !== strpos( $block, '"photoText"' ) && false !== strpos( $block, '"photoTextMaxImages"' ), 'Les attributs Gutenberg du texte photo doivent être déclarés.' );
 $assert( false !== strpos( $controls, "value: 'photo-text'" ), 'Gutenberg doit proposer le mode Texte rempli de photos.' );
