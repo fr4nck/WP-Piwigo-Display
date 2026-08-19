@@ -36,5 +36,7 @@ $assert( false !== strpos( (string) $gutenberg, "'aria-expanded': hasChildren ? 
 $assert( false !== strpos( (string) $gutenberg, 'setSelectedId(id);' ) && false !== strpos( (string) $gutenberg, 'props.onChange(id);' ), 'Gutenberg doit séparer présélection et validation.' );
 
 $assert( false !== strpos( (string) $css, '.wpd-album-row.is-selected' ), 'L’album présélectionné doit être visible.' );
+$assert( false !== strpos( (string) $css, 'max-height:min(360px,50vh)' ), 'Le panneau du sélecteur ne doit pas dépasser 50vh sur les petits écrans.' );
+$assert( false !== strpos( (string) $css, 'overscroll-behavior:contain' ), 'Le défilement du sélecteur doit rester contenu dans son panneau.' );
 
 echo "Album tree picker checks passed.\n";
