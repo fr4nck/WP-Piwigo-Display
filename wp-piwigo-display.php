@@ -20,12 +20,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! defined( 'WPD_VERSION' ) ) {
 	define( 'WPD_VERSION', '3.0.0-rc.1' );
 }
+
 if ( ! defined( 'WPD_PLUGIN_FILE' ) ) {
 	define( 'WPD_PLUGIN_FILE', __FILE__ );
 }
+
 if ( ! defined( 'WPD_PLUGIN_DIR' ) ) {
 	define( 'WPD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
+
 if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
 	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
