@@ -18,6 +18,31 @@
             initialValues[name] = $field.is(':checkbox') ? $field.is(':checked') : $field.val();
         });
 
+        function buildShapePicker() {
+            var $select = $dialog.find('[data-wpd="shape"]');
+            if (!$select.length || $dialog.find('.wpd-shape-picker-grid').length) return;
+
+            var $picker = $('<div class="wpd-shape-picker-grid" role="group" aria-label="Choisir une forme"></div>');
+            $select.find('option').each(function () {
+                var value = String($(this).val());
+                var label = String($(this).text());
+                var $button = $('<button type="button" class="wpd-shape-picker-button" aria-pressed="false"></button>');
+                $button.attr('data-wpd-shape-value', value).attr('aria-label', label).attr('title', label);
+                $button.append($('<span aria-hidden="true"></span>').addClass('wpd-shape-picker-preview wpd-shape-preview-' + value));
+                $button.append($('<span></span>').text(label));
+                $picker.append($button);
+            });
+            $select.after($picker);
+        }
+
+        function syncShapePicker() {
+            var selected = String(value('shape') || 'rectangle');
+            $dialog.find('[data-wpd-shape-value]').each(function () {
+                var active = String($(this).attr('data-wpd-shape-value')) === selected;
+                $(this).attr('aria-pressed', active ? 'true' : 'false');
+            });
+        }
+
         function value(name) {
             return $dialog.find('[data-wpd="' + name + '"]').val();
         }
@@ -149,6 +174,7 @@
             $dialog.find('.wpd-justified-options').toggle(justified);
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded');
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
+            syncShapePicker();
             $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
 
@@ -177,6 +203,8 @@
         function setPrimaryButtonLabel(label) {
             $dialog.parent().find('.ui-dialog-buttonpane .button-primary').text(label);
         }
+
+        buildShapePicker();
 
         $dialog.dialog({
             autoOpen: false,
@@ -212,6 +240,9 @@
             $dialog.dialog('open');
         });
 
+        $dialog.on('click', '[data-wpd-shape-value]', function () {
+            $dialog.find('[data-wpd="shape"]').val($(this).attr('data-wpd-shape-value')).trigger('change');
+        });
         $dialog.on('input', '[data-wpd="height"]', function () { editingLegacyHeight = ''; });
         $dialog.on('change input', 'input, select', refresh);
     });
