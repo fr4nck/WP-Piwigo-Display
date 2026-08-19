@@ -13,16 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Registers the Classic Editor builder and TinyMCE preview integration.
  */
 final class WPD_Classic_Editor {
-	/**
-	 * Registers Classic Editor hooks.
-	 *
-	 * @return void
-	 */
+	/** Registers Classic Editor hooks. */
 	public static function register(): void {
 		if ( ! is_admin() ) {
 			return;
 		}
-
 		add_action( 'media_buttons', array( self::class, 'render_button' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_assets' ) );
 		add_action( 'admin_footer-post.php', array( self::class, 'render_modal' ) );
@@ -30,23 +25,13 @@ final class WPD_Classic_Editor {
 		add_filter( 'mce_external_plugins', array( self::class, 'register_tinymce_plugin' ) );
 	}
 
-	/**
-	 * Adds the TinyMCE shortcode preview plugin.
-	 *
-	 * @param array<string,string> $plugins Registered TinyMCE plugins.
-	 * @return array<string,string>
-	 */
+	/** @param array<string,string> $plugins Registered TinyMCE plugins. @return array<string,string> */
 	public static function register_tinymce_plugin( array $plugins ): array {
 		$plugins['wpd_shortcode_preview'] = WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-tinymce.js';
 		return $plugins;
 	}
 
-	/**
-	 * Enqueues Classic Editor assets on post editing screens.
-	 *
-	 * @param string $hook Current administration screen hook.
-	 * @return void
-	 */
+	/** @param string $hook Current administration screen hook. */
 	public static function enqueue_assets( string $hook ): void {
 		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 			return;
@@ -54,31 +39,19 @@ final class WPD_Classic_Editor {
 		wp_enqueue_style( 'wp-jquery-ui-dialog' );
 		wp_enqueue_script( 'jquery-ui-dialog' );
 		wp_enqueue_style( 'wpd-classic-editor', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-classic-editor.css', array(), WPD_VERSION );
+		wp_enqueue_style( 'wpd-shape-picker', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-shape-picker.css', array(), WPD_VERSION );
 		wp_enqueue_script( 'wpd-classic-editor', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-classic-editor.js', array( 'jquery', 'jquery-ui-dialog' ), WPD_VERSION, true );
 	}
 
-	/**
-	 * Renders the Classic Editor media toolbar button.
-	 *
-	 * @param string $editor_id Target editor identifier.
-	 * @return void
-	 */
+	/** @param string $editor_id Target editor identifier. */
 	public static function render_button( string $editor_id = 'content' ): void {
 		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
 			return;
 		}
-		printf(
-			'<button type="button" class="button wpd-open-builder" data-editor="%1$s"><span class="dashicons dashicons-format-gallery" aria-hidden="true"></span> %2$s</button>',
-			esc_attr( $editor_id ),
-			esc_html__( 'Insérer une galerie Piwigo', 'wp-piwigo-display' )
-		);
+		printf( '<button type="button" class="button wpd-open-builder" data-editor="%1$s"><span class="dashicons dashicons-format-gallery" aria-hidden="true"></span> %2$s</button>', esc_attr( $editor_id ), esc_html__( 'Insérer une galerie Piwigo', 'wp-piwigo-display' ) );
 	}
 
-	/**
-	 * Renders the Classic Editor shortcode builder modal.
-	 *
-	 * @return void
-	 */
+	/** Renders the Classic Editor shortcode builder modal. */
 	public static function render_modal(): void {
 		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
 			return;
@@ -99,7 +72,7 @@ final class WPD_Classic_Editor {
 				<label><?php esc_html_e( 'Légende', 'wp-piwigo-display' ); ?><select data-wpd="caption"><option value="default">Réglage global</option><option value="none">Aucune</option><option value="title">Titre</option><option value="description">Description</option><option value="title-description">Titre et description</option></select></label>
 				<label><?php esc_html_e( 'Style', 'wp-piwigo-display' ); ?><select data-wpd="style"><option value="default">Réglage global</option><option value="theme">Thème WordPress</option><option value="minimal">Minimal</option><option value="none">Sans habillage</option></select></label>
 				<label><?php esc_html_e( 'Cadrage', 'wp-piwigo-display' ); ?><select data-wpd="fit"><option value="contain">Image entière</option><option value="cover">Cadre rempli</option><option value="auto">Automatique</option><option value="raw">Brut</option></select></label>
-				<label><?php esc_html_e( 'Forme', 'wp-piwigo-display' ); ?><select data-wpd="shape"><option value="rectangle">Rectangle</option><option value="rounded">Rectangle arrondi</option><option value="circle">Cercle</option><option value="oval">Ovale</option><option value="pill">Pilule</option><option value="star">Étoile</option><option value="hexagon">Hexagone</option><option value="diamond">Losange</option><option value="cloud">Nuage</option><option value="heart">Cœur</option><option value="drop">Goutte</option><option value="triangle">Triangle</option><option value="pentagon">Pentagone</option><option value="octagon">Octogone</option><option value="card-spade">Carte — Pique ♠</option><option value="card-heart">Carte — Cœur ♥</option><option value="card-diamond">Carte — Carreau ♦</option><option value="card-club">Carte — Trèfle ♣</option></select></label>
+				<div class="wpd-shape-field"><label><?php esc_html_e( 'Forme', 'wp-piwigo-display' ); ?><select data-wpd="shape"><option value="rectangle">Rectangle</option><option value="rounded">Rectangle arrondi</option><option value="circle">Cercle</option><option value="oval">Ovale</option><option value="pill">Pilule</option><option value="star">Étoile</option><option value="hexagon">Hexagone</option><option value="diamond">Losange</option><option value="cloud">Nuage</option><option value="heart">Cœur</option><option value="drop">Goutte</option><option value="triangle">Triangle</option><option value="pentagon">Pentagone</option><option value="octagon">Octogone</option><option value="card-spade">Carte — Pique ♠</option><option value="card-heart">Carte — Cœur ♥</option><option value="card-diamond">Carte — Carreau ♦</option><option value="card-club">Carte — Trèfle ♣</option></select></label><div class="wpd-shape-picker-grid" data-wpd-shape-picker></div></div>
 				<label class="wpd-radius-option"><?php esc_html_e( 'Arrondi (%)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="50" data-wpd="radius" value="8"></label>
 				<label><?php esc_html_e( 'Hauteur (px)', 'wp-piwigo-display' ); ?><input type="number" min="160" max="1200" data-wpd="height" placeholder="520"></label>
 				<label><?php esc_html_e( 'Tag unique', 'wp-piwigo-display' ); ?><input type="text" data-wpd="tag"></label>
