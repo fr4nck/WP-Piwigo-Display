@@ -42,6 +42,10 @@
                     '<label>Graine<input type="text" data-wpd="photo_text_seed" value="0"></label>' +
                     '<label>Police<select data-wpd="photo_text_font"><option value="inherit">Police du thème</option><option value="system">Système</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label>' +
                     '<label>Graisse<input type="number" min="100" max="900" step="100" data-wpd="photo_text_weight" value="800"></label>' +
+                    '<label>Taille du texte<input type="number" min="120" max="300" data-wpd="photo_text_size" value="230"></label>' +
+                    '<label>Interlettrage<input type="number" min="-20" max="80" data-wpd="photo_text_letter_spacing" value="0"></label>' +
+                    '<label>Largeur maximale (%)<input type="number" min="20" max="100" data-wpd="photo_text_max_width" value="100"></label>' +
+                    '<label>Alignement<select data-wpd="photo_text_align"><option value="left">Gauche</option><option value="center" selected>Centre</option><option value="right">Droite</option></select></label>' +
                     '<label>Nombre maximal de photos<input type="number" min="1" max="40" data-wpd="photo_text_max_images" value="20"></label>' +
                     '<label><input type="checkbox" data-wpd="photo_text_outline" checked> Afficher un contour</label>' +
                     '<label class="wpd-photo-text-outline-option">Épaisseur du contour<input type="number" min="0" max="12" data-wpd="photo_text_outline_width" value="3"></label>' +
@@ -166,6 +170,10 @@
                 add(parts, 'photo_text_seed', value('photo_text_seed') || '0', true);
                 add(parts, 'photo_text_font', value('photo_text_font') || 'inherit', true);
                 add(parts, 'photo_text_weight', bounded('photo_text_weight', 100, 900, 800), true);
+                add(parts, 'photo_text_size', bounded('photo_text_size', 120, 300, 230), true);
+                add(parts, 'photo_text_letter_spacing', bounded('photo_text_letter_spacing', -20, 80, 0), true);
+                add(parts, 'photo_text_max_width', bounded('photo_text_max_width', 20, 100, 100), true);
+                add(parts, 'photo_text_align', value('photo_text_align') || 'center', true);
                 add(parts, 'photo_text_max_images', bounded('photo_text_max_images', 1, 40, 20), true);
                 parts.push('photo_text_outline="' + (checked('photo_text_outline') ? 'true' : 'false') + '"');
                 if (checked('photo_text_outline')) {
