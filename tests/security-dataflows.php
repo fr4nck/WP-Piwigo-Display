@@ -94,7 +94,7 @@ $required = array(
         "current_user_can( 'manage_options' )",
         "check_admin_referer( 'wpd_upload_svg_mask' )",
         'is_uploaded_file( $tmp_name )',
-        "WPD_SVG_Mask_Sanitizer::sanitize( $raw )",
+        'WPD_SVG_Mask_Sanitizer::sanitize( $raw )',
         "check_admin_referer( 'wpd_delete_svg_mask' )",
     ),
 );
