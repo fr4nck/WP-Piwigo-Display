@@ -1,6 +1,16 @@
 (function () {
     'use strict';
 
+    var i18n = window.WPDSliderI18n || {};
+
+    function label(key, fallback) {
+        return typeof i18n[key] === 'string' && i18n[key] ? i18n[key] : fallback;
+    }
+
+    function numberedLabel(template, number) {
+        return String(template).replace('%d', String(number));
+    }
+
     function setActiveThumbnail(thumbnails, index) {
         thumbnails.forEach(function (thumbnail, thumbnailIndex) {
             var active = thumbnailIndex === index;
@@ -72,7 +82,7 @@
             var previous = document.createElement('button');
             previous.type = 'button';
             previous.className = 'wp-piwigo-display-slider-arrow wp-piwigo-display-slider-prev';
-            previous.setAttribute('aria-label', 'Image précédente');
+            previous.setAttribute('aria-label', label('previous', 'Previous image'));
             previous.textContent = '‹';
             previous.addEventListener('click', function () {
                 if (slider.dataset.wpdSliderInitialized !== 'true') {
@@ -83,7 +93,7 @@
             var next = document.createElement('button');
             next.type = 'button';
             next.className = 'wp-piwigo-display-slider-arrow wp-piwigo-display-slider-next';
-            next.setAttribute('aria-label', 'Image suivante');
+            next.setAttribute('aria-label', label('next', 'Next image'));
             next.textContent = '›';
             next.addEventListener('click', function () {
                 if (slider.dataset.wpdSliderInitialized !== 'true') {
@@ -99,13 +109,13 @@
         if (navigation === 'dots' && slides.length > 1) {
             var pagination = document.createElement('div');
             pagination.className = 'wp-piwigo-display-slider-pagination wpd-native-slider-pagination';
-            pagination.setAttribute('aria-label', 'Navigation du diaporama');
+            pagination.setAttribute('aria-label', label('navigation', 'Slideshow navigation'));
 
             slides.forEach(function (slide, index) {
                 var dot = document.createElement('button');
                 dot.type = 'button';
                 dot.className = 'wp-piwigo-display-slider-dot';
-                dot.setAttribute('aria-label', 'Afficher l’image ' + (index + 1));
+                dot.setAttribute('aria-label', numberedLabel(label('showImage', 'Show image %d'), index + 1));
                 dot.addEventListener('click', function () {
                     if (slider.dataset.wpdSliderInitialized !== 'true') {
                         showSlide(index);
