@@ -16,10 +16,18 @@ final class WPD_SVG_Mask_Sanitizer {
 	/** Maximum accepted SVG payload size in bytes. */
 	private const MAX_BYTES = 262144;
 
-	/** @var string[] Allowed SVG element names. */
+	/**
+	 * Allowed SVG element names.
+	 *
+	 * @var string[]
+	 */
 	private const ALLOWED_ELEMENTS = array( 'svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'polygon', 'polyline' );
 
-	/** @var string[] Allowed geometry/presentation attributes. */
+	/**
+	 * Allowed geometry and presentation attributes.
+	 *
+	 * @var string[]
+	 */
 	private const ALLOWED_ATTRIBUTES = array(
 		'viewBox',
 		'd',
@@ -68,11 +76,18 @@ final class WPD_SVG_Mask_Sanitizer {
 		libxml_clear_errors();
 		libxml_use_internal_errors( $previous_use_internal_errors );
 
-		if ( ! $loaded || ! $document->documentElement || 'svg' !== strtolower( $document->documentElement->localName ) ) {
+		// DOM extension property names are defined by PHP and cannot be converted to snake_case.
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		if ( ! $loaded || ! $document->documentElement ) {
+			return new WP_Error( 'wpd_svg_invalid_xml', __( 'Le fichier n’est pas un SVG XML valide.', 'wp-piwigo-display' ) );
+		}
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$root = $document->documentElement;
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		if ( 'svg' !== strtolower( $root->localName ) ) {
 			return new WP_Error( 'wpd_svg_invalid_xml', __( 'Le fichier n’est pas un SVG XML valide.', 'wp-piwigo-display' ) );
 		}
 
-		$root = $document->documentElement;
 		if ( ! self::sanitize_element( $root ) ) {
 			return new WP_Error( 'wpd_svg_forbidden_content', __( 'Le SVG contient un élément ou un attribut non autorisé.', 'wp-piwigo-display' ) );
 		}
@@ -98,6 +113,7 @@ final class WPD_SVG_Mask_Sanitizer {
 	 * @return bool Whether the subtree is accepted.
 	 */
 	private static function sanitize_element( DOMElement $element ): bool {
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$name = strtolower( $element->localName );
 		if ( ! in_array( $name, self::ALLOWED_ELEMENTS, true ) ) {
 			return false;
@@ -121,8 +137,11 @@ final class WPD_SVG_Mask_Sanitizer {
 			$element->removeAttribute( $attribute_name );
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		foreach ( iterator_to_array( $element->childNodes ) as $child ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			if ( XML_TEXT_NODE === $child->nodeType ) {
+				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				if ( '' !== trim( (string) $child->nodeValue ) ) {
 					return false;
 				}
@@ -130,6 +149,7 @@ final class WPD_SVG_Mask_Sanitizer {
 				continue;
 			}
 
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			if ( XML_ELEMENT_NODE !== $child->nodeType || ! self::sanitize_element( $child ) ) {
 				return false;
 			}
@@ -138,7 +158,12 @@ final class WPD_SVG_Mask_Sanitizer {
 		return true;
 	}
 
-	/** Returns true when an attribute value may reference active/external content. */
+	/**
+	 * Checks whether an attribute may reference active or external content.
+	 *
+	 * @param string $value Attribute value.
+	 * @return bool Whether the value contains an external or active reference.
+	 */
 	private static function contains_external_reference( string $value ): bool {
 		return (bool) preg_match( '/(?:https?:|data:|javascript:|url\s*\(|@import|\\x00)/i', $value );
 	}
@@ -173,7 +198,12 @@ final class WPD_SVG_Mask_Sanitizer {
 		return implode( ' ', array_map( array( self::class, 'format_number' ), $numbers ) );
 	}
 
-	/** Parses a positive numeric width/height without units. */
+	/**
+	 * Parses a positive numeric width or height without units.
+	 *
+	 * @param string $value Dimension value.
+	 * @return float|null Parsed dimension.
+	 */
 	private static function numeric_dimension( string $value ): ?float {
 		$value = trim( $value );
 		if ( '' === $value || ! preg_match( '/^\d+(?:\.\d+)?$/', $value ) ) {
@@ -182,7 +212,12 @@ final class WPD_SVG_Mask_Sanitizer {
 		return (float) $value;
 	}
 
-	/** Formats normalized numeric SVG values. */
+	/**
+	 * Formats normalized numeric SVG values.
+	 *
+	 * @param float $number Number to format.
+	 * @return string Normalized number.
+	 */
 	private static function format_number( float $number ): string {
 		$formatted = rtrim( rtrim( number_format( $number, 4, '.', '' ), '0' ), '.' );
 		return '-0' === $formatted ? '0' : $formatted;
