@@ -27,7 +27,7 @@ $assert( false !== strpos( $css, 'wpd-shape-circle' ) && false !== strpos( $css,
 $assert( false !== strpos( $block, '"collageSeed"' ) && false !== strpos( $block, '"collageRotation"' ), 'Les attributs Gutenberg du Collage doivent être déclarés.' );
 $assert( false !== strpos( $controls, "value: 'collage'" ), 'Gutenberg doit proposer le mode Collage.' );
 $assert( false !== strpos( $controls, 'Même graine + mêmes photos = même composition.' ), 'Gutenberg doit expliquer la stabilité de la composition.' );
-$assert( false !== strpos( $block_php, "'collageSeed' => 'collage_seed'" ), 'Le bloc doit transmettre la graine au shortcode.' );
+$assert( 1 === preg_match( "/'collageSeed'\\s*=>\\s*'collage_seed'/", $block_php ), 'Le bloc doit transmettre la graine au shortcode.' );
 $assert( false !== strpos( $classic, 'Collage / Pêle-mêle' ) && false !== strpos( $classic, "type === 'collage'" ), 'Classic Editor doit proposer et générer le mode Collage.' );
 $assert( false !== strpos( $classic, 'collage_variation' ), 'Classic Editor doit exposer les réglages Collage.' );
 $assert( false !== strpos( $composer, "[ 'collage', 'Collage / Pêle-mêle' ]" ), 'Le composeur d’administration doit proposer le mode Collage.' );
