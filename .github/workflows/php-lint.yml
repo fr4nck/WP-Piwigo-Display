@@ -70,10 +70,10 @@ jobs:
         continue-on-error: true
         run: composer standards:report
 
-      - name: Prepare Plugin Check distribution
+      - name: Prepare real Plugin Check distribution
         run: |
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a ./ build/plugin-check/piwigo-display/ \
+          mkdir -p build/plugin-check/wp-piwigo-display
+          rsync -a ./ build/plugin-check/wp-piwigo-display/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -89,25 +89,15 @@ jobs:
             --exclude 'CODEX.md' \
             --exclude 'README.en.md' \
             --exclude '*.zip'
-          python3 - <<'PY'
-          from pathlib import Path
 
-          root = Path('build/plugin-check/piwigo-display')
-          allowed = {'.php', '.js', '.json', '.txt', '.md'}
-          for path in root.rglob('*'):
-              if path.is_file() and path.suffix.lower() in allowed:
-                  text = path.read_text(encoding='utf-8')
-                  updated = text.replace('wp-piwigo-display', 'piwigo-display')
-                  if updated != text:
-                      path.write_text(updated, encoding='utf-8')
-          PY
-
-      - name: Run WordPress Plugin Check
+      - name: Run WordPress Plugin Check on real package identity
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/piwigo-display'
+          build-dir: './build/plugin-check/wp-piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
+          # Historical public hooks keep their pre-v3 names for backward compatibility.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
@@ -137,8 +127,8 @@ jobs:
 
       - name: Prepare plugin directory
         run: |
-          mkdir -p build/piwigo-display
-          rsync -a ./ build/piwigo-display/ \
+          mkdir -p build/wp-piwigo-display
+          rsync -a ./ build/wp-piwigo-display/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -156,12 +146,12 @@ jobs:
             --exclude '*.zip'
 
       - name: Check packaged frontend assets
-        run: php tests/package-assets.php build/piwigo-display
+        run: php tests/package-assets.php build/wp-piwigo-display
 
       - name: Create ZIP
         run: |
           cd build
-          zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" piwigo-display
+          zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
