@@ -322,7 +322,7 @@ final class WPD_Service_Api {
 			array(
 				'timeout'     => 10,
 				'redirection' => 0,
-				'user-agent'  => 'WP Piwigo Display/' . WPD_VERSION,
+				'user-agent'  => 'Piwigo Display/' . WPD_VERSION,
 				'body'        => $body,
 				'cookies'     => $this->cookies,
 				'sslverify'   => true,
