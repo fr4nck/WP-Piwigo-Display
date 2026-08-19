@@ -4,6 +4,18 @@
     if (!window.tinymce) return;
 
     tinymce.PluginManager.add('wpd_shortcode_preview', function (editor) {
+        function encodeShortcode(shortcode) {
+            return encodeURIComponent(shortcode);
+        }
+
+        function decodeShortcode(value) {
+            try {
+                return decodeURIComponent(value || '');
+            } catch (error) {
+                return '';
+            }
+        }
+
         function preview(shortcode) {
             var album = shortcode.match(/\balbum="([^"]*)"/);
             var slider = /\btype="slider"/.test(shortcode);
@@ -11,7 +23,7 @@
             if (album && album[1]) label += ' — ' + album[1];
 
             return '<span class="wpd-tinymce-shortcode" contenteditable="false" role="button" tabindex="0" title="Double-cliquez pour modifier" data-wpd-shortcode="' +
-                editor.dom.encode(shortcode) +
+                encodeShortcode(shortcode) +
                 '" style="display:inline-block;padding:8px 12px;border:1px solid #8c8f94;border-radius:3px;background:#f6f7f7;">' +
                 editor.dom.encode(label) +
                 '</span>';
@@ -21,7 +33,7 @@
             if (!node || !window.jQuery) return;
             window.jQuery(document).trigger('wpd:edit-shortcode', [
                 editor.id,
-                node.getAttribute('data-wpd-shortcode'),
+                decodeShortcode(node.getAttribute('data-wpd-shortcode')),
                 node
             ]);
         }
@@ -38,7 +50,7 @@
             container.innerHTML = event.content;
             Array.prototype.forEach.call(container.querySelectorAll('.wpd-tinymce-shortcode[data-wpd-shortcode]'), function (node) {
                 var token = 'WPD_SHORTCODE_' + shortcodes.length + '_PLACEHOLDER';
-                shortcodes.push(node.getAttribute('data-wpd-shortcode'));
+                shortcodes.push(decodeShortcode(node.getAttribute('data-wpd-shortcode')));
                 node.parentNode.replaceChild(document.createTextNode(token), node);
             });
             event.content = container.innerHTML;

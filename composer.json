@@ -21,6 +21,26 @@
   "scripts": {
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
     "compatibility": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --extensions=php --ignore=vendor .",
+    "security:entrypoints": "php tests/security-entrypoints.php",
+    "security:dataflows": "php tests/security-dataflows.php",
+    "security": [
+      "@security:entrypoints",
+      "@security:dataflows"
+    ],
+    "accessibility": "php tests/accessibility-ui.php",
+    "test:php-regressions": "find tests -maxdepth 1 -type f -name '*.php' ! -name 'security-*.php' ! -name 'accessibility-ui.php' ! -name 'package-assets.php' -print0 | sort -z | xargs -0 -n1 php",
+    "test:frontend": [
+      "@test:php-regressions",
+      "node tests/tinymce-preview.js"
+    ],
+    "test:package-assets": "php tests/package-assets.php",
+    "standards": "phpcs --standard=phpcs.xml.dist",
+    "standards:settings": "phpcs --standard=phpcs.xml.dist includes/class-wpd-settings.php",
+    "standards:diagnostic": "phpcs --standard=phpcs.xml.dist includes/class-wpd-diagnostic.php",
+    "standards:service-api": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-api.php",
+    "standards:service-account": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-account.php",
+    "standards:services": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-api.php includes/class-wpd-service-account.php",
+    "standards:checked": "phpcs --standard=phpcs.xml.dist wp-piwigo-display.php includes/class-wpd-api-metrics.php includes/class-wpd-gutenberg-parity.php includes/class-wpd-shapes.php includes/class-wpd-slider-transitions.php includes/class-wpd-classic-editor.php includes/class-wpd-block.php includes/class-wpd-masonry.php includes/class-wpd-composer-parity.php includes/class-wpd-cache.php includes/class-wpd-renderer.php includes/class-wpd-api.php includes/class-wpd-shortcode.php includes/class-wpd-settings.php includes/class-wpd-diagnostic.php includes/class-wpd-service-api.php includes/class-wpd-service-account.php includes/class-wpd-plugin.php includes/class-wpd-piwigo-response-compat.php",
     "standards:report": "phpcs --standard=phpcs.xml.dist --report=summary",
     "standards:fix": "phpcbf --standard=phpcs.xml.dist"
   }

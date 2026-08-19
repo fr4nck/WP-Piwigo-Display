@@ -1,87 +1,130 @@
-# WP Piwigo Display
+# Piwigo Display
 
-Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
+Plugin WordPress pour construire et afficher des galeries Piwigo directement dans WordPress, via l’API officielle, sans recopier les images dans la médiathèque WordPress.
 
-> **Version stable publiée : 1.8.0**
->
-> **La version 2.0.0 n’a jamais été publiée.** Les travaux qui avaient été engagés pour la V2 ont ensuite été repris et prolongés dans la future V3.
->
-> **Développement actuel : 3.0.0 RC**. La V3 est en phase de stabilisation et de recette avant publication.
+> English version: [README.en.md](README.en.md) — pour celles et ceux qui n’arrivent pas encore à utiliser Google Translate. 😄
 
-## Ce que fait WP Piwigo Display
+## État du projet
 
-Piwigo reste la source des photos. WordPress se charge uniquement de leur affichage.
+**Version candidate actuelle : 3.0.0-rc.3.**
 
-Le plugin permet notamment :
+La dernière version stable effectivement publiée avant la V3 est **1.8.0**. La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
 
-- d’afficher des albums Piwigo sans importer les images dans WordPress ;
-- d’utiliser une galerie responsive ou un diaporama ;
-- d’ouvrir les images dans une lightbox ;
-- d’afficher un album et ses sous-albums avec une profondeur configurable ;
-- de trier, limiter et filtrer les images ;
-- de gérer les légendes et plusieurs styles d’intégration ;
-- de sélectionner les albums par identifiant, nom, chemin ou arborescence ;
-- d’utiliser un cache WordPress pour limiter les appels à Piwigo ;
-- de diagnostiquer la connexion et le comportement du cache.
+La V3 est actuellement en phase de Release Candidate et doit encore être considérée comme une version de test avant la publication de 3.0.0 stable.
 
-## État du développement V3
+## Une interface visuelle avant tout
 
-La branche V3 prépare une refonte importante du plugin avec notamment :
+Piwigo Display V3 n’est plus seulement un jeu de shortcodes. Le plugin propose plusieurs outils visuels partageant les mêmes réglages et le même moteur de rendu :
 
-- Gutenberg, éditeur classique et composeur d’administration ;
-- galerie, slider, Masonry et nouveaux moteurs de rendu ;
-- orientations portrait / paysage / carré ;
-- tags et récursivité ;
-- compte de service Piwigo pour les albums privés autorisés ;
-- cache renforcé et mécanismes de résilience ;
-- page de diagnostic ;
-- suivi de la santé API et du cache (appels API, HIT/MISS, temps de réponse), actuellement intégré dans le chantier RC avant publication ;
-- tests automatisés de sécurité, accessibilité, compatibilité PHP et frontend.
+- **bloc Gutenberg dynamique** avec sélection d’album et réglages visuels dans l’éditeur ;
+- **composeur d’administration** pour préparer et prévisualiser une galerie avant insertion ;
+- **intégration Classic Editor / TinyMCE** avec bouton dédié et aperçu ;
+- **sélecteur d’albums visuel, hiérarchique et recherchable** ;
+- **parité fonctionnelle** entre Gutenberg, Classic Editor et le composeur ;
+- **shortcodes** conservés comme interface avancée, format portable et solution de compatibilité.
 
-La V3 n’est pas encore annoncée comme version stable tant que la recette RC n’est pas terminée.
+L’objectif est de permettre à un utilisateur de construire une galerie sans écrire de code, tout en gardant les shortcodes pour l’automatisation, les usages avancés et la compatibilité historique.
 
-## Installation de la version stable
+## Fonctionnalités principales de la V3
 
-La dernière version officiellement publiée est **WP Piwigo Display 1.8.0** et se trouve dans la section **Releases** de GitHub.
+- connexion à Piwigo via l’API officielle ;
+- albums publics et albums privés autorisés via compte de service côté serveur ;
+- galerie responsive classique ;
+- diaporama / carousel Splide ;
+- Masonry natif basé sur les colonnes CSS ;
+- lightbox ;
+- sélection d’album par identifiant, nom, chemin ou arborescence ;
+- sous-albums et profondeur configurable ;
+- tri, limites, orientations, tags, légendes et styles ;
+- formes d’encadrement ;
+- transitions de slider `slide`, `fade` et `none` ;
+- direction `ltr` ou `rtl` ;
+- fond de diaporama transparent indépendamment du style visuel ;
+- largeur, hauteur, ratio, vitesse et intervalle configurables ;
+- cache WordPress séparé par contexte d’accès ;
+- diagnostic et purge du cache ;
+- navigation clavier renforcée, focus visible et prise en compte de `prefers-reduced-motion`.
 
-1. Télécharger le ZIP de la release stable.
-2. Dans WordPress, ouvrir **Extensions > Ajouter une extension**.
-3. Téléverser le ZIP puis activer **WP Piwigo Display**.
-4. Renseigner l’URL de l’instance Piwigo.
-5. Insérer le shortcode `[piwigo]` selon la configuration souhaitée.
+## Santé API & cache
 
-## Exemples
+La V3 RC3 restaure et protège le compteur de diagnostic dans **Piwigo Display → Diagnostic**.
+
+Le bloc **Santé API & cache** permet de suivre notamment :
+
+- nombre d’appels réels à l’API Piwigo ;
+- HIT et MISS du cache ;
+- taux de HIT ;
+- temps API cumulé, moyen et appel le plus lent ;
+- dernière méthode Piwigo observée ;
+- dernier statut HTTP ;
+- dernière erreur détectée ;
+- verdict synthétique de santé.
+
+Les métriques sont agrégées sans conserver les identifiants, mots de passe ou corps de requête. Un test de non-régression empêche leur disparition accidentelle lors d’un futur refactoring.
+
+## Installation de la RC
+
+1. Télécharger le ZIP de la Release Candidate depuis les artefacts/release GitHub prévus pour la V3.
+2. Dans WordPress : **Extensions → Ajouter une extension → Téléverser une extension**.
+3. Activer **Piwigo Display**.
+4. Renseigner l’URL HTTPS de Piwigo dans les réglages du plugin.
+5. Tester la connexion.
+6. Créer l’affichage avec le bloc Gutenberg, le composeur d’administration ou le bouton du Classic Editor.
+7. Si nécessaire, utiliser directement un shortcode pour un usage avancé ou automatisé.
+
+Pour les albums privés, utiliser un compte Piwigo dédié, limité aux seuls albums destinés à être publiés dans WordPress.
+
+## Modes d’affichage
+
+### Galerie classique
+
+Grille responsive standard, compatible avec les légendes, la lightbox, les formes et les filtres.
+
+### Slider / carousel
+
+Diaporama Splide avec dimensions configurables, autoplay, vitesse de transition, direction et transitions `slide`, `fade` ou `none`.
+
+### Masonry
+
+Disposition en colonnes CSS :
+
+- le nombre de colonnes est configurable de 2 à 6 sur grand écran ;
+- l’espacement est configurable ;
+- le nombre de colonnes diminue automatiquement sur tablette et mobile.
+
+## Shortcodes : interface avancée
+
+Les shortcodes restent disponibles pour les intégrations manuelles, les modèles, les contenus générés et la compatibilité avec les versions précédentes. Ils ne sont plus l’unique interface du plugin.
 
 ```text
 [piwigo album="154"]
-[piwigo album="154" type="slider"]
+[piwigo album="154" type="slider" width="72%" height="480px"]
+[piwigo album="154" type="slider" transition="fade" speed="700"]
+[piwigo album="154" type="slider" transition="slide" direction="rtl"]
+[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
 [piwigo album="154" recursive="true" depth="2"]
 [piwigo album="154" sort="date" order="desc" limit="20"]
+[piwigo album="154" tags="nature,animaux" tag_mode="all"]
 ```
 
-## Affichage récursif
+## Compatibilité
 
-Le paramètre `recursive="true"` inclut les images de l’album indiqué et celles de ses sous-albums.
-
-Le paramètre `depth` limite la profondeur :
-
-- `depth="0"` : album indiqué uniquement ;
-- `depth="1"` : album et enfants directs ;
-- `depth="2"` : album, enfants et petits-enfants ;
-- `depth="10"` : descendance prise en charge jusqu’à cette profondeur.
+- WordPress 6.0 ou supérieur ;
+- PHP 8.1 à 8.4 validé par CI ;
+- Piwigo accessible en HTTPS pour le compte de service ;
+- contrôles automatisés de syntaxe, sécurité, accessibilité, rendu frontend, compatibilité PHP, WPCS, packaging et WordPress Plugin Check.
 
 ## Documentation
-
-La documentation complète se trouve dans le dossier [`docs`](docs/).
 
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Shortcodes](docs/shortcodes.md)
-- [Albums récursifs](docs/albums-recursifs.md)
+- [Compte de service](docs/COMPTE-DE-SERVICE.md)
+- [Formes](docs/FORMES.md)
+- [Parité des composeurs](docs/PARITE-COMPOSEURS.md)
+- [Recette V3](docs/RECETTE-3X.md)
 - [Architecture](docs/architecture.md)
 - [Feuille de route](ROADMAP.md)
-
-La documentation V3 est mise à jour au fil de la stabilisation de la Release Candidate. Les documents historiques relatifs à la V2 ne constituent pas une release publiée.
 
 ## Licence
 
