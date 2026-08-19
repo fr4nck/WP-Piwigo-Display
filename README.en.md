@@ -1,6 +1,6 @@
 # Piwigo Display
 
-WordPress plugin for displaying Piwigo albums through the official API without copying images into the WordPress media library.
+WordPress plugin for building and displaying Piwigo galleries directly inside WordPress through the official API, without copying images into the WordPress media library.
 
 > French documentation: see `README.md`.
 
@@ -12,20 +12,28 @@ The last stable public release before the V3 release-candidate line was **1.8.0*
 
 V3 is currently a Release Candidate and should still be considered a test version before the final 3.0.0 release.
 
+## Visual tools first
+
+Piwigo Display V3 is no longer just a set of shortcodes. It provides several visual tools sharing the same settings and rendering engine:
+
+- **dynamic Gutenberg block** with album selection and visual settings inside the editor;
+- **administration composer** to prepare and preview a gallery before insertion;
+- **Classic Editor / TinyMCE integration** with a dedicated button and preview;
+- **visual, hierarchical and searchable album picker**;
+- **functional parity** between Gutenberg, Classic Editor and the administration composer;
+- **shortcodes** retained as an advanced interface, portable format and compatibility layer.
+
+The goal is to let users build galleries without writing code while preserving shortcodes for automation, advanced workflows and backward compatibility.
+
 ## Main V3 features
 
 - connection to Piwigo through the official API;
 - public albums and authorized private albums through a server-side service account;
-- dynamic Gutenberg block;
-- Classic Editor integration with TinyMCE preview;
-- administration gallery composer;
-- functional parity between Gutenberg, Classic Editor and the administration composer;
 - responsive standard gallery;
 - Splide slider/carousel;
 - native CSS-column Masonry;
 - lightbox;
 - album selection by ID, name, path or tree;
-- visual, hierarchical and searchable album picker;
 - sub-albums and configurable depth;
 - sorting, limits, orientation filters, tags, captions and styles;
 - frame shapes;
@@ -61,22 +69,10 @@ Metrics are aggregated without storing credentials, passwords or request bodies.
 3. Activate **Piwigo Display**.
 4. Enter the Piwigo HTTPS URL in the plugin settings.
 5. Test the connection.
-6. Insert the Gutenberg block, use the composer, or enter a shortcode such as `[piwigo album="154"]`.
+6. Build the display using the Gutenberg block, administration composer or Classic Editor button.
+7. When needed, use a shortcode directly for advanced or automated workflows.
 
 For private albums, use a dedicated Piwigo account restricted to albums intended for publication through WordPress.
-
-## Examples
-
-```text
-[piwigo album="154"]
-[piwigo album="154" type="slider" width="72%" height="480px"]
-[piwigo album="154" type="slider" transition="fade" speed="700"]
-[piwigo album="154" type="slider" transition="slide" direction="rtl"]
-[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
-[piwigo album="154" recursive="true" depth="2"]
-[piwigo album="154" sort="date" order="desc" limit="20"]
-[piwigo album="154" tags="nature,animals" tag_mode="all"]
-```
 
 ## Display modes
 
@@ -90,12 +86,22 @@ Splide slideshow with configurable dimensions, autoplay, transition speed, direc
 
 ### Masonry
 
-CSS-column layout:
+CSS-column layout with configurable column count and spacing, automatically adapting to tablets and mobile devices.
 
-- `type="masonry"` enables the mode;
-- `masonry_columns="4"` sets 2 to 6 columns on large screens;
-- `masonry_gap="16"` sets spacing;
-- the number of columns automatically decreases on tablets and mobile devices.
+## Shortcodes: advanced interface
+
+Shortcodes remain available for manual integrations, templates, generated content and compatibility with earlier versions. They are no longer the plugin's only interface.
+
+```text
+[piwigo album="154"]
+[piwigo album="154" type="slider" width="72%" height="480px"]
+[piwigo album="154" type="slider" transition="fade" speed="700"]
+[piwigo album="154" type="slider" transition="slide" direction="rtl"]
+[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
+[piwigo album="154" recursive="true" depth="2"]
+[piwigo album="154" sort="date" order="desc" limit="20"]
+[piwigo album="154" tags="nature,animals" tag_mode="all"]
+```
 
 ## Compatibility
 
