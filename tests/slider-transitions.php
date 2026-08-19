@@ -57,6 +57,10 @@ $assert_same( true, false !== strpos( (string) $slider, "transition === 'none' ?
 $assert_same( true, false !== strpos( (string) $slider, "type: isFade ? 'fade' : 'loop'" ), 'Le fondu doit utiliser le type fade de Splide.' );
 $assert_same( true, false !== strpos( (string) $slider, 'direction: direction' ), 'La direction doit être fournie à Splide.' );
 $assert_same( true, false !== strpos( (string) $slider, 'prefers-reduced-motion: reduce' ), 'Le slider doit respecter prefers-reduced-motion.' );
+$assert_same( true, false !== strpos( (string) $slider, "if (!slides.length)" ), 'Le fallback ne doit dépendre que de la présence de slides, pas de miniatures.' );
+$assert_same( true, false !== strpos( (string) $slider, 'wpd-native-slider-controls' ), 'Le fallback doit créer des commandes précédent/suivant même sans miniatures.' );
+$assert_same( true, false !== strpos( (string) $slider, "navigation === 'dots'" ), 'Le fallback doit recréer une pagination lorsque la navigation par points est demandée.' );
+$assert_same( true, false !== strpos( (string) $slider, 'removeNativeFallbackControls(slider)' ), 'Les commandes de secours doivent être retirées quand Splide devient disponible.' );
 
 $block = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
 $assert_same( true, false !== strpos( (string) $block, '"transition"' ), 'Gutenberg doit exposer le réglage de transition.' );
