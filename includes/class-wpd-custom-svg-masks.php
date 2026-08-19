@@ -69,11 +69,7 @@ final class WPD_Custom_SVG_Masks {
 		);
 	}
 
-	/**
-	 * Handles an authenticated SVG mask upload.
-	 *
-	 * @return void
-	 */
+	/** Handles an authenticated SVG mask upload. */
 	public static function handle_upload(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Vous n’avez pas l’autorisation d’importer des masques SVG.', 'wp-piwigo-display' ), 403 );
@@ -86,7 +82,7 @@ final class WPD_Custom_SVG_Masks {
 			self::redirect_with_error( 'limit' );
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Upload metadata and temporary file are validated below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Upload metadata and temporary file are validated below before any content is accepted.
 		$file = isset( $_FILES['wpd_svg_mask'] ) && is_array( $_FILES['wpd_svg_mask'] ) ? $_FILES['wpd_svg_mask'] : null;
 		if ( ! $file || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) ) {
 			self::redirect_with_error( 'upload' );
@@ -109,6 +105,8 @@ final class WPD_Custom_SVG_Masks {
 			self::redirect_with_error( 'mime' );
 		}
 
+		// This is a validated local PHP upload temporary file, never a remote URL.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$raw = file_get_contents( $tmp_name );
 		if ( false === $raw ) {
 			self::redirect_with_error( 'read' );
@@ -124,7 +122,7 @@ final class WPD_Custom_SVG_Masks {
 		}
 		$name = mb_substr( sanitize_text_field( $name ), 0, 80 );
 
-		$id = substr( hash( 'sha256', $sanitized ), 0, 12 );
+		$id             = substr( hash( 'sha256', $sanitized ), 0, 12 );
 		$library[ $id ] = array(
 			'name' => $name,
 			'svg'  => $sanitized,
@@ -134,11 +132,7 @@ final class WPD_Custom_SVG_Masks {
 		self::redirect( array( 'wpd_mask_added' => $id ) );
 	}
 
-	/**
-	 * Handles deletion of one stored custom mask.
-	 *
-	 * @return void
-	 */
+	/** Handles deletion of one stored custom mask. */
 	public static function handle_delete(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Vous n’avez pas l’autorisation de supprimer des masques SVG.', 'wp-piwigo-display' ), 403 );
@@ -210,7 +204,12 @@ final class WPD_Custom_SVG_Masks {
 		);
 	}
 
-	/** Detects uploaded file MIME type when Fileinfo is available. */
+	/**
+	 * Detects uploaded file MIME type when Fileinfo is available.
+	 *
+	 * @param string $path Local uploaded temporary path.
+	 * @return string Detected MIME type or an empty string.
+	 */
 	private static function detect_mime( string $path ): string {
 		if ( ! function_exists( 'finfo_open' ) ) {
 			return '';
@@ -225,14 +224,24 @@ final class WPD_Custom_SVG_Masks {
 		return is_string( $mime ) ? strtolower( trim( $mime ) ) : '';
 	}
 
-	/** Redirects back to the plugin settings page. */
+	/**
+	 * Redirects back to the plugin settings page.
+	 *
+	 * @param array<string,string> $args Query arguments.
+	 * @return void
+	 */
 	private static function redirect( array $args = array() ): void {
 		$url = add_query_arg( $args, admin_url( 'options-general.php?page=wp-piwigo-display' ) );
 		wp_safe_redirect( $url );
 		exit;
 	}
 
-	/** Redirects with a sanitized import error code. */
+	/**
+	 * Redirects with a sanitized import error code.
+	 *
+	 * @param string $code Error code.
+	 * @return void
+	 */
 	private static function redirect_with_error( string $code ): void {
 		self::redirect( array( 'wpd_mask_error' => sanitize_key( $code ) ) );
 	}
