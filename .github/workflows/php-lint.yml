@@ -96,10 +96,10 @@ jobs:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # The historical public hooks keep their pre-v3 names for backward compatibility.
-          # The WordPress.org slug is `piwigo-display`; GitHub upgrade ZIPs keep the legacy
-          # `wp-piwigo-display` folder so existing installations are not duplicated.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
+          # Compatibility exceptions only: the historical public hooks and text domain
+          # stay unchanged so existing integrations/translations keep working. The public
+          # product name and WordPress.org candidate slug are both `Piwigo Display` / `piwigo-display`.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
 
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
