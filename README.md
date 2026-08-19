@@ -2,6 +2,8 @@
 
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
+> **Nom du projet : Piwigo Display pour WordPress.** Les anciennes versions et certains identifiants techniques peuvent encore porter le nom historique `WP Piwigo Display` / `WP-Piwigo-Display`. Ils sont conservés lorsque leur modification casserait la compatibilité ; le nom visible du projet est désormais **Piwigo Display pour WordPress**.
+
 ## État du projet
 
 La branche `release/3.0.0-rc.1` porte la première **Release Candidate V3**. Le code, la documentation et les métadonnées de version sont synchronisés en **3.0.0-rc.1**.
