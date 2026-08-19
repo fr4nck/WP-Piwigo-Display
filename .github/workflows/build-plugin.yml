@@ -118,10 +118,10 @@ jobs:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Historical public hooks keep their pre-v3 names for backward compatibility.
-          # The WordPress.org slug is `piwigo-display`; GitHub upgrade ZIPs retain the
-          # legacy `wp-piwigo-display` folder so existing installations remain one plugin.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
+          # Compatibility exceptions only: historical hooks and text domain stay unchanged.
+          # The WordPress.org candidate is checked under `piwigo-display`, while the actual
+          # GitHub upgrade ZIP stays rooted at `wp-piwigo-display` for existing installations.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
 
       - name: Build directly installable ZIP
         shell: bash
