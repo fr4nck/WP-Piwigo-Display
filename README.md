@@ -1,6 +1,6 @@
 # Piwigo Display
 
-Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
+Plugin WordPress pour construire et afficher des galeries Piwigo directement dans WordPress, via l’API officielle, sans recopier les images dans la médiathèque WordPress.
 
 > English version: [README.en.md](README.en.md) — pour celles et ceux qui n’arrivent pas encore à utiliser Google Translate. 😄
 
@@ -12,20 +12,28 @@ La dernière version stable effectivement publiée avant la V3 est **1.8.0**. La
 
 La V3 est actuellement en phase de Release Candidate et doit encore être considérée comme une version de test avant la publication de 3.0.0 stable.
 
+## Une interface visuelle avant tout
+
+Piwigo Display V3 n’est plus seulement un jeu de shortcodes. Le plugin propose plusieurs outils visuels partageant les mêmes réglages et le même moteur de rendu :
+
+- **bloc Gutenberg dynamique** avec sélection d’album et réglages visuels dans l’éditeur ;
+- **composeur d’administration** pour préparer et prévisualiser une galerie avant insertion ;
+- **intégration Classic Editor / TinyMCE** avec bouton dédié et aperçu ;
+- **sélecteur d’albums visuel, hiérarchique et recherchable** ;
+- **parité fonctionnelle** entre Gutenberg, Classic Editor et le composeur ;
+- **shortcodes** conservés comme interface avancée, format portable et solution de compatibilité.
+
+L’objectif est de permettre à un utilisateur de construire une galerie sans écrire de code, tout en gardant les shortcodes pour l’automatisation, les usages avancés et la compatibilité historique.
+
 ## Fonctionnalités principales de la V3
 
 - connexion à Piwigo via l’API officielle ;
 - albums publics et albums privés autorisés via compte de service côté serveur ;
-- bloc Gutenberg dynamique ;
-- intégration Classic Editor avec aperçu TinyMCE ;
-- composeur d’administration ;
-- parité fonctionnelle entre Gutenberg, Classic Editor et le composeur ;
 - galerie responsive classique ;
 - diaporama / carousel Splide ;
 - Masonry natif basé sur les colonnes CSS ;
 - lightbox ;
 - sélection d’album par identifiant, nom, chemin ou arborescence ;
-- sélecteur visuel hiérarchique et recherchable ;
 - sous-albums et profondeur configurable ;
 - tri, limites, orientations, tags, légendes et styles ;
 - formes d’encadrement ;
@@ -61,22 +69,10 @@ Les métriques sont agrégées sans conserver les identifiants, mots de passe ou
 3. Activer **Piwigo Display**.
 4. Renseigner l’URL HTTPS de Piwigo dans les réglages du plugin.
 5. Tester la connexion.
-6. Insérer le bloc Gutenberg, utiliser le composeur ou saisir un shortcode tel que `[piwigo album="154"]`.
+6. Créer l’affichage avec le bloc Gutenberg, le composeur d’administration ou le bouton du Classic Editor.
+7. Si nécessaire, utiliser directement un shortcode pour un usage avancé ou automatisé.
 
 Pour les albums privés, utiliser un compte Piwigo dédié, limité aux seuls albums destinés à être publiés dans WordPress.
-
-## Exemples
-
-```text
-[piwigo album="154"]
-[piwigo album="154" type="slider" width="72%" height="480px"]
-[piwigo album="154" type="slider" transition="fade" speed="700"]
-[piwigo album="154" type="slider" transition="slide" direction="rtl"]
-[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
-[piwigo album="154" recursive="true" depth="2"]
-[piwigo album="154" sort="date" order="desc" limit="20"]
-[piwigo album="154" tags="nature,animaux" tag_mode="all"]
-```
 
 ## Modes d’affichage
 
@@ -92,10 +88,24 @@ Diaporama Splide avec dimensions configurables, autoplay, vitesse de transition,
 
 Disposition en colonnes CSS :
 
-- `type="masonry"` active le mode ;
-- `masonry_columns="4"` définit de 2 à 6 colonnes sur grand écran ;
-- `masonry_gap="16"` définit l’espacement ;
+- le nombre de colonnes est configurable de 2 à 6 sur grand écran ;
+- l’espacement est configurable ;
 - le nombre de colonnes diminue automatiquement sur tablette et mobile.
+
+## Shortcodes : interface avancée
+
+Les shortcodes restent disponibles pour les intégrations manuelles, les modèles, les contenus générés et la compatibilité avec les versions précédentes. Ils ne sont plus l’unique interface du plugin.
+
+```text
+[piwigo album="154"]
+[piwigo album="154" type="slider" width="72%" height="480px"]
+[piwigo album="154" type="slider" transition="fade" speed="700"]
+[piwigo album="154" type="slider" transition="slide" direction="rtl"]
+[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
+[piwigo album="154" recursive="true" depth="2"]
+[piwigo album="154" sort="date" order="desc" limit="20"]
+[piwigo album="154" tags="nature,animaux" tag_mode="all"]
+```
 
 ## Compatibilité
 
