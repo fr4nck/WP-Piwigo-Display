@@ -20,6 +20,40 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	}
 }
 
+if ( ! class_exists( 'WPD_Settings' ) ) {
+	final class WPD_Settings {
+		public static string $url = 'https://photos.example.test';
+
+		public static function get_piwigo_url(): string {
+			return self::$url;
+		}
+	}
+}
+
+if ( ! class_exists( 'WPD_Service_Account' ) ) {
+	final class WPD_Service_Account {
+		public static bool $configured = false;
+
+		public static function is_configured(): bool {
+			return self::$configured;
+		}
+	}
+}
+
+if ( ! class_exists( 'WPD_Service_Api' ) ) {
+	final class WPD_Service_Api {
+		/** @var array<int,array<string,mixed>> */
+		public static array $categories = array();
+
+		public function __construct( public string $url ) {}
+
+		/** @return array<int,array<string,mixed>> */
+		public function get_all_categories(): array {
+			return self::$categories;
+		}
+	}
+}
+
 if ( ! function_exists( 'is_wp_error' ) ) {
 	function is_wp_error( $value ): bool {
 		return $value instanceof WP_Error;
@@ -107,8 +141,41 @@ $assert( 30 === $api->resolve_album_id( '/ALSH/Été 2026/Séjour voile' ), 'A f
 $assert( 40 === $api->resolve_album_id( 'ALSH/Séjour voile' ), 'Human-readable paths must disambiguate duplicate album names.' );
 $assert( 30 === $api->resolve_album_id( 'sejour-voile' ), 'Historical permalink lookup must remain supported.' );
 
+$private_categories = array(
+	array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
+	array( 'id' => 60, 'name' => 'Équipe', 'uppercats' => '50,60', 'permalink' => 'equipe' ),
+);
+WPD_Service_Account::$configured = true;
+WPD_Service_Api::$categories     = $private_categories;
+$assert( 60 === $api->resolve_album_id( '/Privé/Équipe' ), 'A private album path must resolve through the service account on the configured Piwigo URL.' );
+
+$other_url = 'https://other.example.test';
+$other_body = array(
+	'method'    => 'pwg.categories.getList',
+	'recursive' => true,
+);
+ksort( $other_body );
+$other_key = md5( $other_url . '|' . wp_json_encode( $other_body ) );
+$property->setValue(
+	null,
+	array(
+		$other_key => array(
+			'stat'   => 'ok',
+			'result' => array(
+				'categories' => array(
+					array( 'id' => 70, 'name' => 'Public externe', 'uppercats' => '70', 'permalink' => 'public-externe' ),
+				),
+			),
+		),
+	)
+);
+$other_api = new WPD_Api( $other_url );
+$assert( 70 === $other_api->resolve_album_id( 'Public externe' ), 'A custom Piwigo URL must keep anonymous album resolution.' );
+$assert( is_wp_error( $other_api->resolve_album_id( '/Privé/Équipe' ) ), 'Private configured categories must never leak into a custom Piwigo URL lookup.' );
+
 $source = file_get_contents( dirname( __DIR__ ) . '/includes/class-wpd-api.php' );
 $assert( false !== strpos( (string) $source, 'build_category_path' ), 'Path resolution must be derived from the Piwigo uppercats hierarchy.' );
+$assert( false !== strpos( (string) $source, 'get_categories_for_resolution' ), 'Album resolution must select the appropriate anonymous or service-account category source.' );
 $assert( false === strpos( (string) $source, "array( 'uppercats', 'global_rank', 'permalink' )" ), 'Numeric uppercats/global_rank values must not be mistaken for human-readable paths.' );
 
-echo "Album identifier/name/path resolution: OK\n";
+echo "Album identifier/name/path resolution, including private albums: OK\n";
