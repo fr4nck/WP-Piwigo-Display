@@ -44,7 +44,17 @@
                                 { label: __('Pilule', 'wp-piwigo-display'), value: 'pill' },
                                 { label: __('Étoile', 'wp-piwigo-display'), value: 'star' },
                                 { label: __('Hexagone', 'wp-piwigo-display'), value: 'hexagon' },
-                                { label: __('Losange', 'wp-piwigo-display'), value: 'diamond' }
+                                { label: __('Losange', 'wp-piwigo-display'), value: 'diamond' },
+                                { label: __('Nuage', 'wp-piwigo-display'), value: 'cloud' },
+                                { label: __('Cœur', 'wp-piwigo-display'), value: 'heart' },
+                                { label: __('Goutte', 'wp-piwigo-display'), value: 'drop' },
+                                { label: __('Triangle', 'wp-piwigo-display'), value: 'triangle' },
+                                { label: __('Pentagone', 'wp-piwigo-display'), value: 'pentagon' },
+                                { label: __('Octogone', 'wp-piwigo-display'), value: 'octagon' },
+                                { label: __('Carte — Pique ♠', 'wp-piwigo-display'), value: 'card-spade' },
+                                { label: __('Carte — Cœur ♥', 'wp-piwigo-display'), value: 'card-heart' },
+                                { label: __('Carte — Carreau ♦', 'wp-piwigo-display'), value: 'card-diamond' },
+                                { label: __('Carte — Trèfle ♣', 'wp-piwigo-display'), value: 'card-club' }
                             ],
                             onChange: function (value) {
                                 props.setAttributes({ shape: value });
