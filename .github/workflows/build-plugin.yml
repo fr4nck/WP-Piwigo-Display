@@ -1,4 +1,4 @@
-name: Build Piwigo Display ZIP
+name: Build Piwigo Display package
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
       - 'v*'
 
 jobs:
-  build-zip:
+  build-package:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf build/piwigo-display
+          rm -rf build
           mkdir -p build/piwigo-display
           rsync -a ./ build/piwigo-display/ \
             --exclude '.git' \
@@ -44,10 +44,10 @@ jobs:
             --exclude 'ROADMAP.md' \
             --exclude '*.zip'
 
-          # Public plugin entry point: no legacy WP prefix.
+          # Public plugin entry point: no legacy prefix.
           mv build/piwigo-display/wp-piwigo-display.php build/piwigo-display/piwigo-display.php
 
-          # Public asset filenames: no legacy WP prefix.
+          # Public asset filenames: no legacy prefix.
           while IFS= read -r -d '' path; do
             dir="$(dirname "$path")"
             base="$(basename "$path")"
@@ -75,7 +75,7 @@ jobs:
               path.write_text(text, encoding='utf-8')
           PY
 
-      - name: Verify distribution contents
+      - name: Verify installable tree
         shell: bash
         run: |
           set -euo pipefail
@@ -85,27 +85,16 @@ jobs:
           test -f build/piwigo-display/assets/vendor/splide/splide.min.css
           ! find build/piwigo-display -type f -name '*wp-piwigo-display*' | grep -q .
           ! grep -RIlE 'wp-piwigo-display|WP_Piwigo_Display|wp_piwigo_display' build/piwigo-display | grep -q .
+          test "$(find build -mindepth 1 -maxdepth 1 -type d -printf '%f\n')" = 'piwigo-display'
+          ! find build -mindepth 1 -maxdepth 1 -type f | grep -q .
 
-      - name: Build Piwigo Display archive
-        shell: bash
-        run: |
-          cd build
-          zip -qr "../piwigo-display-${{ steps.version.outputs.version }}.zip" piwigo-display
-
-      - name: Verify archive structure
-        shell: bash
-        run: |
-          set -euo pipefail
-          ARCHIVE="piwigo-display-${{ steps.version.outputs.version }}.zip"
-          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/piwigo-display.php'
-          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/assets/js/piwigo-display-slider.js'
-          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/assets/vendor/splide/splide.min.js'
-          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/assets/vendor/splide/splide.min.css'
-          ! unzip -l "$ARCHIVE" | grep -q 'wp-piwigo-display'
-
-      - name: Upload Piwigo Display ZIP
+      # upload-artifact already produces the ZIP downloaded from GitHub.
+      # Upload the prepared tree, not another ZIP, so the downloaded artifact
+      # is directly installable by WordPress and contains piwigo-display/ once.
+      - name: Upload directly installable package
         uses: actions/upload-artifact@v4
         with:
           name: piwigo-display-${{ steps.version.outputs.version }}
-          path: piwigo-display-${{ steps.version.outputs.version }}.zip
+          path: build/
           retention-days: 14
+          if-no-files-found: error
