@@ -32,6 +32,22 @@
         ['card-club', __('Trèfle', 'wp-piwigo-display')]
     ];
 
+    var customMasks = Array.isArray(window.WPDCustomMasks) ? window.WPDCustomMasks : [];
+
+    function customPreviewStyle(mask) {
+        return {
+            background: '#1d2327',
+            WebkitMaskImage: 'url("' + mask.dataUri + '")',
+            maskImage: 'url("' + mask.dataUri + '")',
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat'
+        };
+    }
+
     function shapeButton(item, selected, setShape) {
         var value = item[0];
         var label = item[1];
@@ -52,6 +68,27 @@
                 'aria-hidden': 'true'
             }),
             createElement('span', null, label)
+        );
+    }
+
+    function customMaskButton(mask, selected, setShape) {
+        return createElement(
+            Button,
+            {
+                key: mask.value,
+                className: 'wpd-shape-picker-button',
+                isPressed: selected === mask.value,
+                'aria-pressed': selected === mask.value ? 'true' : 'false',
+                'aria-label': mask.name,
+                title: mask.name,
+                onClick: function () { setShape(mask.value); }
+            },
+            createElement('span', {
+                className: 'wpd-shape-picker-preview',
+                style: customPreviewStyle(mask),
+                'aria-hidden': 'true'
+            }),
+            createElement('span', null, mask.name)
         );
     }
 
@@ -80,6 +117,7 @@
                             title: __('Forme des images', 'wp-piwigo-display'),
                             initialOpen: false
                         },
+                        createElement('strong', null, __('Formes intégrées', 'wp-piwigo-display')),
                         createElement(
                             'div',
                             {
@@ -91,6 +129,22 @@
                                 return shapeButton(item, shape, setShape);
                             })
                         ),
+                        customMasks.length ? createElement(
+                            Fragment,
+                            null,
+                            createElement('strong', null, __('Masques SVG personnalisés', 'wp-piwigo-display')),
+                            createElement(
+                                'div',
+                                {
+                                    className: 'wpd-shape-picker-grid',
+                                    role: 'group',
+                                    'aria-label': __('Choisir un masque SVG personnalisé', 'wp-piwigo-display')
+                                },
+                                customMasks.map(function (mask) {
+                                    return customMaskButton(mask, shape, setShape);
+                                })
+                            )
+                        ) : null,
                         shape === 'rounded' ? createElement(RangeControl, {
                             label: __('Arrondi des angles (%)', 'wp-piwigo-display'),
                             value: Number(attributes.radius || 0),
