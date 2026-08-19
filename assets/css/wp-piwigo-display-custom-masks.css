@@ -1,0 +1,22 @@
+.wp-piwigo-display.wpd-custom-svg-mask .wp-piwigo-display-item a,
+.wp-piwigo-display.wpd-custom-svg-mask .splide__track,
+.wp-piwigo-display.wpd-custom-svg-mask .wp-piwigo-display-slider-track {
+	clip-path: none;
+	-webkit-mask-image: var(--wpd-custom-svg-mask);
+	mask-image: var(--wpd-custom-svg-mask);
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+@supports not ((mask-image: url("data:image/svg+xml,%3Csvg/%3E")) or (-webkit-mask-image: url("data:image/svg+xml,%3Csvg/%3E"))) {
+	.wp-piwigo-display.wpd-custom-svg-mask .wp-piwigo-display-item a,
+	.wp-piwigo-display.wpd-custom-svg-mask .splide__track,
+	.wp-piwigo-display.wpd-custom-svg-mask .wp-piwigo-display-slider-track {
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+}
