@@ -1,6 +1,6 @@
 === Piwigo Display ===
 Contributors: fr4nck
-Tags: piwigo, gallery, photos, shortcode, slider
+Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -8,27 +8,30 @@ Stable tag: 3.0.0-rc.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Display public or authorized private Piwigo albums in WordPress through the official API without importing images into the media library.
+Build and display Piwigo galleries visually in WordPress through the official API without importing images into the media library.
 
 == Description ==
 
-Piwigo Display keeps images in Piwigo and renders them inside WordPress without copying them into the WordPress media library.
+Piwigo Display keeps images in Piwigo and lets users build their presentation directly inside WordPress without copying files into the WordPress media library.
+
+Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
 The last public stable release before the V3 release-candidate train was 1.8.0. The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
 
 Version 3.0.0-rc.3 includes:
 
-* dynamic Gutenberg block;
+* dynamic Gutenberg block with visual controls;
+* administration gallery composer with preview;
 * Classic Editor integration with TinyMCE preview;
-* administration gallery composer;
 * functional parity between Gutenberg, Classic Editor, and the administration composer;
-* responsive galleries, Splide sliders, lightbox, and CSS-column Masonry;
 * visual, hierarchical, searchable album picker;
+* responsive galleries, Splide sliders, lightbox, and CSS-column Masonry;
 * album selection by ID, name, path, or tree;
 * sub-albums and configurable depth;
 * sorting, limits, orientation filters, tags, captions, styles, and frame shapes;
 * slider transitions (`slide`, `fade`, `none`) and `ltr` / `rtl` direction;
 * independent interval and transition-speed controls;
+* shortcode support for advanced, automated, and legacy workflows;
 * WordPress caching separated by access context;
 * diagnostics and cache purge;
 * persistent API/cache health metrics with API call count, HIT/MISS rate, timings, latest method/status/error, and health verdict;
@@ -45,10 +48,23 @@ The service account does not sign visitors into Piwigo. A private album rendered
 2. Activate Piwigo Display.
 3. Open the plugin settings and enter the Piwigo HTTPS URL.
 4. Test the connection.
-5. Insert the Piwigo Display block, use the administration composer, or use a shortcode such as `[piwigo album="154"]`.
-6. For private albums, configure a dedicated Piwigo service account restricted to the albums that may be published.
+5. Build the gallery with the Gutenberg block, administration composer, or Classic Editor button.
+6. Use a shortcode directly only when an advanced, automated, or legacy workflow benefits from it.
+7. For private albums, configure a dedicated Piwigo service account restricted to the albums that may be published.
+
+== Visual editing ==
+
+The preferred V3 workflow is visual:
+
+* select an album using the searchable hierarchical picker;
+* choose gallery, slider, or Masonry display;
+* configure dimensions, transitions, filtering, captions, styles, and shapes;
+* preview the result from the available editor/composer interface;
+* insert the configured display into the page or post.
 
 == Shortcodes ==
+
+Shortcodes remain fully supported for advanced integrations, generated content, templates, and backward compatibility.
 
 Basic gallery:
 
@@ -84,6 +100,10 @@ Tags:
 
 == Frequently Asked Questions ==
 
+= Do I need to write shortcodes? =
+
+No. V3 provides visual interfaces through Gutenberg, the administration composer, and Classic Editor integration. Shortcodes remain available for advanced and legacy workflows.
+
 = Are images copied into WordPress? =
 
 No. They remain stored in Piwigo.
@@ -114,6 +134,7 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Kept metrics credential-free and request-body-free.
 * Consolidated the public version history: 1.8.0 was the last stable public release before V3; 2.0.0 was never published as a public release.
 * Aligned the public product name to Piwigo Display.
+* Reframed V3 documentation around its visual editing tools, with shortcodes documented as an advanced interface rather than the primary workflow.
 
 = 3.0.0-rc.2 =
 
