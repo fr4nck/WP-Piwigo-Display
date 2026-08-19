@@ -1,8 +1,24 @@
 .wp-piwigo-display-photo-text {
 	position: relative;
 	width: 100%;
+	max-width: var(--wpd-photo-text-max-width, 100%);
 	background: var(--wpd-photo-text-background, transparent);
 	overflow: hidden;
+}
+
+.wpd-photo-text-align-left {
+	margin-right: auto;
+	margin-left: 0;
+}
+
+.wpd-photo-text-align-center {
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.wpd-photo-text-align-right {
+	margin-right: 0;
+	margin-left: auto;
 }
 
 .wpd-photo-text-svg {
