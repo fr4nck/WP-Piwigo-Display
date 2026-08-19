@@ -4,58 +4,64 @@ Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans co
 
 ## État du projet
 
-La branche `3.x-dev` prépare **3.0.0-rc.2**, version corrective de la Release Candidate V3. Elle corrige l’incompatibilité PHP 8.1 entre le filtre de rendu Masonry et la valeur initiale `null` utilisée par le moteur de rendu, ainsi que les chemins CSS et JavaScript incorrectement réécrits dans le premier paquet de test.
+**Version candidate actuelle : 3.0.0-rc.3.**
 
-La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
+La dernière version stable effectivement publiée avant la V3 est **1.8.0**. La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
 
-## Fonctionnalités principales
+La V3 est actuellement en phase de Release Candidate et doit encore être considérée comme une version de test avant la publication de 3.0.0 stable.
 
+## Fonctionnalités principales de la V3
+
+- connexion à Piwigo via l’API officielle ;
+- albums publics et albums privés autorisés via compte de service côté serveur ;
 - bloc Gutenberg dynamique ;
 - intégration Classic Editor avec aperçu TinyMCE ;
 - composeur d’administration ;
 - parité fonctionnelle entre Gutenberg, Classic Editor et le composeur ;
-- galerie responsive ;
-- diaporama Splide ;
+- galerie responsive classique ;
+- diaporama / carousel Splide ;
 - Masonry natif basé sur les colonnes CSS ;
 - lightbox ;
 - sélection d’album par identifiant, nom, chemin ou arborescence ;
 - sélecteur visuel hiérarchique et recherchable ;
 - sous-albums et profondeur configurable ;
 - tri, limites, orientations, tags, légendes et styles ;
+- formes d’encadrement ;
 - transitions de slider `slide`, `fade` et `none` ;
 - direction `ltr` ou `rtl` ;
-- fond de diaporama transparent, indépendamment du style visuel ;
+- fond de diaporama transparent indépendamment du style visuel ;
 - largeur, hauteur, ratio, vitesse et intervalle configurables ;
 - cache WordPress séparé par contexte d’accès ;
 - diagnostic et purge du cache ;
-- compte de service Piwigo pour publier côté WordPress des albums privés autorisés ;
-- navigation clavier renforcée, focus visible et réduction des animations lorsque `prefers-reduced-motion` est activé.
+- navigation clavier renforcée, focus visible et prise en compte de `prefers-reduced-motion`.
 
-## Installation
+## Santé API & cache
 
-1. Installer le ZIP depuis **Extensions > Ajouter une extension > Téléverser une extension**.
-2. Activer **Piwigo Display pour WordPress**.
-3. Ouvrir les réglages du plugin et renseigner l’URL HTTPS de Piwigo.
-4. Tester la connexion.
-5. Insérer le bloc Gutenberg, utiliser le composeur ou saisir un shortcode tel que `[piwigo album="154"]`.
+La V3 RC3 restaure et protège le compteur de diagnostic dans **Piwigo Display → Diagnostic**.
 
-Pour les albums privés, configurer un compte de service Piwigo dédié et limité aux seuls albums destinés à être publiés sur WordPress.
+Le bloc **Santé API & cache** permet de suivre notamment :
 
-## Compte de service Piwigo
+- nombre d’appels réels à l’API Piwigo ;
+- HIT et MISS du cache ;
+- taux de HIT ;
+- temps API cumulé, moyen et appel le plus lent ;
+- dernière méthode Piwigo observée ;
+- dernier statut HTTP ;
+- dernière erreur détectée ;
+- verdict synthétique de santé.
 
-Le compte de service est un compte Piwigo dédié à WordPress. Il permet au serveur WordPress de récupérer les albums privés auxquels ce compte a accès. Les visiteurs ne se connectent pas à Piwigo.
+Les métriques sont agrégées sans conserver les identifiants, mots de passe ou corps de requête. Un test de non-régression empêche leur disparition accidentelle lors d’un futur refactoring.
 
-Une photo privée affichée sur une page publique WordPress devient publiquement consultable via cette page. Le compte doit donc être limité aux seuls albums destinés à cette diffusion.
+## Installation de la RC
 
-Configuration recommandée dans `wp-config.php` :
+1. Télécharger le ZIP de la Release Candidate depuis les artefacts/release GitHub prévus pour la V3.
+2. Dans WordPress : **Extensions → Ajouter une extension → Téléverser une extension**.
+3. Activer **Piwigo Display**.
+4. Renseigner l’URL HTTPS de Piwigo dans les réglages du plugin.
+5. Tester la connexion.
+6. Insérer le bloc Gutenberg, utiliser le composeur ou saisir un shortcode tel que `[piwigo album="154"]`.
 
-```php
-define('WPD_PIWIGO_SERVICE_ENABLED', true);
-define('WPD_PIWIGO_SERVICE_USERNAME', 'wordpress-publication');
-define('WPD_PIWIGO_SERVICE_PASSWORD', 'mot-de-passe-fort');
-```
-
-Les identifiants restent côté serveur et ne sont pas insérés dans le HTML, JavaScript, les blocs ou les shortcodes.
+Pour les albums privés, utiliser un compte Piwigo dédié, limité aux seuls albums destinés à être publiés dans WordPress.
 
 ## Exemples
 
@@ -70,29 +76,31 @@ Les identifiants restent côté serveur et ne sont pas insérés dans le HTML, J
 [piwigo album="154" tags="nature,animaux" tag_mode="all"]
 ```
 
-## Masonry
+## Modes d’affichage
 
-Le mode Masonry utilise les colonnes CSS natives du navigateur :
+### Galerie classique
 
-- `type="masonry"` active la disposition ;
+Grille responsive standard, compatible avec les légendes, la lightbox, les formes et les filtres.
+
+### Slider / carousel
+
+Diaporama Splide avec dimensions configurables, autoplay, vitesse de transition, direction et transitions `slide`, `fade` ou `none`.
+
+### Masonry
+
+Disposition en colonnes CSS :
+
+- `type="masonry"` active le mode ;
 - `masonry_columns="4"` définit de 2 à 6 colonnes sur grand écran ;
-- `masonry_gap="16"` définit un espacement de 0 à 64 pixels ;
-- le nombre de colonnes diminue automatiquement sur tablette et mobile ;
-- lightbox, légendes, styles et albums privés restent compatibles.
-
-## Slider
-
-La durée d’affichage (`interval`) et la vitesse de transition (`speed`) sont deux réglages indépendants.
-
-Les transitions disponibles sont `slide`, `fade` et `none`. La direction peut être `ltr` ou `rtl`.
-
-Lorsque l’utilisateur demande une réduction des animations via son système (`prefers-reduced-motion`), l’autoplay est neutralisé et les transitions sont supprimées ou réduites.
+- `masonry_gap="16"` définit l’espacement ;
+- le nombre de colonnes diminue automatiquement sur tablette et mobile.
 
 ## Compatibilité
 
 - WordPress 6.0 ou supérieur ;
 - PHP 8.1 à 8.4 validé par CI ;
-- Piwigo accessible en HTTPS pour le compte de service.
+- Piwigo accessible en HTTPS pour le compte de service ;
+- contrôles automatisés de syntaxe, sécurité, accessibilité, rendu frontend, compatibilité PHP, WPCS, packaging et WordPress Plugin Check.
 
 ## Documentation
 
@@ -100,7 +108,9 @@ Lorsque l’utilisateur demande une réduction des animations via son système (
 - [Configuration](docs/configuration.md)
 - [Shortcodes](docs/shortcodes.md)
 - [Compte de service](docs/COMPTE-DE-SERVICE.md)
+- [Formes](docs/FORMES.md)
 - [Parité des composeurs](docs/PARITE-COMPOSEURS.md)
+- [Recette V3](docs/RECETTE-3X.md)
 - [Architecture](docs/architecture.md)
 - [Feuille de route](ROADMAP.md)
 
