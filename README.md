@@ -2,68 +2,86 @@
 
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
-## Version 2.0.0
+> **Version stable publiée : 1.8.0**
+>
+> **La version 2.0.0 n’a jamais été publiée.** Les travaux qui avaient été engagés pour la V2 ont ensuite été repris et prolongés dans la future V3.
+>
+> **Développement actuel : 3.0.0 RC**. La V3 est en phase de stabilisation et de recette avant publication.
 
-- bloc Gutenberg dynamique ;
-- éditeur classique avec aperçu TinyMCE ;
-- composeur d’administration ;
-- galerie responsive et diaporama Splide ;
-- redimensionnement visuel des diaporamas dans Gutenberg ;
-- sélection d’album par identifiant, nom, chemin ou arborescence ;
-- sous-albums et profondeur configurable ;
-- tri, limites, orientations, tags, légendes et styles ;
-- cache WordPress séparé par contexte d’accès ;
-- diagnostic et purge du cache ;
-- compte de service Piwigo pour publier, côté WordPress, des albums privés autorisés.
+## Ce que fait WP Piwigo Display
 
-## Installation
+Piwigo reste la source des photos. WordPress se charge uniquement de leur affichage.
 
-1. Installer le ZIP depuis **Extensions > Ajouter une extension**.
-2. Activer **WP Piwigo Display**.
-3. Renseigner l’URL HTTPS de Piwigo dans les réglages du plugin.
-4. Insérer le bloc Gutenberg ou utiliser `[piwigo album="154"]`.
+Le plugin permet notamment :
 
-## Compte de service Piwigo
+- d’afficher des albums Piwigo sans importer les images dans WordPress ;
+- d’utiliser une galerie responsive ou un diaporama ;
+- d’ouvrir les images dans une lightbox ;
+- d’afficher un album et ses sous-albums avec une profondeur configurable ;
+- de trier, limiter et filtrer les images ;
+- de gérer les légendes et plusieurs styles d’intégration ;
+- de sélectionner les albums par identifiant, nom, chemin ou arborescence ;
+- d’utiliser un cache WordPress pour limiter les appels à Piwigo ;
+- de diagnostiquer la connexion et le comportement du cache.
 
-Le compte de service est un compte Piwigo dédié à WordPress. Il permet au serveur WordPress de récupérer les albums privés auxquels ce compte a accès. Les visiteurs ne se connectent pas à Piwigo.
+## État du développement V3
 
-Les photos d’un album privé affiché sur une page publique WordPress deviennent publiquement consultables sur cette page. Le compte doit donc être limité aux seuls albums destinés à cette diffusion.
+La branche V3 prépare une refonte importante du plugin avec notamment :
 
-Configuration recommandée dans `wp-config.php` :
+- Gutenberg, éditeur classique et composeur d’administration ;
+- galerie, slider, Masonry et nouveaux moteurs de rendu ;
+- orientations portrait / paysage / carré ;
+- tags et récursivité ;
+- compte de service Piwigo pour les albums privés autorisés ;
+- cache renforcé et mécanismes de résilience ;
+- page de diagnostic ;
+- suivi de la santé API et du cache (appels API, HIT/MISS, temps de réponse), actuellement intégré dans le chantier RC avant publication ;
+- tests automatisés de sécurité, accessibilité, compatibilité PHP et frontend.
 
-```php
-define('WPD_PIWIGO_SERVICE_ENABLED', true);
-define('WPD_PIWIGO_SERVICE_USERNAME', 'wordpress-publication');
-define('WPD_PIWIGO_SERVICE_PASSWORD', 'mot-de-passe-fort');
-```
+La V3 n’est pas encore annoncée comme version stable tant que la recette RC n’est pas terminée.
 
-Les identifiants restent côté serveur. Ils ne sont pas insérés dans le HTML, JavaScript, les blocs ou les shortcodes.
+## Installation de la version stable
+
+La dernière version officiellement publiée est **WP Piwigo Display 1.8.0** et se trouve dans la section **Releases** de GitHub.
+
+1. Télécharger le ZIP de la release stable.
+2. Dans WordPress, ouvrir **Extensions > Ajouter une extension**.
+3. Téléverser le ZIP puis activer **WP Piwigo Display**.
+4. Renseigner l’URL de l’instance Piwigo.
+5. Insérer le shortcode `[piwigo]` selon la configuration souhaitée.
 
 ## Exemples
 
 ```text
 [piwigo album="154"]
-[piwigo album="154" type="slider" width="72%" height="480px"]
+[piwigo album="154" type="slider"]
 [piwigo album="154" recursive="true" depth="2"]
 [piwigo album="154" sort="date" order="desc" limit="20"]
-[piwigo album="154" tags="nature,animaux" tag_mode="all"]
 ```
 
-## Compatibilité
+## Affichage récursif
 
-- WordPress 6.0 ou supérieur ;
-- PHP 8.1 à 8.4 validé par CI ;
-- Piwigo accessible en HTTPS pour le compte de service.
+Le paramètre `recursive="true"` inclut les images de l’album indiqué et celles de ses sous-albums.
+
+Le paramètre `depth` limite la profondeur :
+
+- `depth="0"` : album indiqué uniquement ;
+- `depth="1"` : album et enfants directs ;
+- `depth="2"` : album, enfants et petits-enfants ;
+- `depth="10"` : descendance prise en charge jusqu’à cette profondeur.
 
 ## Documentation
+
+La documentation complète se trouve dans le dossier [`docs`](docs/).
 
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Shortcodes](docs/shortcodes.md)
-- [Compte de service](docs/COMPTE-DE-SERVICE.md)
-- [Recette V2](docs/RECETTE-V2.md)
+- [Albums récursifs](docs/albums-recursifs.md)
 - [Architecture](docs/architecture.md)
 - [Feuille de route](ROADMAP.md)
+
+La documentation V3 est mise à jour au fil de la stabilisation de la Release Candidate. Les documents historiques relatifs à la V2 ne constituent pas une release publiée.
 
 ## Licence
 
