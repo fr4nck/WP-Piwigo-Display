@@ -70,6 +70,8 @@ final class WPD_Block {
 				'lightbox'       => 'lightbox',
 				'rounded'        => 'rounded',
 				'style'          => 'style',
+				'shape'          => 'shape',
+				'radius'         => 'radius',
 				'autoplay'       => 'autoplay',
 				'interval'       => 'interval',
 				'speed'          => 'speed',
@@ -117,6 +119,10 @@ final class WPD_Block {
 	/**
 	 * Renders the block through the existing shortcode renderer.
 	 *
+	 * Direct block rendering does not run WordPress's `do_shortcode_tag` filter,
+	 * so post-shortcode decorators that depend on that filter must be applied here
+	 * explicitly to preserve parity with `[piwigo]`.
+	 *
 	 * @param array<string, mixed> $attributes Block attributes.
 	 * @param string               $content    Saved block content, unused.
 	 * @param WP_Block|null        $block      Parsed block instance, unused.
@@ -125,6 +131,7 @@ final class WPD_Block {
 	public static function render( array $attributes = array(), string $content = '', ?WP_Block $block = null ): string {
 		$atts   = self::attributes_to_shortcode( $attributes );
 		$output = WPD_Shortcode::render( $atts );
+		$output = WPD_Shapes::apply_shape( $output, 'piwigo', $atts, array() );
 
 		return WPD_Slider_Transitions::inject_slider_attributes( $output, 'piwigo', $atts, array() );
 	}
