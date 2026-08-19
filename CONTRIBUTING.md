@@ -1,6 +1,34 @@
-# Contribuer à WP Piwigo Display
+# Contribuer à Piwigo Display
 
-Merci de contribuer à **WP Piwigo Display**. Ce document résume les règles à respecter avant d'ouvrir une Pull Request.
+Merci de contribuer à **Piwigo Display**. Ce document résume les règles à respecter avant d'ouvrir une Pull Request.
+
+## Règle impérative de nommage public
+
+Le **nom public du plugin est `Piwigo Display`**.
+
+Afin d'éviter les refus de WordPress.org / Plugin Check, les termes réservés ou susceptibles de bloquer la validation ne doivent jamais être réintroduits dans le nom public du plugin.
+
+En particulier :
+
+- ne jamais renommer le produit en `WP Piwigo Display` ;
+- ne jamais renommer le produit en `WordPress Piwigo Display` ;
+- ne pas préfixer ou suffixer le nom public avec `WP`, `WordPress` ou une variante destinée à suggérer une appartenance officielle ;
+- conserver `Piwigo Display` dans l'en-tête `Plugin Name`, `readme.txt`, la documentation publique et les futures fiches de release ;
+- les identifiants techniques historiques (`WPD_`, noms de classes, constantes, text-domain, slug lorsqu'il doit rester compatible) peuvent être conservés lorsqu'ils ne constituent pas le nom public du produit.
+
+Cette règle est une **contrainte permanente du projet**, pas une décision temporaire liée à la RC3. Toute modification future du nom public doit être vérifiée contre les règles WordPress.org et Plugin Check avant d'être intégrée.
+
+## Langues de documentation
+
+Le dépôt conserve le français comme langue de travail et de développement.
+
+Pour la documentation destinée aux utilisateurs :
+
+- `README.md` constitue la documentation principale en français ;
+- `README.en.md` constitue sa version anglaise destinée à la diffusion internationale ;
+- les deux README doivent décrire les mêmes fonctionnalités, prérequis, avertissements importants et version courante ;
+- une modification fonctionnelle importante doit mettre à jour les deux versions lorsqu'elle affecte la documentation utilisateur ;
+- le `readme.txt` au format WordPress.org reste rédigé en anglais afin de servir de fiche internationale du plugin.
 
 ## Principes de développement
 
@@ -60,7 +88,8 @@ Documente les principes de développement
 
 ## Documentation
 
-- Toute la documentation est rédigée en français.
+- La documentation de développement est rédigée en français.
+- La documentation utilisateur principale existe en français et en anglais selon les règles ci-dessus.
 - Mettez à jour la documentation dans la même Pull Request que le changement concerné.
 - Les exemples doivent être exacts, reproductibles et cohérents avec le code.
 - Documentez les limites connues lorsqu'elles aident à utiliser ou maintenir le plugin.
@@ -85,6 +114,8 @@ Avant de demander une revue, vérifiez que :
 - la compatibilité, la sécurité et les comportements existants sont préservés ;
 - la documentation et les vérifications sont adaptées au changement ;
 - les contenus de contribution sont en français et les noms de code restent en anglais ;
+- le nom public reste strictement `Piwigo Display` ;
+- les README français et anglais restent cohérents ;
 - les mesures avant/après sont indiquées lorsqu'elles sont pertinentes.
 
 Les échanges de revue doivent rester précis, respectueux et orientés vers la maintenance du plugin.
