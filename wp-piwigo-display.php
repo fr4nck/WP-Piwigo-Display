@@ -33,7 +33,7 @@ if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
 	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-$wp_piwigo_display_loaded_classes = array(
+$piwigo_display_loaded_classes = array(
 	'WPD_Plugin',
 	'WPD_Settings',
 	'WPD_Service_Account',
@@ -50,6 +50,7 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Masonry',
 	'WPD_Justified',
 	'WPD_Collage',
+	'WPD_User_Fonts',
 	'WPD_Photo_Text',
 	'WPD_Composer_Parity',
 	'WPD_Gutenberg_Parity',
@@ -59,13 +60,13 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Piwigo_Response_Compat',
 );
 
-foreach ( $wp_piwigo_display_loaded_classes as $wp_piwigo_display_class ) {
-	if ( class_exists( $wp_piwigo_display_class, false ) ) {
+foreach ( $piwigo_display_loaded_classes as $piwigo_display_loaded_class ) {
+	if ( class_exists( $piwigo_display_loaded_class, false ) ) {
 		return;
 	}
 }
 
-unset( $wp_piwigo_display_class, $wp_piwigo_display_loaded_classes );
+unset( $piwigo_display_loaded_class, $piwigo_display_loaded_classes );
 
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
@@ -83,6 +84,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-slider-transitions.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-masonry.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-justified.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-collage.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-user-fonts.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-photo-text.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
@@ -96,7 +98,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
  *
  * @return void
  */
-function wp_piwigo_display_bootstrap_plugin(): void {
+function piwigo_display_bootstrap_plugin(): void {
 	WPD_Api_Metrics::register();
 	WPD_Plugin::init();
 	WPD_Service_Account::register();
@@ -105,6 +107,7 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Masonry::register();
 	WPD_Justified::register();
 	WPD_Collage::register();
+	WPD_User_Fonts::register();
 	WPD_Photo_Text::register();
 	WPD_Composer_Parity::register();
 	WPD_Gutenberg_Parity::register();
@@ -113,4 +116,4 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Piwigo_Response_Compat::register();
 }
 
-add_action( 'plugins_loaded', 'wp_piwigo_display_bootstrap_plugin' );
+add_action( 'plugins_loaded', 'piwigo_display_bootstrap_plugin' );

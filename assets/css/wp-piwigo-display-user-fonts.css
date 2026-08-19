@@ -1,0 +1,23 @@
+.wpd-user-font-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    max-width: 1050px;
+}
+
+.wpd-user-font-card {
+    display: flex;
+    min-height: 150px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.wpd-user-font-preview {
+    overflow-wrap: anywhere;
+    font-size: 28px;
+    line-height: 1.2;
+}
