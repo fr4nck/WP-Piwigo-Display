@@ -2,11 +2,11 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "wp-piwigo-display/gallery",
-  "version": "1.12.0",
-  "title": "Piwigo Display pour WordPress",
+  "version": "3.1.0-dev",
+  "title": "Piwigo Display",
   "category": "media",
   "icon": "format-gallery",
-  "description": "Insère une galerie, un diaporama, un mur Masonry ou une galerie justifiée Piwigo.",
+  "description": "Insère une galerie, un diaporama, un mur Masonry, une galerie justifiée ou un collage Piwigo.",
   "textdomain": "wp-piwigo-display",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./editor.css",
@@ -20,6 +20,7 @@
     "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "transition":{"type":"string","default":"slide"}, "direction":{"type":"string","default":"ltr"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
     "masonryColumns":{"type":"number","default":4}, "masonryGap":{"type":"number","default":16},
     "justifiedRowHeight":{"type":"number","default":220}, "justifiedGap":{"type":"number","default":8},
+    "collageSeed":{"type":"string","default":"0"}, "collageRotation":{"type":"number","default":6}, "collageSpread":{"type":"number","default":18}, "collageOverlap":{"type":"number","default":12}, "collageSize":{"type":"number","default":220}, "collageVariation":{"type":"number","default":20},
     "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
   },
   "supports":{"html":false}
