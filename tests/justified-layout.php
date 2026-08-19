@@ -1,13 +1,13 @@
 <?php
 
-$justified = file_get_contents( __DIR__ . '/../includes/class-wpd-justified.php' );
-$classic   = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js' );
-$css       = file_get_contents( __DIR__ . '/../assets/css/wp-piwigo-display-justified.css' );
-$bootstrap = file_get_contents( __DIR__ . '/../wp-piwigo-display.php' );
-$block     = file_get_contents( __DIR__ . '/../includes/class-wpd-block.php' );
+$justified  = file_get_contents( __DIR__ . '/../includes/class-wpd-justified.php' );
+$classic    = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js' );
+$css        = file_get_contents( __DIR__ . '/../assets/css/wp-piwigo-display-justified.css' );
+$bootstrap  = file_get_contents( __DIR__ . '/../wp-piwigo-display.php' );
+$block      = file_get_contents( __DIR__ . '/../includes/class-wpd-block.php' );
 $block_json = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
-$gutenberg = file_get_contents( __DIR__ . '/../blocks/piwigo/masonry-controls.js' );
-$admin     = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-composer-parity.js' );
+$gutenberg  = file_get_contents( __DIR__ . '/../blocks/piwigo/masonry-controls.js' );
+$admin      = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-composer-parity.js' );
 
 $assert = static function ( bool $condition, string $message ): void {
 	if ( ! $condition ) {
@@ -19,7 +19,13 @@ $assert = static function ( bool $condition, string $message ): void {
 $assert( false !== strpos( $justified, "'layout'] = 'justified'" ), 'type=justified doit activer le layout justifié.' );
 $assert( false !== strpos( $justified, 'min( 600, max( 100' ), 'La hauteur cible doit être bornée entre 100 et 600 px.' );
 $assert( false !== strpos( $justified, 'min( 64, max( 0' ), 'L’espacement doit être borné entre 0 et 64 px.' );
-$assert( false !== strpos( $justified, "return array( 'width' => 4, 'height' => 3 )" ), 'Les dimensions absentes doivent utiliser un fallback 4:3.' );
+$assert(
+	1 === preg_match(
+		"/return\\s+array\\(\\s*'width'\\s*=>\\s*4,\\s*'height'\\s*=>\\s*3,?\\s*\\);/s",
+		$justified
+	),
+	'Les dimensions absentes doivent utiliser un fallback 4:3.'
+);
 $assert( false !== strpos( $justified, "wp_enqueue_script( 'wp-piwigo-display' )" ), 'La lightbox doit rester disponible.' );
 $assert( false !== strpos( $css, 'flex-wrap: wrap' ), 'La galerie justifiée doit utiliser des lignes flex responsives.' );
 $assert( false !== strpos( $css, 'flex-grow: 999999' ), 'La dernière ligne ne doit pas être étirée comme une ligne complète.' );
