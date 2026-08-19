@@ -173,11 +173,13 @@ final class WPD_Cache {
 	 */
 	private static function remember( string $cache_key, callable $loader ) {
 		if ( isset( self::$request_cache[ $cache_key ] ) ) {
+			WPD_Api_Metrics::cache_hit( 'request' );
 			return self::$request_cache[ $cache_key ];
 		}
 
 		$cached = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
+			WPD_Api_Metrics::cache_hit( 'transient' );
 			self::$request_cache[ $cache_key ] = $cached;
 
 			return $cached;
@@ -189,10 +191,13 @@ final class WPD_Cache {
 		$lock_acquired = self::acquire_lock( $lock_key );
 
 		if ( ! $lock_acquired && is_array( $stale ) ) {
+			WPD_Api_Metrics::cache_hit( 'stale' );
 			self::$request_cache[ $cache_key ] = $stale;
 
 			return $stale;
 		}
+
+		WPD_Api_Metrics::cache_miss( 'loader' );
 
 		try {
 			$value = $loader();
