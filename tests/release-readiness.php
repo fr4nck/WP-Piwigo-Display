@@ -31,9 +31,10 @@ $assert( false !== strpos( (string) $readme, '1.8.0' ), 'Le README doit identifi
 $assert( false !== strpos( (string) $readme, '2.0.0' ) && false !== strpos( (string) $readme, 'jamais' ), 'Le README doit préciser que la ligne 2.0.0 n’a jamais été publiée comme release publique.' );
 $assert( false !== strpos( (string) $roadmap, '## Avant 3.0.0 stable' ), 'La feuille de route doit garder une étape explicite avant 3.0.0 stable.' );
 $assert( false !== strpos( (string) $roadmap, 'recette réelle' ), 'La feuille de route doit maintenir la recette WordPress réelle comme verrou de sortie.' );
-$assert( false !== strpos( (string) $recipe, 'Décision de préversion' ), 'La recette doit contenir une décision explicite avant préversion.' );
+$assert( false !== strpos( (string) $recipe, 'Décision de release' ), 'La recette doit contenir une décision explicite avant release stable.' );
 $assert( false !== strpos( (string) $recipe, '**GO / NO GO**' ), 'La recette doit imposer une décision GO ou NO GO.' );
 $assert( false !== strpos( (string) $recipe, 'vérifications manuelles non réalisables' ), 'La recette doit consigner les contrôles manuels non réalisables.' );
+$assert( false !== strpos( (string) $recipe, 'dossier racine `wp-piwigo-display`' ), 'La recette doit protéger l’identité technique du dossier installable.' );
 $assert( false !== strpos( (string) $parity, '| Sélecteur visuel d’albums | Oui | Oui | Oui | Oui |' ), 'La matrice doit confirmer la parité du sélecteur visuel.' );
 
 echo "Release readiness checks passed for version {$header_match[1]}." . PHP_EOL;
