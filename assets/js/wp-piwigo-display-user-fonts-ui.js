@@ -6,15 +6,16 @@
 		return;
 	}
 
-	function appendFonts( select ) {
-		if ( ! select || select.dataset.wpdUserFontsReady === '1' ) {
+	function appendFontGroup( select, source, label ) {
+		const matchingFonts = fonts.filter( ( font ) => font && font.source === source );
+		if ( ! matchingFonts.length ) {
 			return;
 		}
 
 		const group = document.createElement( 'optgroup' );
-		group.label = 'Polices locales';
-		fonts.forEach( ( font ) => {
-			if ( ! font || ! font.value || ! font.name || select.querySelector( 'option[value="' + font.value + '"]' ) ) {
+		group.label = label;
+		matchingFonts.forEach( ( font ) => {
+			if ( ! font.value || ! font.name || select.querySelector( 'option[value="' + font.value + '"]' ) ) {
 				return;
 			}
 			const option = document.createElement( 'option' );
@@ -29,6 +30,15 @@
 		if ( group.children.length ) {
 			select.appendChild( group );
 		}
+	}
+
+	function appendFonts( select ) {
+		if ( ! select || select.dataset.wpdUserFontsReady === '1' ) {
+			return;
+		}
+
+		appendFontGroup( select, 'bundled', 'Polices incluses' );
+		appendFontGroup( select, 'user', 'Polices locales' );
 		select.dataset.wpdUserFontsReady = '1';
 	}
 
