@@ -7,10 +7,18 @@
 - une galerie Piwigo accessible depuis le serveur WordPress ;
 - HTTPS obligatoire pour le compte de service.
 
+## Version à installer
+
+La dernière version stable effectivement publiée avant la V3 est **1.8.0**.
+
+La branche **2.0.0 n’a jamais été publiée comme release publique**. Ses développements ont été repris dans la V3.
+
+La version de test actuelle est **3.0.0-rc.3**. Une Release Candidate doit être installée uniquement si l’on accepte de participer à la recette et de signaler les régressions éventuelles.
+
 ## Installation du plugin
 
 1. Dans WordPress, ouvrir **Extensions > Ajouter une extension > Téléverser une extension**.
-2. Sélectionner le ZIP de Piwigo Display.
+2. Sélectionner le ZIP de Piwigo Display correspondant à la version à tester.
 3. Installer puis activer l’extension.
 4. Ouvrir les réglages de Piwigo Display.
 5. Renseigner l’URL de la galerie Piwigo.
@@ -44,18 +52,18 @@ Ne jamais utiliser un compte administrateur Piwigo comme compte de service.
 
 Voir [Compte de service Piwigo](COMPTE-DE-SERVICE.md).
 
-## Mise à jour depuis la V2
+## Mise à jour vers la V3
 
 La V3 conserve la compatibilité avec les shortcodes et réglages historiques utiles. Les options existantes ne doivent pas être supprimées lors d’une mise à jour.
-
-Avant la Release Candidate, la version déclarée reste 2.0.0 afin de ne pas présenter prématurément la branche 3.x comme une version stable.
 
 Lors de la recette RC, vérifier en particulier :
 
 - conservation de l’URL Piwigo ;
 - conservation des réglages de cache, légendes et styles ;
-- fonctionnement des shortcodes existants ;
-- fonctionnement du compte de service lorsqu’il était déjà configuré.
+- fonctionnement des shortcodes existants issus des versions publiées ;
+- fonctionnement du compte de service s’il était déjà configuré dans une version de développement ;
+- présence du bloc **Santé API & cache** dans Diagnostic ;
+- absence d’erreur PHP ou JavaScript après mise à jour.
 
 ## Désinstallation
 
