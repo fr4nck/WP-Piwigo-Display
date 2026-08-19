@@ -40,6 +40,7 @@ final class WPD_Photo_Text {
 		$defaults['photo_text_weight']         = $defaults['photo_text_weight'] ?? '800';
 		$defaults['photo_text_size']           = $defaults['photo_text_size'] ?? '230';
 		$defaults['photo_text_letter_spacing'] = $defaults['photo_text_letter_spacing'] ?? '0';
+		$defaults['photo_text_line_height']    = $defaults['photo_text_line_height'] ?? '100';
 		$defaults['photo_text_max_width']      = $defaults['photo_text_max_width'] ?? '100';
 		$defaults['photo_text_align']          = $defaults['photo_text_align'] ?? 'center';
 		$defaults['photo_text_fill_mode']      = $defaults['photo_text_fill_mode'] ?? 'grid';
@@ -98,8 +99,8 @@ final class WPD_Photo_Text {
 			return $html;
 		}
 
-		$text = trim( sanitize_text_field( (string) ( $atts['photo_text'] ?? '' ) ) );
-		if ( '' === $text ) {
+		$lines = self::text_lines( (string) ( $atts['photo_text'] ?? '' ) );
+		if ( array() === $lines ) {
 			return $html;
 		}
 
@@ -114,6 +115,7 @@ final class WPD_Photo_Text {
 		$weight         = min( 900, max( 100, absint( $atts['photo_text_weight'] ?? 800 ) ) );
 		$font_size      = min( 300, max( 120, absint( $atts['photo_text_size'] ?? 230 ) ) );
 		$letter_spacing = min( 80, max( -20, (int) ( $atts['photo_text_letter_spacing'] ?? 0 ) ) );
+		$line_height    = min( 160, max( 70, absint( $atts['photo_text_line_height'] ?? 100 ) ) );
 		$max_width      = min( 100, max( 20, absint( $atts['photo_text_max_width'] ?? 100 ) ) );
 		$align          = self::alignment( (string) ( $atts['photo_text_align'] ?? 'center' ) );
 		$fill_mode      = self::fill_mode( (string) ( $atts['photo_text_fill_mode'] ?? 'grid' ) );
@@ -129,16 +131,20 @@ final class WPD_Photo_Text {
 			$outline_color = '#ffffff';
 		}
 
-		$text_position = self::text_position( $align );
-		$tiles         = self::layout_tiles( $urls, $fill_mode, $density, $seed, $rotation, $spread );
+		$render_size    = self::fitted_font_size( $font_size, count( $lines ), $line_height );
+		$line_step      = $render_size * ( $line_height / 100 );
+		$line_positions = self::line_positions( count( $lines ), $line_step );
+		$text_position  = self::text_position( $align );
+		$tiles          = self::layout_tiles( $urls, $fill_mode, $density, $seed, $rotation, $spread );
+		$semantic_text  = implode( ' ', $lines );
 
 		++self::$instance;
-		$id         = 'wpd-photo-text-' . self::$instance . '-' . substr( md5( $text . ':' . $seed ), 0, 8 );
+		$id         = 'wpd-photo-text-' . self::$instance . '-' . substr( md5( $semantic_text . ':' . $seed ), 0, 8 );
 		$clip_id    = $id . '-clip';
 		$text_style = sprintf(
 			'font-family:%1$s;font-size:%2$dpx;font-weight:%3$d;letter-spacing:%4$dpx;',
 			$font,
-			$font_size,
+			$render_size,
 			$weight,
 			$letter_spacing
 		);
@@ -152,12 +158,14 @@ final class WPD_Photo_Text {
 
 		ob_start();
 		?>
-		<div class="wp-piwigo-display wp-piwigo-display-photo-text wpd-photo-text-align-<?php echo esc_attr( $align ); ?> wpd-photo-text-fill-<?php echo esc_attr( $fill_mode ); ?>" style="--wpd-photo-text-background:<?php echo esc_attr( $background ); ?>;--wpd-photo-text-max-width:<?php echo esc_attr( (string) $max_width ); ?>%;">
-			<span class="wpd-photo-text-semantic"><?php echo esc_html( $text ); ?></span>
+		<div class="wp-piwigo-display wp-piwigo-display-photo-text wpd-photo-text-align-<?php echo esc_attr( $align ); ?> wpd-photo-text-fill-<?php echo esc_attr( $fill_mode ); ?> wpd-photo-text-lines-<?php echo esc_attr( (string) count( $lines ) ); ?>" style="--wpd-photo-text-background:<?php echo esc_attr( $background ); ?>;--wpd-photo-text-max-width:<?php echo esc_attr( (string) $max_width ); ?>%;">
+			<span class="wpd-photo-text-semantic"><?php echo esc_html( $semantic_text ); ?></span>
 			<svg class="wpd-photo-text-svg" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
 				<defs>
 					<clipPath id="<?php echo esc_attr( $clip_id ); ?>">
-						<text x="<?php echo esc_attr( (string) $text_position['x'] ); ?>" y="190" text-anchor="<?php echo esc_attr( $text_position['anchor'] ); ?>" dominant-baseline="middle" style="<?php echo esc_attr( $text_style ); ?>"><?php echo esc_html( $text ); ?></text>
+						<?php foreach ( $lines as $index => $line ) : ?>
+							<text x="<?php echo esc_attr( (string) $text_position['x'] ); ?>" y="<?php echo esc_attr( self::number( $line_positions[ $index ] ) ); ?>" text-anchor="<?php echo esc_attr( $text_position['anchor'] ); ?>" dominant-baseline="middle" style="<?php echo esc_attr( $text_style ); ?>"><?php echo esc_html( $line ); ?></text>
+						<?php endforeach; ?>
 					</clipPath>
 				</defs>
 				<g clip-path="url(#<?php echo esc_attr( $clip_id ); ?>)">
@@ -166,13 +174,85 @@ final class WPD_Photo_Text {
 					<?php endforeach; ?>
 				</g>
 				<?php if ( $outline && $outline_width > 0 ) : ?>
-					<text x="<?php echo esc_attr( (string) $text_position['x'] ); ?>" y="190" text-anchor="<?php echo esc_attr( $text_position['anchor'] ); ?>" dominant-baseline="middle" fill="none" stroke="<?php echo esc_attr( $outline_color ); ?>" stroke-width="<?php echo esc_attr( (string) $outline_width ); ?>" paint-order="stroke" vector-effect="non-scaling-stroke" style="<?php echo esc_attr( $text_style ); ?>"><?php echo esc_html( $text ); ?></text>
+					<?php foreach ( $lines as $index => $line ) : ?>
+						<text x="<?php echo esc_attr( (string) $text_position['x'] ); ?>" y="<?php echo esc_attr( self::number( $line_positions[ $index ] ) ); ?>" text-anchor="<?php echo esc_attr( $text_position['anchor'] ); ?>" dominant-baseline="middle" fill="none" stroke="<?php echo esc_attr( $outline_color ); ?>" stroke-width="<?php echo esc_attr( (string) $outline_width ); ?>" paint-order="stroke" vector-effect="non-scaling-stroke" style="<?php echo esc_attr( $text_style ); ?>"><?php echo esc_html( $line ); ?></text>
+					<?php endforeach; ?>
 				<?php endif; ?>
 			</svg>
 		</div>
 		<?php
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Converts a user text value into at most four sanitized visual lines.
+	 *
+	 * Literal \n sequences are accepted so generated shortcodes stay on one line.
+	 *
+	 * @param string $text Raw text value.
+	 * @return array<int,string>
+	 */
+	private static function text_lines( string $text ): array {
+		$text  = str_replace( array( "\r\n", "\r", '\\n' ), "\n", $text );
+		$text  = sanitize_textarea_field( $text );
+		$parts = preg_split( '/\n+/', $text );
+		$lines = array();
+
+		if ( ! is_array( $parts ) ) {
+			return $lines;
+		}
+
+		foreach ( $parts as $part ) {
+			$line = trim( sanitize_text_field( $part ) );
+			if ( '' === $line ) {
+				continue;
+			}
+
+			$lines[] = $line;
+			if ( count( $lines ) >= 4 ) {
+				break;
+			}
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * Fits a multiline text block into the fixed SVG viewBox height.
+	 *
+	 * @param int $requested_size Requested font size.
+	 * @param int $line_count     Number of visual lines.
+	 * @param int $line_height    Line height percentage.
+	 * @return int
+	 */
+	private static function fitted_font_size( int $requested_size, int $line_count, int $line_height ): int {
+		if ( $line_count <= 1 ) {
+			return $requested_size;
+		}
+
+		$block_units = 1 + ( ( $line_count - 1 ) * ( $line_height / 100 ) );
+		$fit_size    = (int) floor( 300 / $block_units );
+
+		return min( $requested_size, max( 60, $fit_size ) );
+	}
+
+	/**
+	 * Returns vertically centered line positions inside the SVG viewBox.
+	 *
+	 * @param int   $line_count Number of lines.
+	 * @param float $line_step  Distance between line centers.
+	 * @return array<int,float>
+	 */
+	private static function line_positions( int $line_count, float $line_step ): array {
+		$positions = array();
+		$start_y   = 190 - ( ( $line_count - 1 ) * $line_step / 2 );
+
+		for ( $index = 0; $index < $line_count; ++$index ) {
+			$positions[] = $start_y + ( $index * $line_step );
+		}
+
+		return $positions;
 	}
 
 	/**
