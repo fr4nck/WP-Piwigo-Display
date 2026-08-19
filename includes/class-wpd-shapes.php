@@ -40,11 +40,7 @@ final class WPD_Shapes {
 		'card-club',
 	);
 
-	/**
-	 * Registers hooks for shape support.
-	 *
-	 * @return void
-	 */
+	/** Registers hooks for shape support. */
 	public static function register(): void {
 		add_filter( 'wp_piwigo_display_shortcode_defaults', array( self::class, 'add_defaults' ) );
 		add_filter( 'do_shortcode_tag', array( self::class, 'apply_shape' ), 10, 4 );
@@ -65,11 +61,7 @@ final class WPD_Shapes {
 		return $defaults;
 	}
 
-	/**
-	 * Registers the public shape stylesheet.
-	 *
-	 * @return void
-	 */
+	/** Registers the public shape stylesheet. */
 	public static function register_style(): void {
 		wp_register_style(
 			'wpd-shapes',
@@ -79,12 +71,14 @@ final class WPD_Shapes {
 		);
 	}
 
-	/**
-	 * Enqueues shape controls in the block editor.
-	 *
-	 * @return void
-	 */
+	/** Enqueues shape controls and visual previews in the block editor. */
 	public static function enqueue_editor_assets(): void {
+		wp_enqueue_style(
+			'wpd-shape-picker',
+			WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-shape-picker.css',
+			array(),
+			WPD_VERSION
+		);
 		wp_enqueue_script(
 			'wpd-shapes-editor',
 			WPD_PLUGIN_URL . 'blocks/piwigo/shapes.js',
@@ -165,7 +159,7 @@ final class WPD_Shapes {
 	 * @return string
 	 */
 	private static function sanitize_shape( string $shape ): string {
-		$shape   = sanitize_key( $shape );
+		$shape   = sanitize_key( remove_accents( $shape ) );
 		$aliases = array(
 			''            => 'rectangle',
 			'none'        => 'rectangle',
@@ -174,23 +168,18 @@ final class WPD_Shapes {
 			'cercle'      => 'circle',
 			'ovale'       => 'oval',
 			'etoile'      => 'star',
-			'étoile'      => 'star',
 			'hexagone'    => 'hexagon',
 			'losange'     => 'diamond',
 			'nuage'       => 'cloud',
 			'coeur'       => 'heart',
-			'cœur'        => 'heart',
 			'goutte'      => 'drop',
 			'pentagone'   => 'pentagon',
 			'octogone'    => 'octagon',
 			'pique'       => 'card-spade',
 			'trefle'      => 'card-club',
-			'trèfle'      => 'card-club',
 			'carreau'     => 'card-diamond',
 			'card-coeur'  => 'card-heart',
-			'card-cœur'   => 'card-heart',
 			'card-trefle' => 'card-club',
-			'card-trèfle' => 'card-club',
 		);
 		$shape   = $aliases[ $shape ] ?? $shape;
 
