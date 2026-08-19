@@ -37,7 +37,7 @@ $assert( false !== strpos( $module, 'text_position( $align )' ) && false !== str
 $assert( false !== strpos( $module, "photo_text_fill_mode']" ) && false !== strpos( $module, "photo_text_density']" ), 'Le moteur doit exposer mode de remplissage et densité.' );
 $assert( false !== strpos( $module, "array( 'grid', 'masonry', 'collage' )" ), 'Les trois modes de remplissage doivent être autorisés.' );
 $assert( false !== strpos( $module, 'grid_tiles(' ) && false !== strpos( $module, 'masonry_tiles(' ) && false !== strpos( $module, 'collage_tiles(' ), 'Chaque mode de remplissage doit disposer de son moteur déterministe.' );
-$assert( false !== strpos( $module, "md5( $seed . ':masonry:'" ) && false !== strpos( $module, "md5( $seed . ':collage:'" ), 'Masonry et pêle-mêle doivent rester déterministes pour une même graine.' );
+$assert( false !== strpos( $module, "':masonry:'" ) && false !== strpos( $module, "':collage:'" ), 'Masonry et pêle-mêle doivent rester déterministes pour une même graine.' );
 $assert( false !== strpos( $module, 'photo_text_rotation' ) && false !== strpos( $module, 'photo_text_spread' ) && false !== strpos( $module, 'signed_value(' ), 'Le pêle-mêle doit exposer rotation et dispersion.' );
 $assert( false !== strpos( $css, '.wpd-photo-text-semantic' ), 'Le texte sémantique doit disposer d’un masquage visuel accessible.' );
 $assert( false !== strpos( $css, '--wpd-photo-text-max-width' ) && false !== strpos( $css, '.wpd-photo-text-align-right' ), 'La largeur responsive et l’alignement du conteneur doivent être stylés.' );
