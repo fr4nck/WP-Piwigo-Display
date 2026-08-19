@@ -2,7 +2,7 @@
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: 3.0.0-rc.3
 License: GPLv3 or later
