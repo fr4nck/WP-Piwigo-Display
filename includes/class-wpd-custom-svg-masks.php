@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Stores, imports, deletes and applies sanitized SVG masks.
+ * Stores, imports, deletes, exposes and applies sanitized SVG masks.
  */
 final class WPD_Custom_SVG_Masks {
 	/** Option name used to store sanitized masks. */
@@ -25,6 +25,9 @@ final class WPD_Custom_SVG_Masks {
 		add_filter( 'do_shortcode_tag', array( self::class, 'apply_mask' ), 12, 4 );
 		add_action( 'admin_post_wpd_upload_svg_mask', array( self::class, 'handle_upload' ) );
 		add_action( 'admin_post_wpd_delete_svg_mask', array( self::class, 'handle_delete' ) );
+		add_action( 'admin_menu', array( self::class, 'register_page' ), 30 );
+		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_admin_assets' ), 30 );
+		add_action( 'enqueue_block_editor_assets', array( self::class, 'localize_block_editor_masks' ), 30 );
 	}
 
 	/**
@@ -69,7 +72,115 @@ final class WPD_Custom_SVG_Masks {
 		);
 	}
 
-	/** Handles an authenticated SVG mask upload. */
+	/** Registers the custom mask administration page. */
+	public static function register_page(): void {
+		add_submenu_page(
+			'wp-piwigo-display',
+			__( 'Masques SVG', 'wp-piwigo-display' ),
+			__( 'Masques SVG', 'wp-piwigo-display' ),
+			'manage_options',
+			'wp-piwigo-display-masks',
+			array( self::class, 'render_page' )
+		);
+	}
+
+	/** Renders the sanitized custom mask library and upload form. */
+	public static function render_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$library = self::all();
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Masques SVG personnalisés', 'wp-piwigo-display' ); ?></h1>
+			<p><?php esc_html_e( 'Les SVG sont filtrés avant stockage. Aucun script, style actif ni ressource externe n’est conservé.', 'wp-piwigo-display' ); ?></p>
+
+			<div class="card" style="max-width:1050px">
+				<h2><?php esc_html_e( 'Importer un masque', 'wp-piwigo-display' ); ?></h2>
+				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" enctype="multipart/form-data">
+					<input type="hidden" name="action" value="wpd_upload_svg_mask">
+					<?php wp_nonce_field( 'wpd_upload_svg_mask' ); ?>
+					<p><label><?php esc_html_e( 'Nom', 'wp-piwigo-display' ); ?> <input type="text" name="wpd_svg_mask_name" maxlength="80"></label></p>
+					<p><label><?php esc_html_e( 'Fichier SVG', 'wp-piwigo-display' ); ?> <input type="file" name="wpd_svg_mask" accept="image/svg+xml,.svg" required></label></p>
+					<p class="description"><?php esc_html_e( '256 Ko maximum. Les primitives géométriques SVG sûres sont conservées ; le contenu actif est refusé.', 'wp-piwigo-display' ); ?></p>
+					<?php submit_button( __( 'Importer et sécuriser', 'wp-piwigo-display' ), 'primary', 'submit', false ); ?>
+				</form>
+			</div>
+
+			<h2><?php esc_html_e( 'Bibliothèque', 'wp-piwigo-display' ); ?></h2>
+			<?php if ( array() === $library ) : ?>
+				<p><?php esc_html_e( 'Aucun masque personnalisé pour le moment.', 'wp-piwigo-display' ); ?></p>
+			<?php else : ?>
+				<div class="wpd-shape-picker-grid" style="max-width:1050px">
+					<?php foreach ( $library as $id => $mask ) : ?>
+						<?php
+						$payload = self::ui_mask( (string) $id, $mask );
+						if ( null === $payload ) {
+							continue;
+						}
+						?>
+						<div class="wpd-shape-picker-button" style="cursor:default;min-height:130px">
+							<span class="wpd-shape-picker-preview" style="background:#1d2327;-webkit-mask-image:url('<?php echo esc_attr( $payload['dataUri'] ); ?>');mask-image:url('<?php echo esc_attr( $payload['dataUri'] ); ?>');-webkit-mask-size:contain;mask-size:contain;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat" aria-hidden="true"></span>
+							<strong><?php echo esc_html( $payload['name'] ); ?></strong>
+							<code>custom-<?php echo esc_html( $payload['id'] ); ?></code>
+							<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+								<input type="hidden" name="action" value="wpd_delete_svg_mask">
+								<input type="hidden" name="wpd_svg_mask_id" value="<?php echo esc_attr( $payload['id'] ); ?>">
+								<?php wp_nonce_field( 'wpd_delete_svg_mask' ); ?>
+								<button type="submit" class="button-link-delete"><?php esc_html_e( 'Supprimer', 'wp-piwigo-display' ); ?></button>
+							</form>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Enqueues mask selection helpers in Classic Editor and the admin composer.
+	 *
+	 * @param string $hook Current administration screen hook.
+	 */
+	public static function enqueue_admin_assets( string $hook ): void {
+		$is_classic = in_array( $hook, array( 'post.php', 'post-new.php' ), true );
+
+		// The page query argument only selects an administration screen and does not mutate data.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$is_composer = 'wp-piwigo-display-compose' === $page;
+		$is_library  = 'wp-piwigo-display-masks' === $page;
+
+		if ( $is_library ) {
+			wp_enqueue_style( 'wpd-shape-picker', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-shape-picker.css', array(), WPD_VERSION );
+		}
+
+		if ( ! $is_classic && ! $is_composer ) {
+			return;
+		}
+
+		$dependencies = $is_classic ? array( 'jquery', 'wpd-classic-editor' ) : array( 'wpd-admin-composer-parity' );
+		wp_enqueue_script(
+			'wpd-custom-svg-mask-ui',
+			WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-custom-masks-ui.js',
+			$dependencies,
+			WPD_VERSION,
+			true
+		);
+		wp_localize_script( 'wpd-custom-svg-mask-ui', 'WPDCustomMasks', self::ui_masks() );
+	}
+
+	/** Adds sanitized mask metadata to the Gutenberg shape picker. */
+	public static function localize_block_editor_masks(): void {
+		wp_localize_script( 'wpd-shapes-editor', 'WPDCustomMasks', self::ui_masks() );
+	}
+
+	/**
+	 * Handles an authenticated SVG mask upload.
+	 *
+	 * @return void
+	 */
 	public static function handle_upload(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Vous n’avez pas l’autorisation d’importer des masques SVG.', 'wp-piwigo-display' ), 403 );
@@ -82,7 +193,7 @@ final class WPD_Custom_SVG_Masks {
 			self::redirect_with_error( 'limit' );
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Upload metadata and temporary file are validated below before any content is accepted.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Upload metadata and temporary file are validated below.
 		$file = isset( $_FILES['wpd_svg_mask'] ) && is_array( $_FILES['wpd_svg_mask'] ) ? $_FILES['wpd_svg_mask'] : null;
 		if ( ! $file || UPLOAD_ERR_OK !== (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) ) {
 			self::redirect_with_error( 'upload' );
@@ -105,7 +216,7 @@ final class WPD_Custom_SVG_Masks {
 			self::redirect_with_error( 'mime' );
 		}
 
-		// This is a validated local PHP upload temporary file, never a remote URL.
+		// This is a local PHP upload temporary file validated with is_uploaded_file() above.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$raw = file_get_contents( $tmp_name );
 		if ( false === $raw ) {
@@ -132,7 +243,11 @@ final class WPD_Custom_SVG_Masks {
 		self::redirect( array( 'wpd_mask_added' => $id ) );
 	}
 
-	/** Handles deletion of one stored custom mask. */
+	/**
+	 * Handles deletion of one stored custom mask.
+	 *
+	 * @return void
+	 */
 	public static function handle_delete(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Vous n’avez pas l’autorisation de supprimer des masques SVG.', 'wp-piwigo-display' ), 403 );
@@ -166,7 +281,7 @@ final class WPD_Custom_SVG_Masks {
 			return $output;
 		}
 
-		$id = sanitize_key( (string) ( $attr['custom_mask'] ?? '' ) );
+		$id = self::resolve_mask_id( $attr );
 		if ( '' === $id ) {
 			return $output;
 		}
@@ -205,10 +320,76 @@ final class WPD_Custom_SVG_Masks {
 	}
 
 	/**
+	 * Resolves a custom mask id from explicit or shape-based shortcode syntax.
+	 *
+	 * @param array<string,mixed> $attr Shortcode attributes.
+	 * @return string
+	 */
+	private static function resolve_mask_id( array $attr ): string {
+		$explicit = sanitize_key( (string) ( $attr['custom_mask'] ?? '' ) );
+		if ( '' !== $explicit ) {
+			return $explicit;
+		}
+
+		$shape = sanitize_key( (string) ( $attr['shape'] ?? '' ) );
+		if ( preg_match( '/^custom-([a-f0-9]{12})$/', $shape, $matches ) ) {
+			return $matches[1];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Returns masks prepared for safe editor previews.
+	 *
+	 * @return array<int,array{id:string,name:string,value:string,dataUri:string}>
+	 */
+	private static function ui_masks(): array {
+		$result = array();
+		foreach ( self::all() as $id => $mask ) {
+			$payload = self::ui_mask( (string) $id, $mask );
+			if ( null !== $payload ) {
+				$result[] = $payload;
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * Prepares one stored mask for a local-only editor preview.
+	 *
+	 * @param string $id   Stored mask identifier.
+	 * @param mixed  $mask Stored mask payload.
+	 * @return array{id:string,name:string,value:string,dataUri:string}|null
+	 */
+	private static function ui_mask( string $id, $mask ): ?array {
+		if ( ! is_array( $mask ) || ! isset( $mask['name'], $mask['svg'] ) ) {
+			return null;
+		}
+
+		$id = sanitize_key( $id );
+		if ( ! preg_match( '/^[a-f0-9]{12}$/', $id ) ) {
+			return null;
+		}
+
+		$sanitized = WPD_SVG_Mask_Sanitizer::sanitize( (string) $mask['svg'] );
+		if ( is_wp_error( $sanitized ) ) {
+			return null;
+		}
+
+		return array(
+			'id'      => $id,
+			'name'    => sanitize_text_field( (string) $mask['name'] ),
+			'value'   => 'custom-' . $id,
+			'dataUri' => 'data:image/svg+xml,' . rawurlencode( $sanitized ),
+		);
+	}
+
+	/**
 	 * Detects uploaded file MIME type when Fileinfo is available.
 	 *
-	 * @param string $path Local uploaded temporary path.
-	 * @return string Detected MIME type or an empty string.
+	 * @param string $path Local temporary upload path.
+	 * @return string
 	 */
 	private static function detect_mime( string $path ): string {
 		if ( ! function_exists( 'finfo_open' ) ) {
@@ -225,13 +406,13 @@ final class WPD_Custom_SVG_Masks {
 	}
 
 	/**
-	 * Redirects back to the plugin settings page.
+	 * Redirects back to the custom mask administration page.
 	 *
 	 * @param array<string,string> $args Query arguments.
 	 * @return void
 	 */
 	private static function redirect( array $args = array() ): void {
-		$url = add_query_arg( $args, admin_url( 'options-general.php?page=wp-piwigo-display' ) );
+		$url = add_query_arg( $args, admin_url( 'admin.php?page=wp-piwigo-display-masks' ) );
 		wp_safe_redirect( $url );
 		exit;
 	}
