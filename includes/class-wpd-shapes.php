@@ -1,6 +1,6 @@
 <?php
 /**
- * Shape support for WP Piwigo Display renderings.
+ * Shape support for Piwigo Display renderings.
  *
  * @package WP_Piwigo_Display
  */
@@ -61,11 +61,22 @@ final class WPD_Shapes {
 	}
 
 	/**
-	 * Enqueues shape controls in the block editor.
+	 * Enqueues shape controls and preview styles in the block editor.
+	 *
+	 * Public styles are registered on `wp_enqueue_scripts`, which does not run on
+	 * the editor screen. The editor therefore gets the same shape CSS through a
+	 * dedicated handle so the visual preview matches the public rendering.
 	 *
 	 * @return void
 	 */
 	public static function enqueue_editor_assets(): void {
+		wp_enqueue_style(
+			'wpd-shapes-editor',
+			WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-shapes.css',
+			array(),
+			WPD_VERSION
+		);
+
 		wp_enqueue_script(
 			'wpd-shapes-editor',
 			WPD_PLUGIN_URL . 'blocks/piwigo/shapes.js',
