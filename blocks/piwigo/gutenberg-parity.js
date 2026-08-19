@@ -122,12 +122,22 @@
             }
         });
 
+        function branchIsVisible(album) {
+            var ids = album.pathIds || [album.id];
+            var lastAncestor = Math.max(0, ids.length - 1);
+            for (var index = 0; index < lastAncestor; index += 1) {
+                if (!expanded[String(ids[index])]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         var visibleAlbums = albums.filter(function (album) {
-            var parentId = String(album.parentId || 0);
             if (query) {
                 return !!searchVisible[String(album.id)];
             }
-            return Number(album.depth || 0) === 0 || !!expanded[parentId];
+            return Number(album.depth || 0) === 0 || branchIsVisible(album);
         });
 
         var children = [
@@ -193,6 +203,7 @@
                         disabled: !hasChildren,
                         icon: hasChildren ? (isExpanded ? 'arrow-down-alt2' : 'arrow-right-alt2') : undefined,
                         label: isExpanded ? __('Fermer les sous-albums', 'wp-piwigo-display') : __('Ouvrir les sous-albums', 'wp-piwigo-display'),
+                        'aria-expanded': hasChildren ? isExpanded : undefined,
                         onClick: function () {
                             var next = Object.assign({}, expanded);
                             next[id] = !next[id];
