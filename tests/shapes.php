@@ -7,7 +7,7 @@ $block = file_get_contents(__DIR__ . '/../blocks/piwigo/block.json');
 $editor = file_get_contents(__DIR__ . '/../blocks/piwigo/shapes.js');
 $classic = file_get_contents(__DIR__ . '/../includes/class-wpd-classic-editor.php');
 $classic_js = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js');
-$composer = file_get_contents(__DIR__ . '/../includes/class-wpd-composer-parity.php');
+$composer = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-composer-parity.js');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -16,10 +16,30 @@ $assert = static function (bool $condition, string $message): void {
     }
 };
 
-$assert(strpos($bootstrap, "class-wpd-shapes.php") !== false, 'Le module de formes doit être chargé.');
+$built_in_shapes = [
+    'rectangle',
+    'rounded',
+    'circle',
+    'oval',
+    'pill',
+    'star',
+    'hexagon',
+    'diamond',
+    'cloud',
+    'heart',
+    'drop',
+    'triangle',
+    'pentagon',
+    'octagon',
+    'card-spade',
+    'card-heart',
+    'card-diamond',
+    'card-club',
+];
+
+$assert(strpos($bootstrap, 'class-wpd-shapes.php') !== false, 'Le module de formes doit être chargé.');
 $assert(strpos($bootstrap, 'WPD_Shapes::register()') !== false, 'Le module de formes doit être enregistré.');
-$assert(strpos($module, "add_filter('do_shortcode_tag'") !== false, 'Le rendu final du shortcode doit recevoir la forme.');
-$assert(strpos($module, "'star'") !== false && strpos($module, "'hexagon'") !== false, 'Les formes complexes doivent être autorisées.');
+$assert(strpos($module, "add_filter( 'do_shortcode_tag'") !== false, 'Le rendu final du shortcode doit recevoir la forme.');
 $assert(strpos($css, 'clip-path: polygon') !== false, 'Les formes complexes doivent utiliser clip-path.');
 $assert(strpos($css, '@supports not (clip-path: polygon(0 0))') !== false, 'Un repli sans clip-path doit être prévu.');
 $assert(strpos($block, '"shape"') !== false && strpos($block, '"radius"') !== false, 'Les attributs Gutenberg doivent être déclarés.');
@@ -27,3 +47,19 @@ $assert(strpos($editor, 'Arrondi des angles (%)') !== false, 'Le réglage fin de
 $assert(strpos($classic, 'data-wpd="shape"') !== false && strpos($classic, 'data-wpd="radius"') !== false, 'Classic Editor doit proposer la forme et le rayon.');
 $assert(strpos($classic_js, "add(parts, 'shape'") !== false && strpos($classic_js, "add(parts, 'radius'") !== false, 'Classic Editor doit générer les attributs de forme.');
 $assert(strpos($composer, 'wpd-c-shape') !== false && strpos($composer, 'wpd-c-radius') !== false, 'Le composeur d’administration doit proposer la forme et le rayon.');
+
+foreach ($built_in_shapes as $shape) {
+    $quoted = "'" . $shape . "'";
+    $option = 'value="' . $shape . '"';
+
+    $assert(strpos($module, $quoted) !== false, sprintf('La forme %s doit être autorisée côté serveur.', $shape));
+    $assert(strpos($editor, $quoted) !== false, sprintf('La forme %s doit être proposée dans Gutenberg.', $shape));
+    $assert(strpos($classic, $option) !== false, sprintf('La forme %s doit être proposée dans Classic Editor.', $shape));
+    $assert(strpos($composer, $option) !== false, sprintf('La forme %s doit être proposée dans le composeur.', $shape));
+}
+
+foreach (['cloud', 'heart', 'drop', 'triangle', 'pentagon', 'octagon', 'card-spade', 'card-heart', 'card-diamond', 'card-club'] as $shape) {
+    $assert(strpos($css, '.wpd-shape-' . $shape) !== false, sprintf('La forme %s doit avoir une silhouette CSS.', $shape));
+}
+
+fwrite(STDOUT, "Shape library and editor parity: OK\n");
