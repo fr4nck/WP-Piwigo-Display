@@ -12,6 +12,24 @@
     var TextControl = components.TextControl;
     var ToggleControl = components.ToggleControl;
     var __ = i18n.__;
+    var userFonts = Array.isArray(window.WPDUserFonts) ? window.WPDUserFonts : [];
+
+    function photoTextFontOptions() {
+        var options = [
+            {label: __('Police du thème', 'wp-piwigo-display'), value: 'inherit'},
+            {label: __('Système', 'wp-piwigo-display'), value: 'system'},
+            {label: __('Serif', 'wp-piwigo-display'), value: 'serif'},
+            {label: __('Monospace', 'wp-piwigo-display'), value: 'mono'}
+        ];
+
+        userFonts.forEach(function (font) {
+            if (font && font.value && font.name) {
+                options.push({label: font.name, value: font.value});
+            }
+        });
+
+        return options;
+    }
 
     var withLayoutControls = createHigherOrderComponent(function (BlockEdit) {
         return function (props) {
@@ -55,12 +73,7 @@
                     displayType === 'collage' && el(RangeControl, {label: __('Variation de taille (%)', 'wp-piwigo-display'), value: collageVariation, min: 0, max: 50, onChange: function (value) { setAttributes({collageVariation: value}); }}),
                     displayType === 'photo-text' && el(TextControl, {label: __('Texte', 'wp-piwigo-display'), value: attributes.photoText || 'PÊLE-MÊLE', onChange: function (value) { setAttributes({photoText: value}); }}),
                     displayType === 'photo-text' && el(TextControl, {label: __('Graine de composition', 'wp-piwigo-display'), value: attributes.photoTextSeed || '0', help: __('Même graine + mêmes photos = même remplissage.', 'wp-piwigo-display'), onChange: function (value) { setAttributes({photoTextSeed: value}); }}),
-                    displayType === 'photo-text' && el(SelectControl, {label: __('Police', 'wp-piwigo-display'), value: attributes.photoTextFont || 'inherit', options: [
-                        {label: __('Police du thème', 'wp-piwigo-display'), value: 'inherit'},
-                        {label: __('Système', 'wp-piwigo-display'), value: 'system'},
-                        {label: __('Serif', 'wp-piwigo-display'), value: 'serif'},
-                        {label: __('Monospace', 'wp-piwigo-display'), value: 'mono'}
-                    ], onChange: function (value) { setAttributes({photoTextFont: value}); }}),
+                    displayType === 'photo-text' && el(SelectControl, {label: __('Police', 'wp-piwigo-display'), value: attributes.photoTextFont || 'inherit', options: photoTextFontOptions(), onChange: function (value) { setAttributes({photoTextFont: value}); }}),
                     displayType === 'photo-text' && el(RangeControl, {label: __('Graisse', 'wp-piwigo-display'), value: photoTextWeight, min: 100, max: 900, step: 100, onChange: function (value) { setAttributes({photoTextWeight: value}); }}),
                     displayType === 'photo-text' && el(RangeControl, {label: __('Nombre maximal de photos', 'wp-piwigo-display'), value: photoTextMaxImages, min: 1, max: 40, onChange: function (value) { setAttributes({photoTextMaxImages: value}); }}),
                     displayType === 'photo-text' && el(ToggleControl, {label: __('Afficher un contour', 'wp-piwigo-display'), checked: attributes.photoTextOutline !== false, onChange: function (value) { setAttributes({photoTextOutline: value}); }}),
