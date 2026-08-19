@@ -1,4 +1,4 @@
-name: Build plugin ZIP
+name: Build Piwigo Display ZIP
 
 on:
   workflow_dispatch:
@@ -22,19 +22,80 @@ jobs:
           VERSION="$(php -r '$c=file_get_contents("wp-piwigo-display.php"); preg_match("/^[[:space:]]*\\*[[:space:]]*Version:[[:space:]]*([^[:space:]]+)/m", $c, $m); echo $m[1] ?? "dev";')"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Build WordPress plugin archive
+      - name: Prepare Piwigo Display distribution
+        shell: bash
         run: |
-          git archive \
-            --format=zip \
-            --prefix=wp-piwigo-display/ \
-            -o "piwigo-display-${{ steps.version.outputs.version }}.zip" \
-            HEAD
+          set -euo pipefail
+          rm -rf build/piwigo-display
+          mkdir -p build/piwigo-display
+          rsync -a ./ build/piwigo-display/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'build' \
+            --exclude 'vendor' \
+            --exclude 'tests' \
+            --exclude 'composer.json' \
+            --exclude 'composer.lock' \
+            --exclude 'phpcs.xml.dist' \
+            --exclude 'AGENTS.md' \
+            --exclude 'ARCHITECTURE.md' \
+            --exclude 'AUDIT.md' \
+            --exclude 'CODEX.md' \
+            --exclude 'ROADMAP.md' \
+            --exclude '*.zip'
+
+          # Public plugin entry point: no legacy WP prefix.
+          mv build/piwigo-display/wp-piwigo-display.php build/piwigo-display/piwigo-display.php
+
+          # Public asset filenames: no legacy WP prefix.
+          while IFS= read -r -d '' path; do
+            dir="$(dirname "$path")"
+            base="$(basename "$path")"
+            mv "$path" "$dir/${base/wp-piwigo-display/piwigo-display}"
+          done < <(find build/piwigo-display/assets -type f -name '*wp-piwigo-display*' -print0)
+
+          # Public identifiers and references: use Piwigo Display consistently.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('build/piwigo-display')
+          allowed = {'.php', '.js', '.json', '.css', '.txt', '.md'}
+          replacements = (
+              ('wp-piwigo-display', 'piwigo-display'),
+              ('WP_Piwigo_Display', 'Piwigo_Display'),
+              ('wp_piwigo_display', 'piwigo_display'),
+              ('WP-Piwigo-Display', 'Piwigo-Display'),
+          )
+          for path in root.rglob('*'):
+              if not path.is_file() or path.suffix.lower() not in allowed:
+                  continue
+              text = path.read_text(encoding='utf-8')
+              for old, new in replacements:
+                  text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify distribution naming
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f build/piwigo-display/piwigo-display.php
+          ! find build/piwigo-display -type f -name '*wp-piwigo-display*' | grep -q .
+          ! grep -RIlE 'wp-piwigo-display|WP_Piwigo_Display|wp_piwigo_display' build/piwigo-display | grep -q .
+
+      - name: Build Piwigo Display archive
+        shell: bash
+        run: |
+          cd build
+          zip -qr "../piwigo-display-${{ steps.version.outputs.version }}.zip" piwigo-display
 
       - name: Verify archive structure
+        shell: bash
         run: |
-          unzip -l "piwigo-display-${{ steps.version.outputs.version }}.zip" | grep -q 'wp-piwigo-display/wp-piwigo-display.php'
+          unzip -l "piwigo-display-${{ steps.version.outputs.version }}.zip" | grep -q 'piwigo-display/piwigo-display.php'
+          ! unzip -l "piwigo-display-${{ steps.version.outputs.version }}.zip" | grep -q 'wp-piwigo-display'
 
-      - name: Upload plugin ZIP
+      - name: Upload Piwigo Display ZIP
         uses: actions/upload-artifact@v4
         with:
           name: piwigo-display-${{ steps.version.outputs.version }}
