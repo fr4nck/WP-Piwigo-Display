@@ -13,7 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Renders semantic text whose visible glyphs are filled with Piwigo photos.
  */
 final class WPD_Photo_Text {
-	/** @var int Unique SVG instance counter. */
+	/**
+	 * Unique SVG instance counter.
+	 *
+	 * @var int
+	 */
 	private static int $instance = 0;
 
 	/** Registers photo-text hooks. */
@@ -30,15 +34,15 @@ final class WPD_Photo_Text {
 	 * @return array<string,mixed>
 	 */
 	public static function add_defaults( array $defaults ): array {
-		$defaults['photo_text']              = $defaults['photo_text'] ?? 'PÊLE-MÊLE';
-		$defaults['photo_text_seed']         = $defaults['photo_text_seed'] ?? '0';
-		$defaults['photo_text_font']         = $defaults['photo_text_font'] ?? 'inherit';
-		$defaults['photo_text_weight']       = $defaults['photo_text_weight'] ?? '800';
-		$defaults['photo_text_outline']      = $defaults['photo_text_outline'] ?? 'true';
+		$defaults['photo_text']               = $defaults['photo_text'] ?? 'PÊLE-MÊLE';
+		$defaults['photo_text_seed']          = $defaults['photo_text_seed'] ?? '0';
+		$defaults['photo_text_font']          = $defaults['photo_text_font'] ?? 'inherit';
+		$defaults['photo_text_weight']        = $defaults['photo_text_weight'] ?? '800';
+		$defaults['photo_text_outline']       = $defaults['photo_text_outline'] ?? 'true';
 		$defaults['photo_text_outline_width'] = $defaults['photo_text_outline_width'] ?? '3';
 		$defaults['photo_text_outline_color'] = $defaults['photo_text_outline_color'] ?? '#ffffff';
-		$defaults['photo_text_background']   = $defaults['photo_text_background'] ?? 'transparent';
-		$defaults['photo_text_max_images']   = $defaults['photo_text_max_images'] ?? '20';
+		$defaults['photo_text_background']    = $defaults['photo_text_background'] ?? 'transparent';
+		$defaults['photo_text_max_images']    = $defaults['photo_text_max_images'] ?? '20';
 
 		return $defaults;
 	}
@@ -96,20 +100,24 @@ final class WPD_Photo_Text {
 			return $html;
 		}
 
-		$urls = self::seeded_urls( $urls, (string) ( $atts['photo_text_seed'] ?? '0' ) );
-		$font = self::font_stack( (string) ( $atts['photo_text_font'] ?? 'inherit' ) );
-		$weight = min( 900, max( 100, absint( $atts['photo_text_weight'] ?? 800 ) ) );
-		$outline = filter_var( $atts['photo_text_outline'] ?? 'true', FILTER_VALIDATE_BOOLEAN );
+		$urls          = self::seeded_urls( $urls, (string) ( $atts['photo_text_seed'] ?? '0' ) );
+		$font          = self::font_stack( (string) ( $atts['photo_text_font'] ?? 'inherit' ) );
+		$weight        = min( 900, max( 100, absint( $atts['photo_text_weight'] ?? 800 ) ) );
+		$outline       = filter_var( $atts['photo_text_outline'] ?? 'true', FILTER_VALIDATE_BOOLEAN );
 		$outline_width = min( 12, max( 0, absint( $atts['photo_text_outline_width'] ?? 3 ) ) );
-		$outline_color = sanitize_hex_color( (string) ( $atts['photo_text_outline_color'] ?? '#ffffff' ) ) ?: '#ffffff';
-		$background = self::background( (string) ( $atts['photo_text_background'] ?? 'transparent' ) );
+		$outline_color = sanitize_hex_color( (string) ( $atts['photo_text_outline_color'] ?? '#ffffff' ) );
+		$background    = self::background( (string) ( $atts['photo_text_background'] ?? 'transparent' ) );
+
+		if ( ! $outline_color ) {
+			$outline_color = '#ffffff';
+		}
 
 		++self::$instance;
-		$id = 'wpd-photo-text-' . self::$instance . '-' . substr( md5( $text . ':' . (string) ( $atts['photo_text_seed'] ?? '0' ) ), 0, 8 );
-		$clip_id = $id . '-clip';
-		$columns = min( 6, max( 2, (int) ceil( sqrt( count( $urls ) * 1.5 ) ) ) );
-		$rows = (int) ceil( count( $urls ) / $columns );
-		$tile_width = 1200 / $columns;
+		$id          = 'wpd-photo-text-' . self::$instance . '-' . substr( md5( $text . ':' . (string) ( $atts['photo_text_seed'] ?? '0' ) ), 0, 8 );
+		$clip_id     = $id . '-clip';
+		$columns     = min( 6, max( 2, (int) ceil( sqrt( count( $urls ) * 1.5 ) ) ) );
+		$rows        = (int) ceil( count( $urls ) / $columns );
+		$tile_width  = 1200 / $columns;
 		$tile_height = 360 / max( 1, $rows );
 
 		wp_enqueue_style(
@@ -133,7 +141,7 @@ final class WPD_Photo_Text {
 					<?php foreach ( $urls as $index => $url ) : ?>
 						<?php
 						$column = $index % $columns;
-						$row = (int) floor( $index / $columns );
+						$row    = (int) floor( $index / $columns );
 						?>
 						<image href="<?php echo esc_url( $url ); ?>" x="<?php echo esc_attr( (string) round( $column * $tile_width, 2 ) ); ?>" y="<?php echo esc_attr( (string) round( $row * $tile_height, 2 ) ); ?>" width="<?php echo esc_attr( (string) round( $tile_width + 1, 2 ) ); ?>" height="<?php echo esc_attr( (string) round( $tile_height + 1, 2 ) ); ?>" preserveAspectRatio="xMidYMid slice" />
 					<?php endforeach; ?>
@@ -221,7 +229,9 @@ final class WPD_Photo_Text {
 			return 'transparent';
 		}
 
-		return sanitize_hex_color( $background ) ?: 'transparent';
+		$color = sanitize_hex_color( $background );
+
+		return $color ? $color : 'transparent';
 	}
 
 	/**
