@@ -50,7 +50,7 @@
 
         $picker.empty().removeAttr('hidden').attr({
             role: 'region',
-            'aria-label': l.picker || 'Sélecteur d’albums Piwigo'
+            'aria-label': l.picker || 'Piwigo album picker'
         });
 
         var searchId = pickerId + '-search';
@@ -58,11 +58,11 @@
         var listId = pickerId + '-list';
         var $searchLabel = $('<label class="screen-reader-text"></label>')
             .attr('for', searchId)
-            .text(l.search || 'Rechercher un album…');
+            .text(l.search || 'Search albums…');
         var $search = $('<input type="search" class="wpd-album-search">')
             .attr({
                 id: searchId,
-                placeholder: l.search || 'Rechercher un album…',
+                placeholder: l.search || 'Search albums…',
                 'aria-controls': listId,
                 autocomplete: 'off'
             });
@@ -71,7 +71,7 @@
         var $list = $('<div class="wpd-album-list" role="tree"></div>')
             .attr({
                 id: listId,
-                'aria-label': l.results || 'Résultats des albums',
+                'aria-label': l.results || 'Album results',
                 'aria-describedby': statusId
             });
         $picker.append($searchLabel, $search, $status, $list);
@@ -131,7 +131,7 @@
                 var $toggle = $('<button type="button" class="wpd-album-toggle"></button>');
                 if (hasChildren) {
                     $toggle.attr({
-                        'aria-label': branchExpanded ? 'Fermer les sous-albums de ' + album.name : 'Ouvrir les sous-albums de ' + album.name,
+                        'aria-label': (branchExpanded ? (l.closeChildren || 'Close sub-albums of') : (l.openChildren || 'Open sub-albums of')) + ' ' + album.name,
                         'aria-expanded': branchExpanded ? 'true' : 'false'
                     });
                     $toggle.append($('<span class="dashicons" aria-hidden="true"></span>').addClass(branchExpanded ? 'dashicons-arrow-down-alt2' : 'dashicons-arrow-right-alt2'));
@@ -146,7 +146,7 @@
                 var $name = $('<button type="button" class="wpd-album-name"></button>')
                     .attr({
                         'data-album-id': id,
-                        'aria-label': album.name + ', album ' + album.id
+                        'aria-label': album.name + ', #' + album.id
                     })
                     .text(album.name);
                 $name.on('click', function () {
@@ -168,10 +168,10 @@
                     }
                 });
 
-                var $meta = $('<span class="wpd-album-option-meta"></span>').text('#' + album.id + (album.images ? ' · ' + album.images + ' photo(s)' : ''));
+                var $meta = $('<span class="wpd-album-option-meta"></span>').text('#' + album.id + (album.images ? ' · ' + album.images : ''));
                 var $confirm = $('<button type="button" class="button button-small wpd-album-confirm"></button>')
-                    .attr('aria-label', (l.choose || 'Choisir cet album') + ' : ' + album.name)
-                    .text(l.validate || 'Valider');
+                    .attr('aria-label', (l.choose || 'Choose this album') + ' : ' + album.name)
+                    .text(l.validate || 'Select');
                 $confirm.on('click', function () {
                     selectedId = id;
                     $(input).val(album.id).trigger('input').trigger('change').trigger('focus');
@@ -183,10 +183,10 @@
             });
 
             if (!count) {
-                $list.append($('<p class="wpd-album-empty"></p>').text(l.empty || 'Aucun album trouvé.'));
+                $list.append($('<p class="wpd-album-empty"></p>').text(l.empty || 'No album found.'));
             }
 
-            $status.text(count + (count > 1 ? ' albums affichés.' : ' album affiché.'));
+            $status.text(count + ' ' + (count > 1 ? (l.pluralCount || 'albums displayed.') : (l.singularCount || 'album displayed.')));
             if (restoreFocusId) {
                 $list.find('.wpd-album-name[data-album-id="' + restoreFocusId + '"]').trigger('focus');
             }
@@ -232,11 +232,11 @@
             }
             $button.attr('aria-expanded', 'true');
             $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
-                .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Chargement des albums…'));
+                .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Loading albums…'));
             loadAlbums().done(function (albums) { render($picker, albums, $input); })
                 .fail(function (message) {
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
-                        .html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Impossible de charger les albums.'));
+                        .html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Unable to load albums.'));
                 });
         });
 
