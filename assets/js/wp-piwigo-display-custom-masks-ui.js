@@ -92,6 +92,10 @@
 		appendPickerButtons( picker, select );
 	}
 
-	wireClassic();
+	if ( document.getElementById( 'wpd-classic-builder' ) && window.jQuery ) {
+		window.jQuery( wireClassic );
+	} else {
+		wireClassic();
+	}
 	wireComposer();
 }() );
