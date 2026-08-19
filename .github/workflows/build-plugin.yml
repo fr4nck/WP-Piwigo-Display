@@ -10,11 +10,13 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-plugin.yml'
+      - 'composer.json'
       - 'wp-piwigo-display.php'
       - 'includes/**'
       - 'assets/**'
       - 'blocks/**'
       - 'readme.txt'
+      - 'tests/**'
 
 permissions:
   contents: write
@@ -30,6 +32,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Configure PHP 8.1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install release verification dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Verify release source before packaging
+        run: |
+          composer lint
+          composer security
+          composer accessibility
+          composer test:frontend
+          composer test:package-assets
+          composer compatibility
+          composer standards:checked
 
       - name: Read plugin version
         id: version
@@ -47,8 +69,8 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf build
-          mkdir -p build/piwigo-display
-          rsync -a ./ build/piwigo-display/ \
+          mkdir -p build/wp-piwigo-display
+          rsync -a ./ build/wp-piwigo-display/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -62,55 +84,33 @@ jobs:
             --exclude 'AUDIT.md' \
             --exclude 'CODEX.md' \
             --exclude 'ROADMAP.md' \
+            --exclude 'README.en.md' \
             --exclude '*.zip'
 
-          mv build/piwigo-display/wp-piwigo-display.php build/piwigo-display/piwigo-display.php
-
-          while IFS= read -r -d '' path; do
-            dir="$(dirname "$path")"
-            base="$(basename "$path")"
-            mv "$path" "$dir/${base/wp-piwigo-display/piwigo-display}"
-          done < <(find build/piwigo-display/assets -type f -name '*wp-piwigo-display*' -print0)
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          root = Path('build/piwigo-display')
-          allowed = {'.php', '.js', '.json', '.css', '.txt', '.md'}
-          replacements = (
-              ('wp-piwigo-display', 'piwigo-display'),
-              ('WP_Piwigo_Display', 'Piwigo_Display'),
-              ('wp_piwigo_display', 'piwigo_display'),
-              ('WP-Piwigo-Display', 'Piwigo-Display'),
-          )
-          for path in root.rglob('*'):
-              if not path.is_file() or path.suffix.lower() not in allowed:
-                  continue
-              text = path.read_text(encoding='utf-8')
-              for old, new in replacements:
-                  text = text.replace(old, new)
-              path.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Verify installable tree
+      - name: Verify installable tree and compatibility identity
         shell: bash
         run: |
           set -euo pipefail
-          test -f build/piwigo-display/piwigo-display.php
-          test -f build/piwigo-display/assets/js/piwigo-display-slider.js
-          test -f build/piwigo-display/assets/vendor/splide/splide.min.js
-          test -f build/piwigo-display/assets/vendor/splide/splide.min.css
-          ! find build/piwigo-display -type f -name '*wp-piwigo-display*' | grep -q .
-          ! grep -RIlE 'wp-piwigo-display|WP_Piwigo_Display|wp_piwigo_display' build/piwigo-display | grep -q .
-          test "$(find build -mindepth 1 -maxdepth 1 -type d -printf '%f\n')" = 'piwigo-display'
+          ROOT=build/wp-piwigo-display
+          test -f "$ROOT/wp-piwigo-display.php"
+          test -f "$ROOT/assets/js/wp-piwigo-display-slider.js"
+          test -f "$ROOT/assets/vendor/splide/splide.min.js"
+          test -f "$ROOT/assets/vendor/splide/splide.min.css"
+          grep -Fq 'Plugin Name: Piwigo Display' "$ROOT/wp-piwigo-display.php"
+          grep -Fq "Text Domain: wp-piwigo-display" "$ROOT/wp-piwigo-display.php"
+          grep -Fq "wp_piwigo_display_shortcode_defaults" "$ROOT/includes/class-wpd-shortcode.php"
+          test "$(find build -mindepth 1 -maxdepth 1 -type d -printf '%f\n')" = 'wp-piwigo-display'
           ! find build -mindepth 1 -maxdepth 1 -type f | grep -q .
+
+      - name: Check packaged frontend assets
+        run: php tests/package-assets.php build/wp-piwigo-display
 
       - name: Build directly installable ZIP
         shell: bash
         run: |
           set -euo pipefail
           cd build
-          zip -qr "../${{ steps.version.outputs.zip }}" piwigo-display
+          zip -qr "../${{ steps.version.outputs.zip }}" wp-piwigo-display
 
       - name: Verify ZIP structure
         shell: bash
@@ -118,12 +118,21 @@ jobs:
           set -euo pipefail
           ZIP="${{ steps.version.outputs.zip }}"
           test -f "$ZIP"
-          test "$(unzip -Z1 "$ZIP" | grep -c '^piwigo-display/piwigo-display.php$')" -eq 1
-          test "$(unzip -Z1 "$ZIP" | grep -c '^piwigo-display/assets/js/piwigo-display-slider.js$')" -eq 1
-          ! unzip -Z1 "$ZIP" | grep -q 'wp-piwigo-display'
-          ! unzip -Z1 "$ZIP" | grep -Eq '^piwigo-display/.*\.zip$'
+          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/wp-piwigo-display.php$')" -eq 1
+          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
+          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
 
-      - name: Publish package in GitHub Releases
+      - name: Upload verified PR package
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: piwigo-display-${{ steps.version.outputs.version }}-verification
+          path: ${{ steps.version.outputs.zip }}
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Replace mutable release-candidate package
+        if: github.event_name != 'pull_request' && github.ref_type == 'branch'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
@@ -132,23 +141,45 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release delete "$TAG" --cleanup-tag --yes
+          fi
           prerelease_args=()
           if [[ "$VERSION" == *-* ]]; then
             prerelease_args+=(--prerelease)
           fi
+          gh release create "$TAG" "$ZIP" \
+            --target "$GITHUB_SHA" \
+            --title "Piwigo Display ${VERSION}" \
+            --notes "Paquet directement installable dans WordPress : ${ZIP}" \
+            "${prerelease_args[@]}"
 
+      - name: Publish immutable tagged package
+        if: github.event_name != 'pull_request' && github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          ZIP: ${{ steps.version.outputs.zip }}
+        shell: bash
+        run: |
+          set -euo pipefail
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$ZIP" --clobber
-          else
-            gh release create "$TAG" "$ZIP" \
-              --target "$GITHUB_SHA" \
-              --title "Piwigo Display ${VERSION}" \
-              --notes "Paquet directement installable dans WordPress : ${ZIP}" \
-              "${prerelease_args[@]}"
+            echo "Release $TAG already exists; refusing to overwrite an immutable tagged release." >&2
+            exit 1
           fi
+          prerelease_args=()
+          if [[ "$VERSION" == *-* ]]; then
+            prerelease_args+=(--prerelease)
+          fi
+          gh release create "$TAG" "$ZIP" \
+            --target "$GITHUB_SHA" \
+            --title "Piwigo Display ${VERSION}" \
+            --notes "Paquet directement installable dans WordPress : ${ZIP}" \
+            "${prerelease_args[@]}"
 
       - name: Verify published release asset
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
@@ -156,11 +187,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh release view "$TAG" --json assets --jq '.assets[].name' | grep -Fxq "$ZIP"
+          gh release view "$TAG" --json tagName,targetCommitish,assets --jq '.assets[].name' | grep -Fxq "$ZIP"
 
       - name: Summary
         shell: bash
         run: |
           echo "### Piwigo Display ${{ steps.version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Package publié dans **GitHub Releases** : \`${{ steps.version.outputs.zip }}\`." >> "$GITHUB_STEP_SUMMARY"
-          echo "Ce ZIP est directement installable dans WordPress. Aucun passage par Artifacts n'est nécessaire." >> "$GITHUB_STEP_SUMMARY"
+          echo "Paquet vérifié : \`${{ steps.version.outputs.zip }}\`." >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "PR : paquet conservé comme artefact de vérification, sans modifier GitHub Releases." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Release : ZIP directement installable publié avec l'identité technique historique \`wp-piwigo-display\`." >> "$GITHUB_STEP_SUMMARY"
+          fi
