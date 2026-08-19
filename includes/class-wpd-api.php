@@ -300,10 +300,18 @@ final class WPD_Api {
 			return $categories;
 		}
 
+		$names = array();
+		foreach ( $categories as $category ) {
+			$id = absint( $category['id'] ?? 0 );
+			if ( 0 < $id ) {
+				$names[ $id ] = sanitize_text_field( (string) ( $category['name'] ?? '' ) );
+			}
+		}
+
 		$wanted_path = trim( $album, '/' );
 		foreach ( $categories as $category ) {
 			$id   = absint( $category['id'] ?? 0 );
-			$name = sanitize_text_field( (string) ( $category['name'] ?? '' ) );
+			$name = $names[ $id ] ?? '';
 			if ( 0 >= $id ) {
 				continue;
 			}
@@ -312,10 +320,13 @@ final class WPD_Api {
 				return $id;
 			}
 
-			foreach ( array( 'uppercats', 'global_rank', 'permalink' ) as $key ) {
-				if ( isset( $category[ $key ] ) && 0 === strcasecmp( trim( sanitize_text_field( (string) $category[ $key ] ), '/' ), $wanted_path ) ) {
-					return $id;
-				}
+			$category_path = self::build_category_path( $category, $names );
+			if ( '' !== $category_path && 0 === strcasecmp( $category_path, $wanted_path ) ) {
+				return $id;
+			}
+
+			if ( isset( $category['permalink'] ) && 0 === strcasecmp( trim( sanitize_text_field( (string) $category['permalink'] ), '/' ), $wanted_path ) ) {
+				return $id;
 			}
 		}
 
@@ -327,6 +338,32 @@ final class WPD_Api {
 				$album
 			)
 		);
+	}
+
+	/**
+	 * Builds a human-readable category path from Piwigo's uppercats chain.
+	 *
+	 * @param array<string, mixed> $category Category data.
+	 * @param array<int, string>   $names    Category names indexed by identifier.
+	 * @return string
+	 */
+	private static function build_category_path( array $category, array $names ): string {
+		$id       = absint( $category['id'] ?? 0 );
+		$uppercat = (string) ( $category['uppercats'] ?? $id );
+		$path_ids = array_values( array_filter( array_map( 'absint', explode( ',', $uppercat ) ) ) );
+
+		if ( empty( $path_ids ) && 0 < $id ) {
+			$path_ids = array( $id );
+		}
+
+		$path_names = array();
+		foreach ( $path_ids as $path_id ) {
+			if ( isset( $names[ $path_id ] ) && '' !== $names[ $path_id ] ) {
+				$path_names[] = $names[ $path_id ];
+			}
+		}
+
+		return implode( '/', $path_names );
 	}
 
 	/**
@@ -359,7 +396,7 @@ final class WPD_Api {
 			array(
 				'timeout'     => 10,
 				'redirection' => 3,
-				'user-agent'  => 'WP Piwigo Display/' . WPD_VERSION,
+				'user-agent'  => 'Piwigo Display/' . WPD_VERSION,
 				'body'        => $body,
 			)
 		);
