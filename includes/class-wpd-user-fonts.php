@@ -25,7 +25,11 @@ final class WPD_User_Fonts {
 	/** Default maximum upload size in bytes. */
 	private const DEFAULT_MAX_BYTES = 2097152;
 
-	/** @var array<string,bool> Already enqueued font identifiers. */
+	/**
+	 * Already-enqueued font identifiers.
+	 *
+	 * @var array<string,bool>
+	 */
 	private static array $enqueued = array();
 
 	/** Registers user-font hooks. */
@@ -50,7 +54,7 @@ final class WPD_User_Fonts {
 	}
 
 	/**
-	 * Returns the stored font metadata.
+	 * Returns stored font metadata.
 	 *
 	 * @return array<string,array{name:string,path:string,format:string}>
 	 */
@@ -75,13 +79,14 @@ final class WPD_User_Fonts {
 		}
 
 		$format = sanitize_key( (string) $font['format'] );
-		if ( ! in_array( $format, array( 'woff2', 'woff' ), true ) ) {
+		$path   = self::normalize_relative_path( (string) $font['path'] );
+		if ( ! in_array( $format, array( 'woff2', 'woff' ), true ) || '' === $path ) {
 			return null;
 		}
 
 		return array(
 			'name'   => sanitize_text_field( (string) $font['name'] ),
-			'path'   => ltrim( wp_normalize_path( (string) $font['path'] ), '/' ),
+			'path'   => $path,
 			'format' => $format,
 		);
 	}
@@ -93,16 +98,18 @@ final class WPD_User_Fonts {
 	 */
 	public static function ui_fonts(): array {
 		$fonts = array();
-		foreach ( self::all() as $id => $font ) {
+		foreach ( array_keys( self::all() ) as $id ) {
 			$normalized = self::get( (string) $id );
 			if ( null === $normalized ) {
 				continue;
 			}
+
+			$id      = sanitize_key( (string) $id );
 			$fonts[] = array(
-				'id'     => sanitize_key( (string) $id ),
+				'id'     => $id,
 				'name'   => $normalized['name'],
-				'value'  => 'user-' . sanitize_key( (string) $id ),
-				'family' => self::family_name( (string) $id ),
+				'value'  => 'user-' . $id,
+				'family' => self::internal_font_family( $id ),
 			);
 		}
 
@@ -121,7 +128,7 @@ final class WPD_User_Fonts {
 			$id = sanitize_key( substr( $font, 5 ) );
 			if ( null !== self::get( $id ) ) {
 				self::enqueue_font( $id );
-				return '"' . self::family_name( $id ) . '", sans-serif';
+				return '"' . self::internal_font_family( $id ) . '", sans-serif';
 			}
 		}
 
@@ -145,7 +152,6 @@ final class WPD_User_Fonts {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Polices locales — Texte rempli de photos', 'wp-piwigo-display' ); ?></h1>
 			<p><?php esc_html_e( 'Les fichiers restent dans les uploads WordPress et ne sont jamais ajoutés au paquet du plugin. Importez uniquement une police que vous avez le droit d’utiliser.', 'wp-piwigo-display' ); ?></p>
-
 			<div class="card" style="max-width:1050px">
 				<h2><?php esc_html_e( 'Importer une police', 'wp-piwigo-display' ); ?></h2>
 				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post" enctype="multipart/form-data">
@@ -163,21 +169,21 @@ final class WPD_User_Fonts {
 				<p><?php esc_html_e( 'Aucune police utilisateur pour le moment.', 'wp-piwigo-display' ); ?></p>
 			<?php else : ?>
 				<div class="wpd-user-font-grid">
-					<?php foreach ( $library as $id => $font ) : ?>
+					<?php foreach ( array_keys( $library ) as $id ) : ?>
 						<?php
 						$normalized = self::get( (string) $id );
 						if ( null === $normalized ) {
 							continue;
 						}
-						self::enqueue_font( (string) $id );
+						$id = sanitize_key( (string) $id );
 						?>
 						<div class="wpd-user-font-card">
 							<strong><?php echo esc_html( $normalized['name'] ); ?></strong>
-							<div class="wpd-user-font-preview" style="font-family:'<?php echo esc_attr( self::family_name( (string) $id ) ); ?>',sans-serif">PÊLE-MÊLE — Été 2026</div>
-							<code>user-<?php echo esc_html( sanitize_key( (string) $id ) ); ?></code>
+							<div class="wpd-user-font-preview" style="font-family:'<?php echo esc_attr( self::internal_font_family( $id ) ); ?>',sans-serif">PÊLE-MÊLE — Été 2026</div>
+							<code>user-<?php echo esc_html( $id ); ?></code>
 							<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
 								<input type="hidden" name="action" value="wpd_delete_user_font">
-								<input type="hidden" name="wpd_user_font_id" value="<?php echo esc_attr( sanitize_key( (string) $id ) ); ?>">
+								<input type="hidden" name="wpd_user_font_id" value="<?php echo esc_attr( $id ); ?>">
 								<?php wp_nonce_field( 'wpd_delete_user_font' ); ?>
 								<button type="submit" class="button-link-delete"><?php esc_html_e( 'Supprimer', 'wp-piwigo-display' ); ?></button>
 							</form>
@@ -192,11 +198,10 @@ final class WPD_User_Fonts {
 	/** Handles a secured WOFF/WOFF2 upload. */
 	public static function handle_upload(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Vous n’avez pas l’autorisation d’importer des polices.', 'wp-piwigo-display' ), 403 );
+			wp_die( esc_html__( 'Vous n’avez pas l’autorisation d’importer des polices.', 'wp-piwigo-display' ), '', array( 'response' => 403 ) );
 		}
 
 		check_admin_referer( 'wpd_upload_user_font' );
-
 		$library = self::all();
 		if ( count( $library ) >= self::MAX_FONTS ) {
 			self::redirect_with_error( 'limit' );
@@ -220,11 +225,8 @@ final class WPD_User_Fonts {
 		if ( $size <= 0 || $size > self::max_bytes() ) {
 			self::redirect_with_error( 'size' );
 		}
-		if ( ! self::has_valid_signature( $tmp_name, $format ) ) {
-			self::redirect_with_error( 'signature' );
-		}
-		if ( ! self::has_valid_mime( $tmp_name, $format ) ) {
-			self::redirect_with_error( 'mime' );
+		if ( ! self::has_valid_signature( $tmp_name, $format ) || ! self::has_valid_mime( $tmp_name, $format ) ) {
+			self::redirect_with_error( 'validation' );
 		}
 
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
@@ -249,7 +251,12 @@ final class WPD_User_Fonts {
 		}
 
 		$path = wp_normalize_path( (string) $handled['file'] );
-		$id   = substr( hash_file( 'sha256', $path ), 0, 12 );
+		$hash = hash_file( 'sha256', $path );
+		if ( ! is_string( $hash ) || '' === $hash ) {
+			wp_delete_file( $path );
+			self::redirect_with_error( 'hash' );
+		}
+		$id = substr( $hash, 0, 12 );
 		if ( isset( $library[ $id ] ) ) {
 			wp_delete_file( $path );
 			self::redirect( array( 'wpd_font_added' => $id ) );
@@ -262,26 +269,28 @@ final class WPD_User_Fonts {
 			self::redirect_with_error( 'path' );
 		}
 
-		$relative = ltrim( substr( $path, strlen( $base_dir ) ), '/' );
+		$relative = self::normalize_relative_path( substr( $path, strlen( $base_dir ) ) );
+		if ( '' === $relative ) {
+			wp_delete_file( $path );
+			self::redirect_with_error( 'path' );
+		}
 		if ( '' === $name ) {
 			$name = pathinfo( $filename, PATHINFO_FILENAME );
 		}
-		$name = substr( sanitize_text_field( $name ), 0, 80 );
 
 		$library[ $id ] = array(
-			'name'   => $name,
+			'name'   => substr( sanitize_text_field( $name ), 0, 80 ),
 			'path'   => $relative,
 			'format' => $format,
 		);
 		update_option( self::OPTION_NAME, $library, false );
-
 		self::redirect( array( 'wpd_font_added' => $id ) );
 	}
 
 	/** Handles deletion of one imported user font. */
 	public static function handle_delete(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Vous n’avez pas l’autorisation de supprimer des polices.', 'wp-piwigo-display' ), 403 );
+			wp_die( esc_html__( 'Vous n’avez pas l’autorisation de supprimer des polices.', 'wp-piwigo-display' ), '', array( 'response' => 403 ) );
 		}
 
 		check_admin_referer( 'wpd_delete_user_font' );
@@ -291,7 +300,7 @@ final class WPD_User_Fonts {
 
 		if ( null !== $font ) {
 			$path = self::absolute_path( $font['path'] );
-			if ( '' !== $path && file_exists( $path ) ) {
+			if ( '' !== $path && is_file( $path ) ) {
 				wp_delete_file( $path );
 			}
 			unset( $library[ $id ] );
@@ -302,7 +311,7 @@ final class WPD_User_Fonts {
 	}
 
 	/**
-	 * Redirects uploads into the plugin font subdirectory.
+	 * Redirects uploads into the dedicated font subdirectory.
 	 *
 	 * @param array<string,string> $dirs WordPress upload directories.
 	 * @return array<string,string>
@@ -314,20 +323,34 @@ final class WPD_User_Fonts {
 		return $dirs;
 	}
 
-	/** Enqueues user-font UI data on relevant administration screens. */
-	public static function enqueue_admin_assets(): void {
-		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
-			return;
-		}
+	/**
+	 * Enqueues user-font UI data on relevant administration screens.
+	 *
+	 * @param string $hook Current administration screen hook.
+	 * @return void
+	 */
+	public static function enqueue_admin_assets( string $hook ): void {
+		$is_classic = in_array( $hook, array( 'post.php', 'post-new.php' ), true );
 
 		// The page query argument only selects an administration screen and does not mutate data.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		if ( 'wp-piwigo-display-fonts' === $page ) {
+		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$is_composer = 'wp-piwigo-display-compose' === $page;
+		$is_library  = 'wp-piwigo-display-fonts' === $page;
+
+		if ( $is_library ) {
 			wp_enqueue_style( 'wpd-user-fonts', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-user-fonts.css', array(), WPD_VERSION );
 			self::enqueue_all_fonts();
 		}
 
+		if ( ! $is_classic && ! $is_composer ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) && ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		self::enqueue_all_fonts();
 		wp_enqueue_script(
 			'wpd-user-fonts-ui',
 			WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-user-fonts-ui.js',
@@ -345,7 +368,7 @@ final class WPD_User_Fonts {
 	}
 
 	/**
-	 * Adjusts the maximum file size through a dedicated filter.
+	 * Returns the filtered and bounded maximum upload size.
 	 *
 	 * @return int
 	 */
@@ -380,6 +403,7 @@ final class WPD_User_Fonts {
 		if ( ! function_exists( 'finfo_open' ) ) {
 			return true;
 		}
+
 		$finfo = finfo_open( FILEINFO_MIME_TYPE );
 		if ( false === $finfo ) {
 			return true;
@@ -396,7 +420,7 @@ final class WPD_User_Fonts {
 		return in_array( strtolower( trim( $mime ) ), $allowed, true );
 	}
 
-	/** Enqueues all stored local fonts for administration/editor previews. */
+	/** Enqueues all stored local fonts for editor/library previews. */
 	private static function enqueue_all_fonts(): void {
 		foreach ( array_keys( self::all() ) as $id ) {
 			self::enqueue_font( (string) $id );
@@ -414,6 +438,7 @@ final class WPD_User_Fonts {
 		if ( isset( self::$enqueued[ $id ] ) ) {
 			return;
 		}
+
 		$font = self::get( $id );
 		if ( null === $font ) {
 			return;
@@ -426,7 +451,7 @@ final class WPD_User_Fonts {
 		wp_enqueue_style( 'wpd-user-fonts', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-user-fonts.css', array(), WPD_VERSION );
 		$css = sprintf(
 			'@font-face{font-family:"%1$s";src:url("%2$s") format("%3$s");font-display:swap;font-style:normal;font-weight:normal;}',
-			esc_attr( self::family_name( $id ) ),
+			esc_attr( self::internal_font_family( $id ) ),
 			esc_url( $url ),
 			esc_attr( $font['format'] )
 		);
@@ -435,13 +460,28 @@ final class WPD_User_Fonts {
 	}
 
 	/**
-	 * Returns the deterministic internal CSS family name.
+	 * Returns the deterministic internal CSS font-family name.
 	 *
 	 * @param string $id Font identifier.
 	 * @return string
 	 */
-	private static function family_name( string $id ): string {
+	private static function internal_font_family( string $id ): string {
 		return 'wpd-user-font-' . sanitize_key( $id );
+	}
+
+	/**
+	 * Validates and normalizes a stored relative upload path.
+	 *
+	 * @param string $relative Candidate relative path.
+	 * @return string
+	 */
+	private static function normalize_relative_path( string $relative ): string {
+		$relative = ltrim( wp_normalize_path( $relative ), '/' );
+		$prefix   = ltrim( self::UPLOAD_SUBDIR, '/' ) . '/';
+		if ( ! str_starts_with( $relative, $prefix ) || str_contains( $relative, '../' ) || str_contains( $relative, '..\\' ) || str_contains( $relative, ':' ) ) {
+			return '';
+		}
+		return $relative;
 	}
 
 	/**
@@ -451,36 +491,51 @@ final class WPD_User_Fonts {
 	 * @return string
 	 */
 	private static function font_url( string $relative ): string {
-		$uploads = wp_upload_dir();
-		$path    = ltrim( wp_normalize_path( $relative ), '/' );
-		if ( ! str_starts_with( $path, ltrim( self::UPLOAD_SUBDIR, '/' ) . '/' ) ) {
+		$relative = self::normalize_relative_path( $relative );
+		if ( '' === $relative ) {
 			return '';
 		}
-		return esc_url_raw( trailingslashit( $uploads['baseurl'] ) . $path );
+		$uploads = wp_upload_dir();
+		return esc_url_raw( trailingslashit( $uploads['baseurl'] ) . $relative );
 	}
 
 	/**
-	 * Resolves a stored relative font path to a local absolute path.
+	 * Resolves a stored relative font path to a safe local absolute path.
 	 *
 	 * @param string $relative Relative uploads path.
 	 * @return string
 	 */
 	private static function absolute_path( string $relative ): string {
+		$relative = self::normalize_relative_path( $relative );
+		if ( '' === $relative ) {
+			return '';
+		}
+
 		$uploads  = wp_upload_dir();
 		$base_dir = trailingslashit( wp_normalize_path( $uploads['basedir'] ) );
-		$path     = wp_normalize_path( $base_dir . ltrim( $relative, '/' ) );
+		$path     = wp_normalize_path( $base_dir . $relative );
 		$allowed  = $base_dir . ltrim( self::UPLOAD_SUBDIR, '/' ) . '/';
 		return str_starts_with( $path, $allowed ) ? $path : '';
 	}
 
-	/** Redirects back to the font library page. */
+	/**
+	 * Redirects back to the font library page.
+	 *
+	 * @param array<string,string> $args Query arguments.
+	 * @return void
+	 */
 	private static function redirect( array $args = array() ): void {
 		$url = add_query_arg( $args, admin_url( 'admin.php?page=wp-piwigo-display-fonts' ) );
 		wp_safe_redirect( $url );
 		exit;
 	}
 
-	/** Redirects with a normalized import error code. */
+	/**
+	 * Redirects with a normalized import error code.
+	 *
+	 * @param string $code Error code.
+	 * @return void
+	 */
 	private static function redirect_with_error( string $code ): void {
 		self::redirect( array( 'wpd_font_error' => sanitize_key( $code ) ) );
 	}
