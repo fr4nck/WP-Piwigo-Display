@@ -1,56 +1,72 @@
 <?php
+/**
+ * Regression checks for slider transitions and direction.
+ *
+ * @package WP_Piwigo_Display
+ */
 
-define('ABSPATH', __DIR__ . '/../');
+declare(strict_types=1);
 
-function sanitize_text_field($value): string { return trim(strip_tags((string) $value)); }
-function sanitize_key($value): string { return preg_replace('/[^a-z0-9_\-]/', '', strtolower((string) $value)); }
-function absint($value): int { return abs((int) $value); }
-function esc_url_raw($value): string { return filter_var((string) $value, FILTER_SANITIZE_URL); }
-function wp_parse_url($url, $component = -1) { return parse_url($url, $component); }
-function untrailingslashit($value): string { return rtrim((string) $value, '/\\'); }
+define( 'ABSPATH', __DIR__ . '/../' );
 
-require_once __DIR__ . '/../includes/class-wpd-shortcode.php';
-
-function wpd_transition_assert_same($expected, $actual, string $message): void
-{
-    if ($expected !== $actual) {
-        fwrite(STDERR, $message . PHP_EOL);
-        exit(1);
-    }
+function esc_attr( $value ): string {
+	return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' );
 }
 
-$method = new ReflectionMethod(WPD_Shortcode::class, 'sanitize_atts');
-$method->setAccessible(true);
-$sanitize = static function (array $attributes) use ($method): array {
-    return $method->invoke(null, $attributes);
+require_once __DIR__ . '/../includes/class-wpd-slider-transitions.php';
+
+$assert_same = static function ( $expected, $actual, string $message ): void {
+	if ( $expected !== $actual ) {
+		fwrite( STDERR, $message . PHP_EOL );
+		exit( 1 );
+	}
 };
 
-wpd_transition_assert_same('slide', $sanitize([])['transition'], 'Le glissement doit rester la transition par défaut.');
-wpd_transition_assert_same('fade', $sanitize(['transition' => 'fade'])['transition'], 'Le fondu doit être accepté.');
-wpd_transition_assert_same('none', $sanitize(['transition' => 'none'])['transition'], 'Le mode sans animation doit être accepté.');
-wpd_transition_assert_same('slide', $sanitize(['transition' => 'zoom'])['transition'], 'Une transition inconnue doit revenir au glissement.');
-wpd_transition_assert_same('ltr', $sanitize([])['direction'], 'La direction ltr doit rester la valeur par défaut.');
-wpd_transition_assert_same('rtl', $sanitize(['direction' => 'rtl'])['direction'], 'La direction rtl doit être acceptée.');
-wpd_transition_assert_same('ltr', $sanitize(['direction' => 'vertical'])['direction'], 'Une direction inconnue doit revenir à ltr.');
-wpd_transition_assert_same('420', $sanitize(['speed' => '420'])['speed'], 'La vitesse de transition doit rester indépendante.');
-wpd_transition_assert_same('7200', $sanitize(['interval' => '7200'])['interval'], 'La durée d’affichage doit rester indépendante.');
+$defaults = WPD_Slider_Transitions::add_defaults( array() );
+$assert_same( 'slide', $defaults['transition'] ?? null, 'Le glissement doit rester la transition par défaut.' );
+$assert_same( 'ltr', $defaults['direction'] ?? null, 'La direction ltr doit rester la valeur par défaut.' );
 
-$renderer = file_get_contents(__DIR__ . '/../includes/class-wpd-renderer.php');
-wpd_transition_assert_same(true, strpos($renderer, 'data-transition') !== false, 'Le rendu doit transmettre la transition au script public.');
-wpd_transition_assert_same(true, strpos($renderer, 'data-direction') !== false, 'Le rendu doit transmettre la direction au script public.');
+$transition_method = new ReflectionMethod( WPD_Slider_Transitions::class, 'sanitize_transition' );
+$transition_method->setAccessible( true );
+$direction_method = new ReflectionMethod( WPD_Slider_Transitions::class, 'sanitize_direction' );
+$direction_method->setAccessible( true );
 
-$slider = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-slider.js');
-wpd_transition_assert_same(true, strpos($slider, "transition === 'none' ? 0") !== false, 'Le mode sans animation doit forcer une vitesse nulle.');
-wpd_transition_assert_same(true, strpos($slider, "type: isFade ? 'fade' : 'loop'") !== false, 'Le fondu doit utiliser le type fade de Splide.');
-wpd_transition_assert_same(true, strpos($slider, 'direction: direction') !== false, 'La direction doit être fournie à Splide.');
+$assert_same( 'fade', $transition_method->invoke( null, 'fade' ), 'Le fondu doit être accepté.' );
+$assert_same( 'none', $transition_method->invoke( null, 'none' ), 'Le mode sans animation doit être accepté.' );
+$assert_same( 'slide', $transition_method->invoke( null, 'zoom' ), 'Une transition inconnue doit revenir au glissement.' );
+$assert_same( 'rtl', $direction_method->invoke( null, 'rtl' ), 'La direction rtl doit être acceptée.' );
+$assert_same( 'ltr', $direction_method->invoke( null, 'vertical' ), 'Une direction inconnue doit revenir à ltr.' );
 
-$block = file_get_contents(__DIR__ . '/../blocks/piwigo/index.js');
-wpd_transition_assert_same(true, strpos($block, "'transition'") !== false, 'Gutenberg doit exposer le réglage de transition.');
-wpd_transition_assert_same(true, strpos($block, "'direction'") !== false, 'Gutenberg doit exposer le réglage de direction.');
+$output = '<div class="wp-piwigo-display wp-piwigo-display-slider"></div>';
+$injected = WPD_Slider_Transitions::inject_slider_attributes(
+	$output,
+	'piwigo',
+	array(
+		'type'       => 'slider',
+		'transition' => 'fade',
+		'direction'  => 'rtl',
+	),
+	array()
+);
+$assert_same( true, false !== strpos( $injected, 'data-transition="fade"' ), 'Le rendu final doit transmettre la transition au script public.' );
+$assert_same( true, false !== strpos( $injected, 'data-direction="rtl"' ), 'Le rendu final doit transmettre la direction au script public.' );
+$assert_same( $output, WPD_Slider_Transitions::inject_slider_attributes( $output, 'piwigo', array( 'type' => 'gallery' ), array() ), 'Une galerie ne doit pas recevoir les attributs du slider.' );
 
-$classic = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js');
-wpd_transition_assert_same(true, strpos($classic, "'transition', 'direction'") !== false, 'Le composeur classique doit enregistrer transition et direction.');
+$slider = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-slider.js' );
+$assert_same( true, false !== strpos( (string) $slider, "transition === 'none' ? 0" ), 'Le mode sans animation doit forcer une vitesse nulle.' );
+$assert_same( true, false !== strpos( (string) $slider, "type: isFade ? 'fade' : 'loop'" ), 'Le fondu doit utiliser le type fade de Splide.' );
+$assert_same( true, false !== strpos( (string) $slider, 'direction: direction' ), 'La direction doit être fournie à Splide.' );
+$assert_same( true, false !== strpos( (string) $slider, 'prefers-reduced-motion: reduce' ), 'Le slider doit respecter prefers-reduced-motion.' );
 
-$modal = file_get_contents(__DIR__ . '/../includes/class-wpd-classic-editor.php');
-wpd_transition_assert_same(true, strpos($modal, 'data-wpd="transition"') !== false, 'Le composeur classique doit afficher le champ transition.');
-wpd_transition_assert_same(true, strpos($modal, 'data-wpd="direction"') !== false, 'Le composeur classique doit afficher le champ direction.');
+$block = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
+$assert_same( true, false !== strpos( (string) $block, '"transition"' ), 'Gutenberg doit exposer le réglage de transition.' );
+$assert_same( true, false !== strpos( (string) $block, '"direction"' ), 'Gutenberg doit exposer le réglage de direction.' );
+
+$classic = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js' );
+$assert_same( true, false !== strpos( (string) $classic, "'transition', 'direction'" ), 'Le composeur classique doit enregistrer transition et direction.' );
+
+$modal = file_get_contents( __DIR__ . '/../includes/class-wpd-classic-editor.php' );
+$assert_same( true, false !== strpos( (string) $modal, 'data-wpd="transition"' ), 'Le composeur classique doit afficher le champ transition.' );
+$assert_same( true, false !== strpos( (string) $modal, 'data-wpd="direction"' ), 'Le composeur classique doit afficher le champ direction.' );
+
+echo "Slider transition checks passed.\n";
