@@ -140,7 +140,8 @@ Sur ordinateur, tablette et mobile :
 - [ ] tous les tests PHP de non-régression du dossier `tests/` sont réellement exécutés ;
 - [ ] sécurité et accessibilité automatisées réussies ;
 - [ ] WPCS contrôlé sur les fichiers normalisés ;
-- [ ] WordPress Plugin Check réussi **sur l’arborescence réellement installable**, sans réécriture artificielle du slug/text-domain ;
+- [ ] le ZIP réellement installable est validé sous l’identité technique historique `wp-piwigo-display` sans renommer ses fichiers, hooks ou text-domain ;
+- [ ] WordPress Plugin Check réussit sur une copie **byte-identique du code livré** placée sous le slug candidat `piwigo-display`, sans réécriture du contenu ; seules les exceptions de compatibilité documentées pour les hooks publics et le text-domain historiques sont ignorées ;
 - [ ] intégrité du paquet frontend vérifiée ;
 - [ ] cohérence entre l’en-tête du plugin, `WPD_VERSION`, README et `readme.txt` ;
 - [ ] aucun secret ni identifiant Piwigo dans le HTML ou JavaScript public ;
