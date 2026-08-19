@@ -102,7 +102,7 @@ Tags:
 
 = Do I need to write shortcodes? =
 
-No. V3 provides visual interfaces through Gutenberg, the administration composer, and Classic Editor integration. Shortcodes remain available for advanced and legacy workflows.
+No. V3 provides visual interfaces through Gutenberg, the administration composer, and Classic Editor integration. But if writing shortcodes is your own form of therapy, you can. 🙂
 
 = Are images copied into WordPress? =
 
