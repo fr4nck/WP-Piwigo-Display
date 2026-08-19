@@ -37,6 +37,31 @@
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
 
+	const shapeSelect = document.getElementById( 'wpd-c-shape' );
+	if ( shapeSelect && ! root.querySelector( '.wpd-shape-picker-grid' ) ) {
+		const picker = document.createElement( 'div' );
+		picker.className = 'wpd-shape-picker-grid';
+		picker.setAttribute( 'role', 'group' );
+		picker.setAttribute( 'aria-label', 'Choisir une forme' );
+		Array.from( shapeSelect.options ).forEach( ( option ) => {
+			const button = document.createElement( 'button' );
+			button.type = 'button';
+			button.className = 'wpd-shape-picker-button';
+			button.dataset.wpdShapeValue = option.value;
+			button.setAttribute( 'aria-label', option.textContent );
+			button.setAttribute( 'title', option.textContent );
+			button.setAttribute( 'aria-pressed', 'false' );
+			const preview = document.createElement( 'span' );
+			preview.className = 'wpd-shape-picker-preview wpd-shape-preview-' + option.value;
+			preview.setAttribute( 'aria-hidden', 'true' );
+			const label = document.createElement( 'span' );
+			label.textContent = option.textContent;
+			button.append( preview, label );
+			picker.appendChild( button );
+		} );
+		shapeSelect.parentNode.insertAdjacentElement( 'afterend', picker );
+	}
+
 	if ( ! document.getElementById( 'wpd-c-masonry-columns' ) ) {
 		const row = document.createElement( 'tr' );
 		row.className = 'wpd-c-masonry';
@@ -61,6 +86,12 @@
 		return Number.isFinite( parsed ) ? Math.min( max, Math.max( min, parsed ) ) : fallback;
 	};
 
+	function syncShapePicker( shape ) {
+		root.querySelectorAll( '[data-wpd-shape-value]' ).forEach( ( button ) => {
+			button.setAttribute( 'aria-pressed', button.dataset.wpdShapeValue === shape ? 'true' : 'false' );
+		} );
+	}
+
 	function syncParity() {
 		document.querySelectorAll( '.wpd-c-masonry' ).forEach( ( row ) => {
 			row.style.display = type.value === 'masonry' ? 'table-row' : 'none';
@@ -71,6 +102,7 @@
 
 		const shape = document.getElementById( 'wpd-c-shape' ).value;
 		document.getElementById( 'wpd-c-radius-wrap' ).style.display = shape === 'rounded' ? 'inline' : 'none';
+		syncShapePicker( shape );
 
 		let shortcode = output.value;
 		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'justified_row_height', 'justified_gap', 'shape', 'radius' ].forEach( ( key ) => {
@@ -100,6 +132,14 @@
 		output.value = shortcode;
 	}
 
+	root.addEventListener( 'click', ( event ) => {
+		const button = event.target.closest( '[data-wpd-shape-value]' );
+		if ( ! button ) {
+			return;
+		}
+		shapeSelect.value = button.dataset.wpdShapeValue;
+		shapeSelect.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	} );
 	root.addEventListener( 'input', () => window.setTimeout( syncParity, 0 ) );
 	root.addEventListener( 'change', () => window.setTimeout( syncParity, 0 ) );
 	window.setTimeout( syncParity, 0 );
