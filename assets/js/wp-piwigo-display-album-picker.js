@@ -87,6 +87,15 @@
             return visible;
         }
 
+        function branchIsVisible(album) {
+            var ids = album.pathIds || [album.id];
+            var lastAncestor = Math.max(0, ids.length - 1);
+            for (var index = 0; index < lastAncestor; index += 1) {
+                if (!expanded[String(ids[index])]) return false;
+            }
+            return true;
+        }
+
         function focusRelative(current, direction) {
             var $buttons = $list.find('.wpd-album-name:visible');
             var index = $buttons.index(current);
@@ -103,10 +112,9 @@
 
             albums.forEach(function (album) {
                 var id = String(album.id);
-                var parentId = String(album.parentId || 0);
                 var hasChildren = !!(childrenByParent[id] && childrenByParent[id].length);
-                var parentVisible = !parentId || parentId === '0' || expanded[parentId];
-                var visible = query ? !!searchVisible[id] : (Number(album.depth || 0) === 0 || parentVisible);
+                var branchExpanded = query ? true : !!expanded[id];
+                var visible = query ? !!searchVisible[id] : (Number(album.depth || 0) === 0 || branchIsVisible(album));
                 if (!visible) return;
                 count += 1;
 
@@ -117,17 +125,16 @@
                     'aria-level': Number(album.depth || 0) + 1,
                     'aria-selected': selectedId === id ? 'true' : 'false'
                 });
-                if (hasChildren) $row.attr('aria-expanded', query ? 'true' : (expanded[id] ? 'true' : 'false'));
+                if (hasChildren) $row.attr('aria-expanded', branchExpanded ? 'true' : 'false');
                 if (selectedId === id) $row.addClass('is-selected');
 
                 var $toggle = $('<button type="button" class="wpd-album-toggle"></button>');
                 if (hasChildren) {
                     $toggle.attr({
-                        'aria-label': expanded[id] ? 'Fermer les sous-albums de ' + album.name : 'Ouvrir les sous-albums de ' + album.name,
-                        'aria-controls': rowId,
-                        'aria-expanded': query ? 'true' : (expanded[id] ? 'true' : 'false')
+                        'aria-label': branchExpanded ? 'Fermer les sous-albums de ' + album.name : 'Ouvrir les sous-albums de ' + album.name,
+                        'aria-expanded': branchExpanded ? 'true' : 'false'
                     });
-                    $toggle.append($('<span class="dashicons" aria-hidden="true"></span>').addClass(query || expanded[id] ? 'dashicons-arrow-down-alt2' : 'dashicons-arrow-right-alt2'));
+                    $toggle.append($('<span class="dashicons" aria-hidden="true"></span>').addClass(branchExpanded ? 'dashicons-arrow-down-alt2' : 'dashicons-arrow-right-alt2'));
                     $toggle.on('click', function () {
                         expanded[id] = !expanded[id];
                         draw($search.val(), id);
