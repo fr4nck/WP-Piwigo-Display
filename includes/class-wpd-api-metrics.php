@@ -22,13 +22,48 @@ final class WPD_Api_Metrics {
 	private static int $last_http_status = 0;
 	private static string $last_error = '';
 
-	/** Records a request-cache hit. */
+	/** Registers the HTTP observation hook. */
+	public static function register(): void {
+		add_action( 'http_api_debug', array( self::class, 'observe_http' ), 10, 5 );
+	}
+
+	/**
+	 * Observes completed Piwigo HTTP requests without reading credentials.
+	 *
+	 * @param mixed  $response HTTP response or WP_Error.
+	 * @param string $context  HTTP API debug context.
+	 * @param string $class    Transport class name.
+	 * @param array  $args     Request arguments.
+	 * @param string $url      Requested URL.
+	 */
+	public static function observe_http( $response, string $context, string $class, array $args, string $url ): void {
+		unset( $class );
+		if ( 'response' !== $context ) {
+			return;
+		}
+		$base_url = WPD_Settings::get_piwigo_url();
+		if ( '' === $base_url || ! str_starts_with( untrailingslashit( $url ), untrailingslashit( $base_url ) ) ) {
+			return;
+		}
+		$method = '';
+		if ( isset( $args['body'] ) && is_array( $args['body'] ) ) {
+			$method = sanitize_key( (string) ( $args['body']['method'] ?? '' ) );
+		}
+		if ( '' === $method ) {
+			$method = sanitize_key( (string) wp_parse_url( $url, PHP_URL_PATH ) );
+		}
+		$status = is_wp_error( $response ) ? 0 : wp_remote_retrieve_response_code( $response );
+		$error  = is_wp_error( $response ) ? $response->get_error_message() : '';
+		self::api_call( $method, 0.0, $status, $error );
+	}
+
+	/** Records a cache hit. */
 	public static function cache_hit( string $method ): void {
 		++self::$cache_hits;
 		self::$last_method = sanitize_key( $method );
 	}
 
-	/** Records a request-cache miss. */
+	/** Records a cache miss. */
 	public static function cache_miss( string $method ): void {
 		++self::$cache_misses;
 		self::$last_method = sanitize_key( $method );
