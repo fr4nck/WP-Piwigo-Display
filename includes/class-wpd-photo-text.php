@@ -313,7 +313,7 @@ final class WPD_Photo_Text {
 					$column_width + 1,
 					$height + 1
 				);
-				$y += $height;
+				$y      += $height;
 				++$url_index;
 			}
 		}
