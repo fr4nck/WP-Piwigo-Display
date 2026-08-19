@@ -29,7 +29,32 @@
             }
         }
 
+        function ensurePhotoTextControls() {
+            var $type = $dialog.find('[data-wpd="type"]');
+            if ($type.length && !$type.find('option[value="photo-text"]').length) {
+                $type.append($('<option value="photo-text">Texte rempli de photos</option>'));
+            }
+            if (!$dialog.find('[data-wpd="photo_text"]').length) {
+                var $anchor = $dialog.find('.wpd-collage-options').last();
+                var $controls = $(
+                    '<div class="wpd-photo-text-options">' +
+                    '<label>Texte<input type="text" data-wpd="photo_text" value="PÊLE-MÊLE"></label>' +
+                    '<label>Graine<input type="text" data-wpd="photo_text_seed" value="0"></label>' +
+                    '<label>Police<select data-wpd="photo_text_font"><option value="inherit">Police du thème</option><option value="system">Système</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label>' +
+                    '<label>Graisse<input type="number" min="100" max="900" step="100" data-wpd="photo_text_weight" value="800"></label>' +
+                    '<label>Nombre maximal de photos<input type="number" min="1" max="40" data-wpd="photo_text_max_images" value="20"></label>' +
+                    '<label><input type="checkbox" data-wpd="photo_text_outline" checked> Afficher un contour</label>' +
+                    '<label class="wpd-photo-text-outline-option">Épaisseur du contour<input type="number" min="0" max="12" data-wpd="photo_text_outline_width" value="3"></label>' +
+                    '<label class="wpd-photo-text-outline-option">Couleur du contour<input type="text" data-wpd="photo_text_outline_color" value="#ffffff"></label>' +
+                    '<label>Fond<input type="text" data-wpd="photo_text_background" value="transparent" placeholder="transparent ou #ffffff"></label>' +
+                    '</div>'
+                );
+                if ($anchor.length) $controls.insertAfter($anchor); else $dialog.find('.wpd-builder-grid').append($controls);
+            }
+        }
+
         ensureCollageControls();
+        ensurePhotoTextControls();
 
         if (window.WPDAlbumPicker) {
             window.WPDAlbumPicker.attach($dialog.find('.wpd-album-field'), $dialog.find('[data-wpd="album"]'));
@@ -129,12 +154,25 @@
             if (type === 'masonry') { add(parts, 'masonry_columns', bounded('masonry_columns', 2, 6, 4), true); add(parts, 'masonry_gap', bounded('masonry_gap', 0, 64, 16), true); }
             if (type === 'justified') { add(parts, 'justified_row_height', bounded('justified_row_height', 100, 600, 220), true); add(parts, 'justified_gap', bounded('justified_gap', 0, 64, 8), true); }
             if (type === 'collage') {
-                add(parts, 'collage_seed', parseInt(value('collage_seed') || '0', 10) || 0, true);
+                add(parts, 'collage_seed', value('collage_seed') || '0', true);
                 add(parts, 'collage_rotation', bounded('collage_rotation', 0, 15, 6), true);
                 add(parts, 'collage_spread', bounded('collage_spread', 0, 50, 18), true);
                 add(parts, 'collage_overlap', bounded('collage_overlap', 0, 40, 12), true);
                 add(parts, 'collage_size', bounded('collage_size', 120, 420, 220), true);
                 add(parts, 'collage_variation', bounded('collage_variation', 0, 50, 20), true);
+            }
+            if (type === 'photo-text') {
+                add(parts, 'photo_text', value('photo_text') || 'PÊLE-MÊLE', true);
+                add(parts, 'photo_text_seed', value('photo_text_seed') || '0', true);
+                add(parts, 'photo_text_font', value('photo_text_font') || 'inherit', true);
+                add(parts, 'photo_text_weight', bounded('photo_text_weight', 100, 900, 800), true);
+                add(parts, 'photo_text_max_images', bounded('photo_text_max_images', 1, 40, 20), true);
+                parts.push('photo_text_outline="' + (checked('photo_text_outline') ? 'true' : 'false') + '"');
+                if (checked('photo_text_outline')) {
+                    add(parts, 'photo_text_outline_width', bounded('photo_text_outline_width', 0, 12, 3), true);
+                    add(parts, 'photo_text_outline_color', value('photo_text_outline_color') || '#ffffff', true);
+                }
+                add(parts, 'photo_text_background', value('photo_text_background') || 'transparent', true);
             }
             return '[piwigo ' + parts.join(' ') + ']';
         }
@@ -144,6 +182,8 @@
             $dialog.find('.wpd-masonry-options').toggle(type === 'masonry');
             $dialog.find('.wpd-justified-options').toggle(type === 'justified');
             $dialog.find('.wpd-collage-options').toggle(type === 'collage');
+            $dialog.find('.wpd-photo-text-options').toggle(type === 'photo-text');
+            $dialog.find('.wpd-photo-text-outline-option').toggle(type === 'photo-text' && checked('photo_text_outline'));
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded'); $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             syncShapePicker(); $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
