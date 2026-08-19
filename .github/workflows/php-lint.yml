@@ -87,6 +87,7 @@ jobs:
             --exclude 'ARCHITECTURE.md' \
             --exclude 'AUDIT.md' \
             --exclude 'CODEX.md' \
+            --exclude 'README.en.md' \
             --exclude '*.zip'
           python3 - <<'PY'
           from pathlib import Path
@@ -151,6 +152,7 @@ jobs:
             --exclude 'ARCHITECTURE.md' \
             --exclude 'AUDIT.md' \
             --exclude 'CODEX.md' \
+            --exclude 'README.en.md' \
             --exclude '*.zip'
 
       - name: Check packaged frontend assets
