@@ -9,12 +9,14 @@
 		return;
 	}
 
-	if ( ! type.querySelector( 'option[value="masonry"]' ) ) {
-		const option = document.createElement( 'option' );
-		option.value = 'masonry';
-		option.textContent = 'Masonry';
-		type.appendChild( option );
-	}
+	[ [ 'masonry', 'Masonry' ], [ 'justified', 'Galerie justifiée' ] ].forEach( ( item ) => {
+		if ( ! type.querySelector( 'option[value="' + item[ 0 ] + '"]' ) ) {
+			const option = document.createElement( 'option' );
+			option.value = item[ 0 ];
+			option.textContent = item[ 1 ];
+			type.appendChild( option );
+		}
+	} );
 
 	const sliderRow = root.querySelector( '.wpd-c-slider' );
 	if ( sliderRow && ! document.getElementById( 'wpd-c-transition' ) ) {
@@ -43,6 +45,14 @@
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
 
+	if ( ! document.getElementById( 'wpd-c-justified-row-height' ) ) {
+		const row = document.createElement( 'tr' );
+		row.className = 'wpd-c-justified';
+		row.innerHTML = '<th>Galerie justifiée</th><td><label>Hauteur cible <input id="wpd-c-justified-row-height" class="small-text" type="number" min="100" max="600" value="220"> px</label> <label>Espacement <input id="wpd-c-justified-gap" class="small-text" type="number" min="0" max="64" value="8"> px</label></td>';
+		const outputRow = output.closest( 'tr' );
+		outputRow.parentNode.insertBefore( row, outputRow );
+	}
+
 	const escapeValue = ( value ) => String( value ).replace( /\\/g, '\\\\' ).replace( /"/g, '\\"' );
 	const removeAttribute = ( shortcode, key ) => shortcode.replace( new RegExp( '\\s+' + key + '="(?:\\\\.|[^"])*"', 'g' ), '' );
 	const appendAttribute = ( shortcode, key, value ) => shortcode.replace( /\]$/, ' ' + key + '="' + escapeValue( value ) + '"]' );
@@ -55,12 +65,15 @@
 		document.querySelectorAll( '.wpd-c-masonry' ).forEach( ( row ) => {
 			row.style.display = type.value === 'masonry' ? 'table-row' : 'none';
 		} );
+		document.querySelectorAll( '.wpd-c-justified' ).forEach( ( row ) => {
+			row.style.display = type.value === 'justified' ? 'table-row' : 'none';
+		} );
 
 		const shape = document.getElementById( 'wpd-c-shape' ).value;
 		document.getElementById( 'wpd-c-radius-wrap' ).style.display = shape === 'rounded' ? 'inline' : 'none';
 
 		let shortcode = output.value;
-		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'shape', 'radius' ].forEach( ( key ) => {
+		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'justified_row_height', 'justified_gap', 'shape', 'radius' ].forEach( ( key ) => {
 			shortcode = removeAttribute( shortcode, key );
 		} );
 
@@ -77,6 +90,11 @@
 		if ( type.value === 'masonry' ) {
 			shortcode = appendAttribute( shortcode, 'masonry_columns', clamp( document.getElementById( 'wpd-c-masonry-columns' ).value, 2, 6, 4 ) );
 			shortcode = appendAttribute( shortcode, 'masonry_gap', clamp( document.getElementById( 'wpd-c-masonry-gap' ).value, 0, 64, 16 ) );
+		}
+
+		if ( type.value === 'justified' ) {
+			shortcode = appendAttribute( shortcode, 'justified_row_height', clamp( document.getElementById( 'wpd-c-justified-row-height' ).value, 100, 600, 220 ) );
+			shortcode = appendAttribute( shortcode, 'justified_gap', clamp( document.getElementById( 'wpd-c-justified-gap' ).value, 0, 64, 8 ) );
 		}
 
 		output.value = shortcode;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Piwigo Display pour WordPress
+ * Plugin Name: Piwigo Display
  * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
  * Version: 3.0.0-rc.2
  * Requires at least: 6.0
@@ -47,6 +47,7 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Classic_Editor',
 	'WPD_Slider_Transitions',
 	'WPD_Masonry',
+	'WPD_Justified',
 	'WPD_Composer_Parity',
 	'WPD_Gutenberg_Parity',
 	'WPD_Shapes',
@@ -74,6 +75,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-block.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-classic-editor.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-slider-transitions.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-masonry.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-justified.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
@@ -90,6 +92,7 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Classic_Editor::register();
 	WPD_Slider_Transitions::register();
 	WPD_Masonry::register();
+	WPD_Justified::register();
 	WPD_Composer_Parity::register();
 	WPD_Gutenberg_Parity::register();
 	WPD_Shapes::register();

@@ -3,10 +3,10 @@
   "apiVersion": 3,
   "name": "wp-piwigo-display/gallery",
   "version": "1.12.0",
-  "title": "WP Piwigo Display",
+  "title": "Piwigo Display pour WordPress",
   "category": "media",
   "icon": "format-gallery",
-  "description": "Insère une galerie, un diaporama ou un mur Masonry Piwigo.",
+  "description": "Insère une galerie, un diaporama, un mur Masonry ou une galerie justifiée Piwigo.",
   "textdomain": "wp-piwigo-display",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./editor.css",
@@ -19,6 +19,7 @@
     "shape":{"type":"string","default":"rectangle"}, "radius":{"type":"number","default":0},
     "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "transition":{"type":"string","default":"slide"}, "direction":{"type":"string","default":"ltr"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
     "masonryColumns":{"type":"number","default":4}, "masonryGap":{"type":"number","default":16},
+    "justifiedRowHeight":{"type":"number","default":220}, "justifiedGap":{"type":"number","default":8},
     "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
   },
   "supports":{"html":false}

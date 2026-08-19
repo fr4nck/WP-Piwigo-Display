@@ -1,4 +1,4 @@
-=== Piwigo Display pour WordPress ===
+=== Piwigo Display ===
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
@@ -38,7 +38,7 @@ The service account does not sign visitors into Piwigo. A private album rendered
 == Installation ==
 
 1. Upload the ZIP file from Plugins > Add New Plugin > Upload Plugin.
-2. Activate Piwigo Display pour WordPress.
+2. Activate Piwigo Display.
 3. Open the plugin settings and enter the Piwigo HTTPS URL.
 4. Test the connection.
 5. Insert the Piwigo Display block, use the administration composer, or use a shortcode such as `[piwigo album="154"]`.
@@ -106,7 +106,7 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Added an automated packaged-asset integrity check.
 * Added an independent transparent slider background option that preserves the selected visual style.
 * Fixed Classic Editor shortcode previews leaking HTML attributes into the article during double-click editing.
-* Aligned the visible plugin name to Piwigo Display pour WordPress.
+* Aligned the visible plugin name to Piwigo Display.
 
 = 3.0.0-rc.1 =
 
