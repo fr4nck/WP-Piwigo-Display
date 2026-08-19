@@ -73,10 +73,10 @@ final class WPD_Justified {
 	/**
 	 * Renders a Justified gallery when requested.
 	 *
-	 * @param string|null                       $html   Existing output.
-	 * @param array<int, array<string, mixed>>  $images Prepared Piwigo images.
-	 * @param array<string, mixed>              $atts   Normalized attributes.
-	 * @param string                            $type   Requested display type, unused.
+	 * @param string|null                      $html   Existing output.
+	 * @param array<int, array<string, mixed>> $images Prepared Piwigo images.
+	 * @param array<string, mixed>             $atts   Normalized attributes.
+	 * @param string                           $type   Requested display type, unused.
 	 * @return string|null
 	 */
 	public static function render( ?string $html, array $images, array $atts, string $type ): ?string {
