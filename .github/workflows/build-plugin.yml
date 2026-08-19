@@ -105,6 +105,15 @@ jobs:
       - name: Check packaged frontend assets
         run: php tests/package-assets.php build/wp-piwigo-display
 
+      - name: Run WordPress Plugin Check on installable package
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './build/wp-piwigo-display'
+          exclude-directories: 'vendor,tests,build'
+          strict: true
+          # Historical public hooks keep their pre-v3 names for backward compatibility.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
+
       - name: Build directly installable ZIP
         shell: bash
         run: |
