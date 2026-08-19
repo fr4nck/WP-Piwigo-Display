@@ -26,6 +26,37 @@ final class WPD_Cache {
 	private const LOCK_TTL = 20;
 
 	/**
+	 * Resolves an album identifier using the same access context as rendering.
+	 *
+	 * This matters for private albums: names and paths must be resolved with the
+	 * service account when the configured Piwigo URL is used, while a custom URL
+	 * must remain anonymous.
+	 *
+	 * @param string $album      Album name, path or numeric identifier.
+	 * @param string $piwigo_url Optional Piwigo base URL.
+	 * @return int|WP_Error
+	 */
+	public static function resolve_album_id( string $album, string $piwigo_url = '' ) {
+		$album = sanitize_text_field( $album );
+		if ( '' === $album ) {
+			return new WP_Error( 'wpd_empty_album', __( 'Album non renseigné.', 'wp-piwigo-display' ) );
+		}
+
+		if ( ctype_digit( $album ) ) {
+			return absint( $album );
+		}
+
+		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
+		$api        = self::create_api( $piwigo_url );
+		$categories = $api->get_all_categories();
+		if ( is_wp_error( $categories ) ) {
+			return $categories;
+		}
+
+		return self::resolve_album_from_categories( $album, $categories );
+	}
+
+	/**
 	 * Retrieves album images through the cache layer.
 	 *
 	 * @param int    $album_id   Piwigo album identifier.
@@ -315,6 +346,88 @@ final class WPD_Cache {
 		$configured_url = untrailingslashit( trim( WPD_Settings::get_piwigo_url() ) );
 
 		return '' !== $configured_url && $requested_url === $configured_url;
+	}
+
+	/**
+	 * Resolves a non-numeric album against visible Piwigo categories.
+	 *
+	 * @param string                   $album      Requested album name or path.
+	 * @param array<int, array<mixed>> $categories Visible Piwigo categories.
+	 * @return int|WP_Error
+	 */
+	private static function resolve_album_from_categories( string $album, array $categories ) {
+		$names = array();
+		foreach ( $categories as $category ) {
+			if ( ! is_array( $category ) ) {
+				continue;
+			}
+			$id = absint( $category['id'] ?? 0 );
+			if ( 0 < $id ) {
+				$names[ $id ] = sanitize_text_field( (string) ( $category['name'] ?? '' ) );
+			}
+		}
+
+		$wanted_path = trim( $album, '/' );
+		foreach ( $categories as $category ) {
+			if ( ! is_array( $category ) ) {
+				continue;
+			}
+
+			$id   = absint( $category['id'] ?? 0 );
+			$name = $names[ $id ] ?? '';
+			if ( 0 >= $id ) {
+				continue;
+			}
+
+			if ( 0 === strcasecmp( $name, $album ) ) {
+				return $id;
+			}
+
+			$category_path = self::build_category_path( $category, $names );
+			if ( '' !== $category_path && 0 === strcasecmp( $category_path, $wanted_path ) ) {
+				return $id;
+			}
+
+			$permalink = sanitize_text_field( (string) ( $category['permalink'] ?? '' ) );
+			if ( '' !== $permalink && 0 === strcasecmp( trim( $permalink, '/' ), $wanted_path ) ) {
+				return $id;
+			}
+		}
+
+		return new WP_Error(
+			'wpd_album_not_found',
+			sprintf(
+				/* translators: %s: requested Piwigo album name or path. */
+				__( 'Album introuvable : %s. Vérifiez le nom, le chemin ou utilisez directement son identifiant Piwigo.', 'wp-piwigo-display' ),
+				$album
+			)
+		);
+	}
+
+	/**
+	 * Builds a human-readable category path from Piwigo's uppercats chain.
+	 *
+	 * @param array<string, mixed> $category Category data.
+	 * @param array<int, string>   $names    Category names indexed by identifier.
+	 * @return string
+	 */
+	private static function build_category_path( array $category, array $names ): string {
+		$id       = absint( $category['id'] ?? 0 );
+		$uppercat = (string) ( $category['uppercats'] ?? $id );
+		$path_ids = array_values( array_filter( array_map( 'absint', explode( ',', $uppercat ) ) ) );
+
+		if ( empty( $path_ids ) && 0 < $id ) {
+			$path_ids = array( $id );
+		}
+
+		$path_names = array();
+		foreach ( $path_ids as $path_id ) {
+			if ( isset( $names[ $path_id ] ) && '' !== $names[ $path_id ] ) {
+				$path_names[] = $names[ $path_id ];
+			}
+		}
+
+		return implode( '/', $path_names );
 	}
 
 	/**
