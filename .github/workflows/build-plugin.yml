@@ -17,15 +17,16 @@ jobs:
 
       - name: Build WordPress plugin archive
         run: |
+          SAFE_REF="${GITHUB_REF_NAME//\//-}"
           git archive \
             --format=zip \
             --prefix=wp-piwigo-display/ \
-            -o wp-piwigo-display-${GITHUB_REF_NAME//\//-}.zip \
+            -o "wp-piwigo-display-${SAFE_REF}.zip" \
             HEAD
 
       - name: Upload plugin ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: wp-piwigo-display-${{ github.ref_name }}
+          name: wp-piwigo-display-${{ github.run_id }}
           path: wp-piwigo-display-*.zip
           retention-days: 14
