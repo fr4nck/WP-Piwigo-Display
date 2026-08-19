@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, shortcode, slider
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 3.0.0-rc.2
+Stable tag: 3.0.0-rc.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -14,7 +14,9 @@ Display public or authorized private Piwigo albums in WordPress through the offi
 
 Piwigo Display keeps images in Piwigo and renders them inside WordPress without copying them into the WordPress media library.
 
-Version 3.0.0-rc.2 fixes a blocking frontend rendering failure found during real-world testing of the 3.x Release Candidate. It includes:
+The last public stable release before the V3 release-candidate train was 1.8.0. The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
+
+Version 3.0.0-rc.3 includes:
 
 * dynamic Gutenberg block;
 * Classic Editor integration with TinyMCE preview;
@@ -24,14 +26,16 @@ Version 3.0.0-rc.2 fixes a blocking frontend rendering failure found during real
 * visual, hierarchical, searchable album picker;
 * album selection by ID, name, path, or tree;
 * sub-albums and configurable depth;
-* sorting, limits, orientation filters, tags, captions, and visual styles;
+* sorting, limits, orientation filters, tags, captions, styles, and frame shapes;
 * slider transitions (`slide`, `fade`, `none`) and `ltr` / `rtl` direction;
 * independent interval and transition-speed controls;
-* visual slider sizing;
 * WordPress caching separated by access context;
 * diagnostics and cache purge;
+* persistent API/cache health metrics with API call count, HIT/MISS rate, timings, latest method/status/error, and health verdict;
 * server-side Piwigo service account for authorized private albums;
 * keyboard navigation, visible focus, and reduced-motion support.
+
+API health metrics do not store credentials, passwords, or HTTP request bodies.
 
 The service account does not sign visitors into Piwigo. A private album rendered on a public WordPress page becomes visible on that page, so the dedicated account must only have access to albums intended for publication.
 
@@ -92,11 +96,23 @@ Create a dedicated Piwigo account, restrict it to the albums that may be publish
 
 No. Authentication and session cookies remain server-side.
 
+= What does API & cache health show? =
+
+It shows aggregated API calls, cache HIT/MISS counts and rate, cumulative/average/slowest API time, the latest API method and HTTP status, the latest sanitized error, and a compact health verdict.
+
 = Does the slider respect reduced-motion preferences? =
 
 Yes. When the operating system requests reduced motion, autoplay is disabled and transitions are removed or reduced.
 
 == Changelog ==
+
+= 3.0.0-rc.3 =
+
+* Restored persistent API and cache health diagnostics.
+* Added API call count, cache HIT/MISS statistics, hit rate, cumulative/average/slowest timings, latest API method, HTTP status, latest error, and health verdict.
+* Added a regression test protecting the diagnostic counter from accidental removal.
+* Kept metrics credential-free and request-body-free.
+* Consolidated the public version history: 1.8.0 was the last stable public release before V3; 2.0.0 was never published as a public release.
 
 = 3.0.0-rc.2 =
 
@@ -122,7 +138,7 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Added accessibility and security regression checks to the single CI workflow.
 * Kept PHP 8.1 through PHP 8.4 compatibility and Plugin Check validation in CI.
 
-= 2.0.0 =
+= 2.0.0 (development milestone, never published as a public release) =
 
 * Added a Piwigo service account for authorized private albums.
 * Kept authentication and session cookies server-side.
