@@ -32,6 +32,7 @@ $forbidden = array(
 
 $allowed_upload_surfaces = array(
     'includes/class-wpd-custom-svg-masks.php',
+    'includes/class-wpd-user-fonts.php',
 );
 
 foreach ($files as $path) {
@@ -96,6 +97,16 @@ $required = array(
         'is_uploaded_file( $tmp_name )',
         'WPD_SVG_Mask_Sanitizer::sanitize( $raw )',
         "check_admin_referer( 'wpd_delete_svg_mask' )",
+    ),
+    'includes/class-wpd-user-fonts.php' => array(
+        "current_user_can( 'manage_options' )",
+        "check_admin_referer( 'wpd_upload_user_font' )",
+        'is_uploaded_file( $tmp_name )',
+        "'wOF2'",
+        "'wOFF'",
+        'wp_handle_upload(',
+        "check_admin_referer( 'wpd_delete_user_font' )",
+        'wp_delete_file(',
     ),
 );
 
