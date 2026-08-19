@@ -86,7 +86,7 @@
 	if ( ! document.getElementById( 'wpd-c-photo-text' ) ) {
 		const row = document.createElement( 'tr' );
 		row.className = 'wpd-c-photo-text';
-		row.innerHTML = '<th>Texte rempli de photos</th><td><label>Texte <input id="wpd-c-photo-text" type="text" value="PÊLE-MÊLE"></label> <label>Graine <input id="wpd-c-photo-text-seed" class="small-text" type="text" value="0"></label> <label>Police <select id="wpd-c-photo-text-font"><option value="inherit">Police du thème</option><option value="system">Système</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label> <label>Graisse <input id="wpd-c-photo-text-weight" class="small-text" type="number" min="100" max="900" step="100" value="800"></label> <label>Photos max <input id="wpd-c-photo-text-max-images" class="small-text" type="number" min="1" max="40" value="20"></label> <label><input id="wpd-c-photo-text-outline" type="checkbox" checked> Contour</label> <label>Épaisseur <input id="wpd-c-photo-text-outline-width" class="small-text" type="number" min="0" max="12" value="3"></label> <label>Couleur contour <input id="wpd-c-photo-text-outline-color" type="text" value="#ffffff"></label> <label>Fond <input id="wpd-c-photo-text-background" type="text" value="transparent"></label></td>';
+		row.innerHTML = '<th>Texte rempli de photos</th><td><label>Texte <input id="wpd-c-photo-text" type="text" value="PÊLE-MÊLE"></label> <label>Graine <input id="wpd-c-photo-text-seed" class="small-text" type="text" value="0"></label> <label>Police <select id="wpd-c-photo-text-font"><option value="inherit">Police du thème</option><option value="system">Système</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label> <label>Graisse <input id="wpd-c-photo-text-weight" class="small-text" type="number" min="100" max="900" step="100" value="800"></label> <label>Taille <input id="wpd-c-photo-text-size" class="small-text" type="number" min="120" max="300" value="230"></label> <label>Interlettrage <input id="wpd-c-photo-text-letter-spacing" class="small-text" type="number" min="-20" max="80" value="0"></label> <label>Largeur max <input id="wpd-c-photo-text-max-width" class="small-text" type="number" min="20" max="100" value="100"> %</label> <label>Alignement <select id="wpd-c-photo-text-align"><option value="left">Gauche</option><option value="center" selected>Centre</option><option value="right">Droite</option></select></label> <label>Photos max <input id="wpd-c-photo-text-max-images" class="small-text" type="number" min="1" max="40" value="20"></label> <label><input id="wpd-c-photo-text-outline" type="checkbox" checked> Contour</label> <label>Épaisseur <input id="wpd-c-photo-text-outline-width" class="small-text" type="number" min="0" max="12" value="3"></label> <label>Couleur contour <input id="wpd-c-photo-text-outline-color" type="text" value="#ffffff"></label> <label>Fond <input id="wpd-c-photo-text-background" type="text" value="transparent"></label></td>';
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
 
@@ -123,7 +123,7 @@
 		syncShapePicker( shape );
 
 		let shortcode = output.value;
-		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'justified_row_height', 'justified_gap', 'collage_seed', 'collage_rotation', 'collage_spread', 'collage_overlap', 'collage_size', 'collage_variation', 'photo_text', 'photo_text_seed', 'photo_text_font', 'photo_text_weight', 'photo_text_outline', 'photo_text_outline_width', 'photo_text_outline_color', 'photo_text_background', 'photo_text_max_images', 'shape', 'radius' ].forEach( ( key ) => {
+		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'justified_row_height', 'justified_gap', 'collage_seed', 'collage_rotation', 'collage_spread', 'collage_overlap', 'collage_size', 'collage_variation', 'photo_text', 'photo_text_seed', 'photo_text_font', 'photo_text_weight', 'photo_text_size', 'photo_text_letter_spacing', 'photo_text_max_width', 'photo_text_align', 'photo_text_outline', 'photo_text_outline_width', 'photo_text_outline_color', 'photo_text_background', 'photo_text_max_images', 'shape', 'radius' ].forEach( ( key ) => {
 			shortcode = removeAttribute( shortcode, key );
 		} );
 
@@ -156,6 +156,10 @@
 			shortcode = appendAttribute( shortcode, 'photo_text_seed', document.getElementById( 'wpd-c-photo-text-seed' ).value || '0' );
 			shortcode = appendAttribute( shortcode, 'photo_text_font', document.getElementById( 'wpd-c-photo-text-font' ).value );
 			shortcode = appendAttribute( shortcode, 'photo_text_weight', clamp( document.getElementById( 'wpd-c-photo-text-weight' ).value, 100, 900, 800 ) );
+			shortcode = appendAttribute( shortcode, 'photo_text_size', clamp( document.getElementById( 'wpd-c-photo-text-size' ).value, 120, 300, 230 ) );
+			shortcode = appendAttribute( shortcode, 'photo_text_letter_spacing', clamp( document.getElementById( 'wpd-c-photo-text-letter-spacing' ).value, -20, 80, 0 ) );
+			shortcode = appendAttribute( shortcode, 'photo_text_max_width', clamp( document.getElementById( 'wpd-c-photo-text-max-width' ).value, 20, 100, 100 ) );
+			shortcode = appendAttribute( shortcode, 'photo_text_align', document.getElementById( 'wpd-c-photo-text-align' ).value );
 			shortcode = appendAttribute( shortcode, 'photo_text_max_images', clamp( document.getElementById( 'wpd-c-photo-text-max-images' ).value, 1, 40, 20 ) );
 			shortcode = appendAttribute( shortcode, 'photo_text_outline', document.getElementById( 'wpd-c-photo-text-outline' ).checked ? 'true' : 'false' );
 			shortcode = appendAttribute( shortcode, 'photo_text_outline_width', clamp( document.getElementById( 'wpd-c-photo-text-outline-width' ).value, 0, 12, 3 ) );
