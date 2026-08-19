@@ -9,13 +9,12 @@
     var PanelBody = components.PanelBody;
     var SelectControl = components.SelectControl;
     var RangeControl = components.RangeControl;
+    var TextControl = components.TextControl;
     var __ = i18n.__;
 
     var withLayoutControls = createHigherOrderComponent(function (BlockEdit) {
         return function (props) {
-            if (props.name !== 'wp-piwigo-display/gallery') {
-                return el(BlockEdit, props);
-            }
+            if (props.name !== 'wp-piwigo-display/gallery') return el(BlockEdit, props);
 
             var attributes = props.attributes || {};
             var setAttributes = props.setAttributes;
@@ -24,62 +23,33 @@
             var masonryGap = Math.min(64, Math.max(0, parseInt(attributes.masonryGap || 16, 10)));
             var justifiedRowHeight = Math.min(600, Math.max(100, parseInt(attributes.justifiedRowHeight || 220, 10)));
             var justifiedGap = Math.min(64, Math.max(0, parseInt(attributes.justifiedGap || 8, 10)));
+            var collageRotation = Math.min(15, Math.max(0, parseInt(attributes.collageRotation || 6, 10)));
+            var collageSpread = Math.min(50, Math.max(0, parseInt(attributes.collageSpread || 18, 10)));
+            var collageOverlap = Math.min(40, Math.max(0, parseInt(attributes.collageOverlap || 12, 10)));
+            var collageSize = Math.min(420, Math.max(120, parseInt(attributes.collageSize || 220, 10)));
+            var collageVariation = Math.min(50, Math.max(0, parseInt(attributes.collageVariation || 20, 10)));
 
-            return el(
-                Fragment,
-                null,
-                el(BlockEdit, props),
-                el(
-                    InspectorControls,
-                    null,
-                    el(
-                        PanelBody,
-                        { title: __('Disposition de la galerie', 'wp-piwigo-display'), initialOpen: displayType === 'masonry' || displayType === 'justified' },
-                        el(SelectControl, {
-                            label: __('Mode d’affichage', 'wp-piwigo-display'),
-                            value: displayType,
-                            options: [
-                                { label: __('Galerie', 'wp-piwigo-display'), value: 'gallery' },
-                                { label: __('Diaporama', 'wp-piwigo-display'), value: 'slider' },
-                                { label: __('Masonry', 'wp-piwigo-display'), value: 'masonry' },
-                                { label: __('Galerie justifiée', 'wp-piwigo-display'), value: 'justified' }
-                            ],
-                            onChange: function (value) { setAttributes({ displayType: value }); }
-                        }),
-                        displayType === 'masonry' && el(RangeControl, {
-                            label: __('Nombre de colonnes', 'wp-piwigo-display'),
-                            value: columns,
-                            min: 2,
-                            max: 6,
-                            onChange: function (value) { setAttributes({ masonryColumns: value }); }
-                        }),
-                        displayType === 'masonry' && el(RangeControl, {
-                            label: __('Espacement entre les images', 'wp-piwigo-display'),
-                            value: masonryGap,
-                            min: 0,
-                            max: 64,
-                            help: __('Valeur en pixels.', 'wp-piwigo-display'),
-                            onChange: function (value) { setAttributes({ masonryGap: value }); }
-                        }),
-                        displayType === 'justified' && el(RangeControl, {
-                            label: __('Hauteur cible des lignes', 'wp-piwigo-display'),
-                            value: justifiedRowHeight,
-                            min: 100,
-                            max: 600,
-                            help: __('Valeur en pixels. Les lignes s’adaptent pour remplir la largeur.', 'wp-piwigo-display'),
-                            onChange: function (value) { setAttributes({ justifiedRowHeight: value }); }
-                        }),
-                        displayType === 'justified' && el(RangeControl, {
-                            label: __('Espacement entre les images', 'wp-piwigo-display'),
-                            value: justifiedGap,
-                            min: 0,
-                            max: 64,
-                            help: __('Valeur en pixels.', 'wp-piwigo-display'),
-                            onChange: function (value) { setAttributes({ justifiedGap: value }); }
-                        })
-                    )
+            return el(Fragment, null, el(BlockEdit, props), el(InspectorControls, null,
+                el(PanelBody, {title: __('Disposition de la galerie', 'wp-piwigo-display'), initialOpen: ['masonry','justified','collage'].indexOf(displayType) !== -1},
+                    el(SelectControl, {label: __('Mode d’affichage', 'wp-piwigo-display'), value: displayType, options: [
+                        {label: __('Galerie', 'wp-piwigo-display'), value: 'gallery'},
+                        {label: __('Diaporama', 'wp-piwigo-display'), value: 'slider'},
+                        {label: __('Masonry', 'wp-piwigo-display'), value: 'masonry'},
+                        {label: __('Galerie justifiée', 'wp-piwigo-display'), value: 'justified'},
+                        {label: __('Collage / Pêle-mêle', 'wp-piwigo-display'), value: 'collage'}
+                    ], onChange: function (value) { setAttributes({displayType: value}); }}),
+                    displayType === 'masonry' && el(RangeControl, {label: __('Nombre de colonnes', 'wp-piwigo-display'), value: columns, min: 2, max: 6, onChange: function (value) { setAttributes({masonryColumns: value}); }}),
+                    displayType === 'masonry' && el(RangeControl, {label: __('Espacement entre les images', 'wp-piwigo-display'), value: masonryGap, min: 0, max: 64, onChange: function (value) { setAttributes({masonryGap: value}); }}),
+                    displayType === 'justified' && el(RangeControl, {label: __('Hauteur cible des lignes', 'wp-piwigo-display'), value: justifiedRowHeight, min: 100, max: 600, onChange: function (value) { setAttributes({justifiedRowHeight: value}); }}),
+                    displayType === 'justified' && el(RangeControl, {label: __('Espacement entre les images', 'wp-piwigo-display'), value: justifiedGap, min: 0, max: 64, onChange: function (value) { setAttributes({justifiedGap: value}); }}),
+                    displayType === 'collage' && el(TextControl, {label: __('Graine de composition', 'wp-piwigo-display'), value: attributes.collageSeed || '0', help: __('Même graine + mêmes photos = même composition.', 'wp-piwigo-display'), onChange: function (value) { setAttributes({collageSeed: value}); }}),
+                    displayType === 'collage' && el(RangeControl, {label: __('Rotation maximale', 'wp-piwigo-display'), value: collageRotation, min: 0, max: 15, onChange: function (value) { setAttributes({collageRotation: value}); }}),
+                    displayType === 'collage' && el(RangeControl, {label: __('Dispersion', 'wp-piwigo-display'), value: collageSpread, min: 0, max: 50, onChange: function (value) { setAttributes({collageSpread: value}); }}),
+                    displayType === 'collage' && el(RangeControl, {label: __('Chevauchement', 'wp-piwigo-display'), value: collageOverlap, min: 0, max: 40, onChange: function (value) { setAttributes({collageOverlap: value}); }}),
+                    displayType === 'collage' && el(RangeControl, {label: __('Taille moyenne des photos', 'wp-piwigo-display'), value: collageSize, min: 120, max: 420, onChange: function (value) { setAttributes({collageSize: value}); }}),
+                    displayType === 'collage' && el(RangeControl, {label: __('Variation de taille (%)', 'wp-piwigo-display'), value: collageVariation, min: 0, max: 50, onChange: function (value) { setAttributes({collageVariation: value}); }})
                 )
-            );
+            ));
         };
     }, 'withLayoutControls');
 
