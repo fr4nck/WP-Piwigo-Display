@@ -9,6 +9,12 @@
         });
     }
 
+    function removeNativeFallbackControls(slider) {
+        slider.querySelectorAll('.wpd-native-slider-controls, .wpd-native-slider-pagination').forEach(function (element) {
+            element.remove();
+        });
+    }
+
     function bindNativeFallback(slider) {
         if (slider.dataset.wpdFallbackBound === 'true') {
             return;
@@ -16,20 +22,33 @@
 
         var slides = Array.prototype.slice.call(slider.querySelectorAll('.splide__slide'));
         var thumbnails = Array.prototype.slice.call(slider.querySelectorAll('.wp-piwigo-display-slider-thumbnail'));
+        var navigation = slider.dataset.navigation || 'thumbnails';
+        var fallbackDots = [];
+        var currentIndex = 0;
 
-        if (!slides.length || !thumbnails.length) {
+        if (!slides.length) {
             return;
         }
 
         slider.dataset.wpdFallbackBound = 'true';
 
         function showSlide(index) {
+            if (!slides.length) {
+                return;
+            }
+
+            currentIndex = (index + slides.length) % slides.length;
             slides.forEach(function (slide, slideIndex) {
-                var active = slideIndex === index;
+                var active = slideIndex === currentIndex;
                 slide.hidden = !active;
                 slide.setAttribute('aria-hidden', active ? 'false' : 'true');
             });
-            setActiveThumbnail(thumbnails, index);
+            setActiveThumbnail(thumbnails, currentIndex);
+            fallbackDots.forEach(function (dot, dotIndex) {
+                var active = dotIndex === currentIndex;
+                dot.classList.toggle('is-active', active);
+                dot.setAttribute('aria-current', active ? 'true' : 'false');
+            });
         }
 
         thumbnails.forEach(function (thumbnail) {
@@ -45,6 +64,58 @@
                 }
             });
         });
+
+        if (slides.length > 1) {
+            var controls = document.createElement('div');
+            controls.className = 'wpd-native-slider-controls';
+
+            var previous = document.createElement('button');
+            previous.type = 'button';
+            previous.className = 'wp-piwigo-display-slider-arrow wp-piwigo-display-slider-prev';
+            previous.setAttribute('aria-label', 'Image précédente');
+            previous.textContent = '‹';
+            previous.addEventListener('click', function () {
+                if (slider.dataset.wpdSliderInitialized !== 'true') {
+                    showSlide(currentIndex - 1);
+                }
+            });
+
+            var next = document.createElement('button');
+            next.type = 'button';
+            next.className = 'wp-piwigo-display-slider-arrow wp-piwigo-display-slider-next';
+            next.setAttribute('aria-label', 'Image suivante');
+            next.textContent = '›';
+            next.addEventListener('click', function () {
+                if (slider.dataset.wpdSliderInitialized !== 'true') {
+                    showSlide(currentIndex + 1);
+                }
+            });
+
+            controls.appendChild(previous);
+            controls.appendChild(next);
+            slider.appendChild(controls);
+        }
+
+        if (navigation === 'dots' && slides.length > 1) {
+            var pagination = document.createElement('div');
+            pagination.className = 'wp-piwigo-display-slider-pagination wpd-native-slider-pagination';
+            pagination.setAttribute('aria-label', 'Navigation du diaporama');
+
+            slides.forEach(function (slide, index) {
+                var dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'wp-piwigo-display-slider-dot';
+                dot.setAttribute('aria-label', 'Afficher l’image ' + (index + 1));
+                dot.addEventListener('click', function () {
+                    if (slider.dataset.wpdSliderInitialized !== 'true') {
+                        showSlide(index);
+                    }
+                });
+                fallbackDots.push(dot);
+                pagination.appendChild(dot);
+            });
+            slider.appendChild(pagination);
+        }
 
         showSlide(0);
     }
@@ -66,6 +137,7 @@
         var isFade = !reducedMotion && transition === 'fade';
         var speed = reducedMotion || transition === 'none' ? 0 : configuredSpeed;
 
+        removeNativeFallbackControls(slider);
         slides.forEach(function (slide) {
             slide.hidden = false;
             slide.removeAttribute('aria-hidden');
