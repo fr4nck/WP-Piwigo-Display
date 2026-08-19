@@ -131,12 +131,12 @@ final class WPD_Photo_Text {
 			$outline_color = '#ffffff';
 		}
 
-		$render_size   = self::fitted_font_size( $font_size, count( $lines ), $line_height );
-		$line_step     = $render_size * ( $line_height / 100 );
+		$render_size    = self::fitted_font_size( $font_size, count( $lines ), $line_height );
+		$line_step      = $render_size * ( $line_height / 100 );
 		$line_positions = self::line_positions( count( $lines ), $line_step );
-		$text_position = self::text_position( $align );
-		$tiles         = self::layout_tiles( $urls, $fill_mode, $density, $seed, $rotation, $spread );
-		$semantic_text = implode( ' ', $lines );
+		$text_position  = self::text_position( $align );
+		$tiles          = self::layout_tiles( $urls, $fill_mode, $density, $seed, $rotation, $spread );
+		$semantic_text  = implode( ' ', $lines );
 
 		++self::$instance;
 		$id         = 'wpd-photo-text-' . self::$instance . '-' . substr( md5( $semantic_text . ':' . $seed ), 0, 8 );
