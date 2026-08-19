@@ -375,7 +375,7 @@ final class WPD_User_Fonts {
 	 * @return int
 	 */
 	private static function max_bytes(): int {
-		$max = (int) apply_filters( 'wpd_user_font_max_bytes', self::DEFAULT_MAX_BYTES );
+		$max = (int) apply_filters( 'piwigo_display_user_font_max_bytes', self::DEFAULT_MAX_BYTES );
 		return max( 65536, min( 8388608, $max ) );
 	}
 
