@@ -64,7 +64,7 @@ jobs:
           echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
           echo "zip=piwigo-display-${VERSION}.zip" >> "$GITHUB_OUTPUT"
 
-      - name: Prepare Piwigo Display distribution
+      - name: Prepare directly installable legacy-compatible tree
         shell: bash
         run: |
           set -euo pipefail
@@ -105,13 +105,22 @@ jobs:
       - name: Check packaged frontend assets
         run: php tests/package-assets.php build/wp-piwigo-display
 
-      - name: Run WordPress Plugin Check on installable package
+      - name: Prepare WordPress.org Plugin Check tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/plugin-check/piwigo-display
+          rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
+
+      - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/wp-piwigo-display'
+          build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
           # Historical public hooks keep their pre-v3 names for backward compatibility.
+          # The WordPress.org slug is `piwigo-display`; GitHub upgrade ZIPs retain the
+          # legacy `wp-piwigo-display` folder so existing installations remain one plugin.
           ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Build directly installable ZIP
