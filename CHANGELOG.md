@@ -11,6 +11,7 @@
 - Les métriques ne conservent ni identifiants, ni mots de passe, ni corps de requête HTTP.
 - Ajout d’un test de non-régression dédié afin d’empêcher la disparition accidentelle du compteur lors d’un futur refactoring.
 - Clarification de l’historique public : **1.8.0 est la dernière version stable publiée avant la V3 ; 2.0.0 n’a jamais été distribuée comme release publique**.
+- Restauration du nom public **WP Piwigo Display**, afin de conserver explicitement l’identité de l’intégration WordPress.
 
 ## 3.0.0-rc.2 — 17 août 2026
 
@@ -21,7 +22,6 @@
 - Ajout d’un contrôle vérifiant que chaque ressource frontend enregistrée existe dans le paquet final.
 - Ajout d’une option « Fond transparent » propre au diaporama, indépendante du style, des arrondis et des ombres.
 - Correction de l’aperçu TinyMCE dont les attributs HTML pouvaient apparaître comme texte lors d’une modification par double-clic.
-- Alignement du nom visible sur « Piwigo Display ».
 
 ## 3.0.0-rc.1
 
