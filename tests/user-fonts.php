@@ -32,7 +32,7 @@ $assert(false !== strpos((string) $library, "'wOF2'") && false !== strpos((strin
 $assert(false !== strpos((string) $library, 'finfo_open'), 'Le MIME doit être vérifié quand Fileinfo est disponible.');
 $assert(false !== strpos((string) $library, 'wp_handle_upload('), 'Le déplacement doit passer par l’API WordPress.');
 $assert(false !== strpos((string) $library, "UPLOAD_SUBDIR = '/piwigo-display-fonts'"), 'Les polices doivent rester dans un répertoire uploads dédié.');
-$assert(false !== strpos((string) $library, 'wpd_user_font_max_bytes'), 'La taille maximale doit être configurable par filtre préfixé.');
+$assert(false !== strpos((string) $library, 'piwigo_display_user_font_max_bytes'), 'La taille maximale doit être configurable par filtre préfixé.');
 $assert(false !== strpos((string) $library, 'wp_delete_file('), 'La suppression doit passer par l’API WordPress.');
 $assert(false !== strpos((string) $library, 'update_option( self::OPTION_NAME, $library, false )'), 'Les métadonnées ne doivent pas être autoloadées.');
 $assert(false !== strpos((string) $photo, 'WPD_User_Fonts::font_stack'), 'Le rendu Texte-photo doit résoudre les polices locales via la bibliothèque.');
