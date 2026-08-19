@@ -43,6 +43,13 @@ $slider = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-slider.js
 wpd_transition_assert_same(true, strpos($slider, "transition === 'none' ? 0") !== false, 'Le mode sans animation doit forcer une vitesse nulle.');
 wpd_transition_assert_same(true, strpos($slider, "type: isFade ? 'fade' : 'loop'") !== false, 'Le fondu doit utiliser le type fade de Splide.');
 wpd_transition_assert_same(true, strpos($slider, 'direction: direction') !== false, 'La direction doit être fournie à Splide.');
+wpd_transition_assert_same(true, strpos($slider, 'bindNativeFallback') !== false, 'Le slider doit conserver le fallback natif RC3 quand Splide tarde ou échoue.');
+wpd_transition_assert_same(true, strpos($slider, "slider.dataset.wpdFallbackBound === 'true'") !== false, 'Le fallback natif ne doit être lié qu’une fois.');
+wpd_transition_assert_same(true, strpos($slider, "slider.dataset.wpdSliderInitialized === 'true'") !== false, 'L’initialisation Splide doit être idempotente.');
+wpd_transition_assert_same(true, strpos($slider, "slide.hidden = !active") !== false && strpos($slider, "slide.setAttribute('aria-hidden'") !== false, 'Le fallback doit masquer proprement les diapositives inactives.');
+wpd_transition_assert_same(true, strpos($slider, "splide.on('mounted moved'") !== false, 'La miniature active doit être synchronisée au montage et au déplacement Splide.');
+wpd_transition_assert_same(true, strpos($slider, 'window.setInterval') !== false && strpos($slider, 'attempts >= 20') !== false, 'Le script doit retenter brièvement l’initialisation si Splide arrive en retard.');
+wpd_transition_assert_same(true, strpos($slider, "document.readyState === 'loading'") !== false, 'Le slider doit aussi pouvoir s’initialiser si le script arrive après DOMContentLoaded.');
 
 $block = file_get_contents(__DIR__ . '/../blocks/piwigo/index.js');
 wpd_transition_assert_same(true, strpos($block, "'transition'") !== false, 'Gutenberg doit exposer le réglage de transition.');
