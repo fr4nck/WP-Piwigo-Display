@@ -1,7 +1,5 @@
 # Piwigo Display
 
-[![Téléchargements GitHub](https://img.shields.io/github/downloads/fr4nck/WP-Piwigo-Display/total?label=t%C3%A9l%C3%A9chargements&style=flat)](https://github.com/fr4nck/WP-Piwigo-Display/releases)
-
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
 ## État du projet
@@ -108,3 +106,11 @@ Lorsque l’utilisateur demande une réduction des animations via son système (
 ## Licence
 
 GNU GPL v3 ou version ultérieure.
+
+## Téléchargements
+
+[![Téléchargements GitHub](https://img.shields.io/github/downloads/fr4nck/WP-Piwigo-Display/total?label=t%C3%A9l%C3%A9chargements&style=for-the-badge)](https://github.com/fr4nck/WP-Piwigo-Display/releases)
+
+Le compteur additionne les téléchargements des fichiers distribués avec les Releases GitHub.
+
+*Un parpaing offert tous les dix téléchargements.*
