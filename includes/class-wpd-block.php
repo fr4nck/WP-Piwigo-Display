@@ -51,7 +51,7 @@ final class WPD_Block {
 	 * @return array<string, string> Shortcode attributes.
 	 */
 	public static function attributes_to_shortcode( array $attributes ): array {
-		$map = array_merge(
+		$map  = array_merge(
 			array(
 				'albumId'               => 'album',
 				'displayType'           => 'type',
