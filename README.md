@@ -8,7 +8,7 @@ Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans co
 
 La branche `release/3.0.0-rc.1` porte la première **Release Candidate V3**. Le code, la documentation et les métadonnées de version sont synchronisés en **3.0.0-rc.1**.
 
-La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
+La V2 a constitué une étape de développement du projet mais n’a pas été distribuée. La V3 est actuellement en phase de Release Candidate et fait l’objet de tests en conditions réelles.
 
 **Piwigo Display pour WordPress — distribution GitHub, README en français, CI maison et zéro bénédiction pontificale de WordPress.org.**
 
