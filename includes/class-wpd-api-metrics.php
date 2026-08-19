@@ -16,34 +16,74 @@ final class WPD_Api_Metrics {
 	private const TRANSIENT_KEY = 'wpd_api_health_metrics';
 	private const TRANSIENT_TTL = 7 * DAY_IN_SECONDS;
 
-	/** @var int API calls performed during the current request. */
+	/**
+	 * API calls performed during the current request.
+	 *
+	 * @var int
+	 */
 	private static int $api_calls = 0;
 
-	/** @var int Plugin cache hits during the current request. */
+	/**
+	 * Plugin cache hits during the current request.
+	 *
+	 * @var int
+	 */
 	private static int $cache_hits = 0;
 
-	/** @var int Plugin cache misses during the current request. */
+	/**
+	 * Plugin cache misses during the current request.
+	 *
+	 * @var int
+	 */
 	private static int $cache_misses = 0;
 
-	/** @var float Cumulative Piwigo HTTP time during the current request. */
+	/**
+	 * Cumulative Piwigo HTTP time during the current request.
+	 *
+	 * @var float
+	 */
 	private static float $elapsed_ms = 0.0;
 
-	/** @var float Slowest Piwigo HTTP request during the current request. */
+	/**
+	 * Slowest Piwigo HTTP request during the current request.
+	 *
+	 * @var float
+	 */
 	private static float $slowest_ms = 0.0;
 
-	/** @var string Last Piwigo API method observed. */
+	/**
+	 * Last Piwigo API method observed.
+	 *
+	 * @var string
+	 */
 	private static string $last_method = '';
 
-	/** @var string Last plugin cache layer observed. */
+	/**
+	 * Last plugin cache layer observed.
+	 *
+	 * @var string
+	 */
 	private static string $last_cache_source = '';
 
-	/** @var int Last Piwigo HTTP status observed. */
+	/**
+	 * Last Piwigo HTTP status observed.
+	 *
+	 * @var int
+	 */
 	private static int $last_http_status = 0;
 
-	/** @var string Last Piwigo HTTP error observed. */
+	/**
+	 * Last Piwigo HTTP error observed.
+	 *
+	 * @var string
+	 */
 	private static string $last_error = '';
 
-	/** @var array<string, float> Request start times indexed by an opaque local key. */
+	/**
+	 * Request start times indexed by an opaque local key.
+	 *
+	 * @var array<string, float>
+	 */
 	private static array $request_started = array();
 
 	/**
@@ -90,10 +130,8 @@ final class WPD_Api_Metrics {
 			return;
 		}
 
-		$key = self::request_key( $url, $args );
-
-		$started = self::$request_started[ $key ] ?? microtime( true );
-
+		$key        = self::request_key( $url, $args );
+		$started    = self::$request_started[ $key ] ?? microtime( true );
 		$elapsed_ms = ( microtime( true ) - $started ) * 1000;
 		unset( self::$request_started[ $key ] );
 
@@ -106,8 +144,7 @@ final class WPD_Api_Metrics {
 		}
 
 		$status = is_wp_error( $response ) ? 0 : wp_remote_retrieve_response_code( $response );
-
-		$error = is_wp_error( $response ) ? $response->get_error_message() : '';
+		$error  = is_wp_error( $response ) ? $response->get_error_message() : '';
 
 		self::api_call( $method, $elapsed_ms, $status, $error );
 	}
@@ -145,11 +182,11 @@ final class WPD_Api_Metrics {
 	 */
 	public static function api_call( string $method, float $elapsed_ms, int $http_status = 0, string $error = '' ): void {
 		++self::$api_calls;
-		self::$elapsed_ms += max( 0.0, $elapsed_ms );
-		self::$slowest_ms = max( self::$slowest_ms, $elapsed_ms );
-		self::$last_method = sanitize_text_field( $method );
-		self::$last_http_status = absint( $http_status );
-		self::$last_error = sanitize_text_field( $error );
+		self::$elapsed_ms       += max( 0.0, $elapsed_ms );
+		self::$slowest_ms        = max( self::$slowest_ms, $elapsed_ms );
+		self::$last_method       = sanitize_text_field( $method );
+		self::$last_http_status  = absint( $http_status );
+		self::$last_error        = sanitize_text_field( $error );
 	}
 
 	/**
@@ -167,19 +204,14 @@ final class WPD_Api_Metrics {
 			$stored = self::empty_summary();
 		}
 
-		$stored['api_calls'] = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
+		$stored['api_calls']        = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
+		$stored['cache_hits']       = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
+		$stored['cache_misses']     = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
+		$stored['elapsed_ms']       = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
+		$stored['slowest_ms']       = max( (float) ( $stored['slowest_ms'] ?? 0.0 ), self::$slowest_ms );
+		$stored['updated_at']       = time();
+		$stored['started_at']       = absint( $stored['started_at'] ?? 0 );
 
-		$stored['cache_hits'] = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
-
-		$stored['cache_misses'] = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
-
-		$stored['elapsed_ms'] = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
-
-		$stored['slowest_ms'] = max( (float) ( $stored['slowest_ms'] ?? 0.0 ), self::$slowest_ms );
-
-		$stored['updated_at'] = time();
-
-		$stored['started_at'] = absint( $stored['started_at'] ?? 0 );
 		if ( 0 === $stored['started_at'] ) {
 			$stored['started_at'] = time();
 		}
@@ -211,15 +243,11 @@ final class WPD_Api_Metrics {
 			$stored = self::empty_summary();
 		}
 
-		$api_calls = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
-
-		$cache_hits = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
-
+		$api_calls    = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
+		$cache_hits   = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
 		$cache_misses = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
-
-		$elapsed_ms = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
-
-		$total_cache = $cache_hits + $cache_misses;
+		$elapsed_ms   = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
+		$total_cache  = $cache_hits + $cache_misses;
 
 		return array(
 			'api_calls'         => $api_calls,
@@ -253,10 +281,8 @@ final class WPD_Api_Metrics {
 			return;
 		}
 
-		$metrics = self::summary();
-
-		$status = self::health_status( $metrics );
-
+		$metrics     = self::summary();
+		$status      = self::health_status( $metrics );
 		$last_method = '' !== (string) $metrics['last_method'] ? (string) $metrics['last_method'] : '—';
 		?>
 		<div class="notice notice-info wpd-api-health">
