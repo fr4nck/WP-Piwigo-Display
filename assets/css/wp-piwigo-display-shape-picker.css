@@ -1,0 +1,78 @@
+.wpd-shape-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+    margin: 8px 0 12px;
+}
+
+.wpd-shape-picker-button {
+    display: flex;
+    min-height: 76px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    color: #1d2327;
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.wpd-shape-picker-button:hover,
+.wpd-shape-picker-button:focus-visible {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 0;
+}
+
+.wpd-shape-picker-button[aria-pressed="true"] {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px #2271b1;
+}
+
+.wpd-shape-picker-preview {
+    display: block;
+    width: 34px;
+    height: 34px;
+    background: currentColor;
+}
+
+.wpd-shape-preview-rounded { border-radius: 28%; }
+.wpd-shape-preview-circle { border-radius: 50%; }
+.wpd-shape-preview-oval { width: 44px; border-radius: 50%; }
+.wpd-shape-preview-pill { width: 48px; border-radius: 999px; }
+.wpd-shape-preview-star { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 94%, 50% 72%, 21% 94%, 32% 57%, 2% 35%, 39% 35%); }
+.wpd-shape-preview-hexagon { clip-path: polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0 50%); }
+.wpd-shape-preview-diamond,
+.wpd-shape-preview-card-diamond { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0 50%); }
+.wpd-shape-preview-cloud { clip-path: polygon(18% 74%, 8% 65%, 8% 52%, 15% 42%, 27% 39%, 34% 24%, 50% 18%, 64% 25%, 70% 38%, 83% 39%, 94% 49%, 94% 63%, 85% 73%); }
+.wpd-shape-preview-heart,
+.wpd-shape-preview-card-heart { clip-path: polygon(50% 92%, 8% 51%, 5% 32%, 13% 17%, 27% 10%, 41% 14%, 50% 25%, 59% 14%, 73% 10%, 87% 17%, 95% 32%, 92% 51%); }
+.wpd-shape-preview-drop { clip-path: polygon(50% 0%, 78% 28%, 92% 55%, 89% 76%, 73% 94%, 50% 100%, 27% 94%, 11% 76%, 8% 55%, 22% 28%); }
+.wpd-shape-preview-triangle { clip-path: polygon(50% 0%, 100% 100%, 0 100%); }
+.wpd-shape-preview-pentagon { clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0 38%); }
+.wpd-shape-preview-octagon { clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
+
+.wpd-shape-preview-card-spade,
+.wpd-shape-preview-card-club {
+    width: auto;
+    height: auto;
+    background: none;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 38px;
+    line-height: 34px;
+}
+
+.wpd-shape-preview-card-spade::before { content: "♠"; }
+.wpd-shape-preview-card-club::before { content: "♣"; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .wpd-shape-picker-button {
+        transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+}
