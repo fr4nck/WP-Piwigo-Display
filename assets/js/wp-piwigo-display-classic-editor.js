@@ -8,6 +8,29 @@
         var editingLegacyHeight = '';
         var initialValues = {};
 
+        function ensureCollageControls() {
+            var $type = $dialog.find('[data-wpd="type"]');
+            if ($type.length && !$type.find('option[value="collage"]').length) {
+                $type.append($('<option value="collage">Collage / Pêle-mêle</option>'));
+            }
+            if (!$dialog.find('[data-wpd="collage_seed"]').length) {
+                var $anchor = $dialog.find('.wpd-justified-options').last();
+                var $controls = $(
+                    '<div class="wpd-collage-options">' +
+                    '<label>Graine<input type="number" data-wpd="collage_seed" value="0"></label>' +
+                    '<label>Rotation maximale (°)<input type="number" min="0" max="15" data-wpd="collage_rotation" value="6"></label>' +
+                    '<label>Dispersion (px)<input type="number" min="0" max="50" data-wpd="collage_spread" value="18"></label>' +
+                    '<label>Chevauchement (px)<input type="number" min="0" max="40" data-wpd="collage_overlap" value="12"></label>' +
+                    '<label>Taille moyenne (px)<input type="number" min="120" max="420" data-wpd="collage_size" value="220"></label>' +
+                    '<label>Variation de taille (%)<input type="number" min="0" max="50" data-wpd="collage_variation" value="20"></label>' +
+                    '</div>'
+                );
+                if ($anchor.length) $controls.insertAfter($anchor); else $dialog.find('.wpd-builder-grid').append($controls);
+            }
+        }
+
+        ensureCollageControls();
+
         if (window.WPDAlbumPicker) {
             window.WPDAlbumPicker.attach($dialog.find('.wpd-album-field'), $dialog.find('[data-wpd="album"]'));
         }
@@ -105,12 +128,22 @@
             }
             if (type === 'masonry') { add(parts, 'masonry_columns', bounded('masonry_columns', 2, 6, 4), true); add(parts, 'masonry_gap', bounded('masonry_gap', 0, 64, 16), true); }
             if (type === 'justified') { add(parts, 'justified_row_height', bounded('justified_row_height', 100, 600, 220), true); add(parts, 'justified_gap', bounded('justified_gap', 0, 64, 8), true); }
+            if (type === 'collage') {
+                add(parts, 'collage_seed', parseInt(value('collage_seed') || '0', 10) || 0, true);
+                add(parts, 'collage_rotation', bounded('collage_rotation', 0, 15, 6), true);
+                add(parts, 'collage_spread', bounded('collage_spread', 0, 50, 18), true);
+                add(parts, 'collage_overlap', bounded('collage_overlap', 0, 40, 12), true);
+                add(parts, 'collage_size', bounded('collage_size', 120, 420, 220), true);
+                add(parts, 'collage_variation', bounded('collage_variation', 0, 50, 20), true);
+            }
             return '[piwigo ' + parts.join(' ') + ']';
         }
         function refresh() {
             var type = value('type');
             $dialog.find('.wpd-slider-options, .wpd-slider-layout-option').toggle(type === 'slider');
-            $dialog.find('.wpd-masonry-options').toggle(type === 'masonry'); $dialog.find('.wpd-justified-options').toggle(type === 'justified');
+            $dialog.find('.wpd-masonry-options').toggle(type === 'masonry');
+            $dialog.find('.wpd-justified-options').toggle(type === 'justified');
+            $dialog.find('.wpd-collage-options').toggle(type === 'collage');
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded'); $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             syncShapePicker(); $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
