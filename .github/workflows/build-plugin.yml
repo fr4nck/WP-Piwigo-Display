@@ -1,0 +1,28 @@
+name: Build plugin ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build WordPress plugin archive
+        run: |
+          git archive \
+            --format=zip \
+            --prefix=wp-piwigo-display/ \
+            -o wp-piwigo-display-${GITHUB_REF_NAME}.zip \
+            HEAD
+
+      - name: Upload plugin ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-piwigo-display-${{ github.ref_name }}
+          path: wp-piwigo-display-${{ github.ref_name }}.zip
