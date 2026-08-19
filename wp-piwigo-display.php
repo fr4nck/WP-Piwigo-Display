@@ -50,6 +50,7 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Masonry',
 	'WPD_Justified',
 	'WPD_Collage',
+	'WPD_Photo_Text',
 	'WPD_Composer_Parity',
 	'WPD_Gutenberg_Parity',
 	'WPD_Shapes',
@@ -80,6 +81,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-slider-transitions.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-masonry.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-justified.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-collage.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-photo-text.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
@@ -99,6 +101,7 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Masonry::register();
 	WPD_Justified::register();
 	WPD_Collage::register();
+	WPD_Photo_Text::register();
 	WPD_Composer_Parity::register();
 	WPD_Gutenberg_Parity::register();
 	WPD_Shapes::register();

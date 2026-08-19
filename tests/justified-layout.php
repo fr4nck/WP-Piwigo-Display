@@ -30,8 +30,8 @@ $assert( false !== strpos( $justified, "wp_enqueue_script( 'wp-piwigo-display' )
 $assert( false !== strpos( $css, 'flex-wrap: wrap' ), 'La galerie justifiée doit utiliser des lignes flex responsives.' );
 $assert( false !== strpos( $css, 'flex-grow: 999999' ), 'La dernière ligne ne doit pas être étirée comme une ligne complète.' );
 $assert( false !== strpos( $bootstrap, 'WPD_Justified::register()' ), 'Le module Justified doit être enregistré au chargement.' );
-$assert( false !== strpos( $block, "'justifiedRowHeight' => 'justified_row_height'" ), 'Le bloc doit transmettre la hauteur cible.' );
-$assert( false !== strpos( $block, "'justifiedGap'       => 'justified_gap'" ), 'Le bloc doit transmettre l’espacement.' );
+$assert( 1 === preg_match( "/'justifiedRowHeight'\\s*=>\\s*'justified_row_height'/", $block ), 'Le bloc doit transmettre la hauteur cible.' );
+$assert( 1 === preg_match( "/'justifiedGap'\\s*=>\\s*'justified_gap'/", $block ), 'Le bloc doit transmettre l’espacement.' );
 $assert( false !== strpos( $block_json, '"justifiedRowHeight"' ), 'Gutenberg doit déclarer la hauteur cible.' );
 $assert( false !== strpos( $block_json, '"justifiedGap"' ), 'Gutenberg doit déclarer l’espacement.' );
 $assert( false !== strpos( $gutenberg, "value: 'justified'" ), 'Gutenberg doit proposer le mode justifié.' );
