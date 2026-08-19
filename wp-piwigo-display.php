@@ -51,6 +51,7 @@ $piwigo_display_loaded_classes = array(
 	'WPD_Justified',
 	'WPD_Collage',
 	'WPD_User_Fonts',
+	'WPD_Bundled_Fonts',
 	'WPD_Photo_Text',
 	'WPD_Composer_Parity',
 	'WPD_Gutenberg_Parity',
@@ -85,6 +86,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-masonry.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-justified.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-collage.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-user-fonts.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-bundled-fonts.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-photo-text.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
@@ -108,6 +110,7 @@ function piwigo_display_bootstrap_plugin(): void {
 	WPD_Justified::register();
 	WPD_Collage::register();
 	WPD_User_Fonts::register();
+	WPD_Bundled_Fonts::register();
 	WPD_Photo_Text::register();
 	WPD_Composer_Parity::register();
 	WPD_Gutenberg_Parity::register();
