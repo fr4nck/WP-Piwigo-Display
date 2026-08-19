@@ -1,6 +1,6 @@
 <?php
 /**
- * WP Piwigo Display settings.
+ * Piwigo Display settings.
  *
  * @package WP_Piwigo_Display
  */
@@ -60,8 +60,8 @@ final class WPD_Settings {
 	 */
 	public static function register_page(): void {
 		add_menu_page(
-			__( 'WP Piwigo Display', 'wp-piwigo-display' ),
-			__( 'WP Piwigo', 'wp-piwigo-display' ),
+			__( 'Piwigo Display', 'wp-piwigo-display' ),
+			__( 'Piwigo Display', 'wp-piwigo-display' ),
 			'manage_options',
 			'wp-piwigo-display',
 			array( self::class, 'render_dashboard_page' ),
@@ -84,7 +84,7 @@ final class WPD_Settings {
 		$url = self::get_piwigo_url();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'WP Piwigo Display', 'wp-piwigo-display' ); ?></h1>
+			<h1><?php esc_html_e( 'Piwigo Display', 'wp-piwigo-display' ); ?></h1>
 			<p><?php esc_html_e( 'Accès rapide aux outils du plugin.', 'wp-piwigo-display' ); ?></p>
 			<div class="card" style="max-width:900px">
 				<h2><?php esc_html_e( 'État', 'wp-piwigo-display' ); ?></h2>
@@ -122,7 +122,7 @@ final class WPD_Settings {
 					<tr id="wpd-c-depth-row"><th><label for="wpd-c-depth">Profondeur des sous-albums</label></th><td><input id="wpd-c-depth" class="small-text" type="number" min="1" max="10" value="10"> <span class="description">1 = enfants directs uniquement, 10 = tous les niveaux.</span></td></tr>
 					<tr class="wpd-c-slider"><th>Diaporama</th><td><label><input id="wpd-c-transparent-background" type="checkbox"> Fond transparent</label> <label><input id="wpd-c-autoplay" type="checkbox" checked> Lecture automatique</label> <label><input id="wpd-c-thumbnails" type="checkbox" checked> Miniatures (compatibilité)</label> <label>Intervalle <input id="wpd-c-interval" class="small-text" type="number" min="1000" value="5000"></label> <label>Vitesse <input id="wpd-c-speed" class="small-text" type="number" min="0" value="500"></label></td></tr>
 					<tr class="wpd-c-slider"><th>Format du diaporama</th><td><label>Ratio <input id="wpd-c-ratio" class="small-text" type="text" value="16/9"></label> <select id="wpd-c-navigation"><option value="thumbnails">Miniatures</option><option value="dots">Points</option><option value="none">Aucune navigation</option></select> <select id="wpd-c-width"><option value="100%">100 %</option><option value="75%">75 %</option><option value="66%">66 %</option><option value="50%">50 %</option><option value="33%">33 %</option></select> <select id="wpd-c-align"><option value="center">Centré</option><option value="left">À gauche, texte autour</option><option value="right">À droite, texte autour</option></select></td></tr>
-					<tr><th><label for="wpd-c-url">URL Piwigo spécifique</label></th><td><input id="wpd-c-url" class="regular-text" type="url" placeholder="https://phototheque.example.org"> <span class="description">Laissez vide pour utiliser le réglage global.</span></td></tr>
+					<tr><th><label for="wpd-c-url">URL Piwigo spécifique</label></th><td><input id="wpd-c-url" class="regular-text" type="url" placeholder="https://phototheque.example.org"> <span class="description">Laissez vide pour utiliser le réglage global. Le compte de service configuré n’est jamais transmis à une URL spécifique différente.</span></td></tr>
 					<tr><th><label for="wpd-c-output">Shortcode</label></th><td><textarea id="wpd-c-output" class="large-text code" rows="6" readonly></textarea><p><button type="button" class="button button-primary" id="wpd-c-copy">Copier le shortcode</button></p></td></tr>
 				</tbody></table>
 			</div>
@@ -194,7 +194,7 @@ final class WPD_Settings {
 	 */
 	public static function default_options(): array {
 		return array(
-			'piwigo_url'         => 'https://phototheque.pelemele.org/',
+			'piwigo_url'         => '',
 			'cache_duration'     => 3600,
 			'default_type'       => 'gallery',
 			'default_fit'        => 'contain',
@@ -391,7 +391,9 @@ final class WPD_Settings {
 				'gallery' => 'Galerie',
 				'slider'  => 'Diaporama',
 			)
-		); }
+		);
+	}
+
 	/**
 	 * Renders the default image fit field.
 	 */
@@ -404,29 +406,39 @@ final class WPD_Settings {
 				'auto'    => 'Automatique',
 				'raw'     => 'Brut',
 			)
-		); }
+		);
+	}
+
 	/**
 	 * Renders the default slider ratio field.
 	 */
 	public static function render_default_ratio_field(): void {
 		$o = self::get_options();
-		self::input( 'text', 'default_ratio', (string) $o['default_ratio'], 'small-text', '16/9' ); }
+		self::input( 'text', 'default_ratio', (string) $o['default_ratio'], 'small-text', '16/9' );
+	}
+
 	/**
 	 * Renders the default slider height field.
 	 */
 	public static function render_default_height_field(): void {
 		$o = self::get_options();
-		self::input( 'text', 'default_height', (string) $o['default_height'], 'small-text', 'ex : 520px' ); }
+		self::input( 'text', 'default_height', (string) $o['default_height'], 'small-text', 'ex : 520px' );
+	}
+
 	/**
 	 * Renders the autoplay field.
 	 */
 	public static function render_default_autoplay_field(): void {
-		self::select_bool( 'default_autoplay' ); }
+		self::select_bool( 'default_autoplay' );
+	}
+
 	/**
 	 * Renders the lightbox field.
 	 */
 	public static function render_default_lightbox_field(): void {
-		self::select_bool( 'default_lightbox' ); }
+		self::select_bool( 'default_lightbox' );
+	}
+
 	/**
 	 * Renders the default style field.
 	 */
@@ -458,6 +470,7 @@ final class WPD_Settings {
 		);
 		echo '<p class="description">' . esc_html__( 'Ce choix peut être remplacé dans chaque shortcode avec le paramètre caption.', 'wp-piwigo-display' ) . '</p>';
 	}
+
 	/**
 	 * Renders the navigation field.
 	 */
@@ -469,12 +482,16 @@ final class WPD_Settings {
 				'dots'       => 'Points',
 				'none'       => 'Aucune',
 			)
-		); }
+		);
+	}
+
 	/**
 	 * Renders the rounded corners field.
 	 */
 	public static function render_default_rounded_field(): void {
-		self::select_bool( 'default_rounded' ); }
+		self::select_bool( 'default_rounded' );
+	}
+
 	/**
 	 * Renders the image sort field.
 	 */
@@ -488,7 +505,9 @@ final class WPD_Settings {
 				'id'     => 'Identifiant',
 				'random' => 'Aléatoire',
 			)
-		); }
+		);
+	}
+
 	/**
 	 * Renders the sort order field.
 	 */
@@ -499,7 +518,9 @@ final class WPD_Settings {
 				'asc'  => 'Croissant',
 				'desc' => 'Décroissant',
 			)
-		); }
+		);
+	}
+
 	/**
 	 * Renders the image limit field.
 	 */
@@ -516,13 +537,16 @@ final class WPD_Settings {
 				'step' => '1',
 			)
 		);
-		echo ' <span>' . esc_html__( '0 = aucune limite', 'wp-piwigo-display' ) . '</span>'; }
+		echo ' <span>' . esc_html__( '0 = aucune limite', 'wp-piwigo-display' ) . '</span>';
+	}
+
 	/**
 	 * Renders the debug mode field.
 	 */
 	public static function render_debug_mode_field(): void {
 		self::select_bool( 'debug_mode' );
-		echo '<p class="description">' . esc_html__( 'Affiche un résumé technique sous les galeries pour les administrateurs connectés.', 'wp-piwigo-display' ) . '</p>'; }
+		echo '<p class="description">' . esc_html__( 'Affiche un résumé technique sous les galeries pour les administrateurs connectés.', 'wp-piwigo-display' ) . '</p>';
+	}
 
 	/**
 	 * Renders the autoplay interval field.
@@ -571,7 +595,7 @@ final class WPD_Settings {
 		}
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'WP Piwigo Display', 'wp-piwigo-display' ); ?></h1>
+			<h1><?php esc_html_e( 'Piwigo Display', 'wp-piwigo-display' ); ?></h1>
 			<p><?php esc_html_e( 'Réglages de connexion, d’affichage, de diaporama, de cache et de diagnostic.', 'wp-piwigo-display' ); ?></p>
 
 			<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect. ?>
@@ -630,8 +654,8 @@ final class WPD_Settings {
 			<hr />
 
 			<h2><?php esc_html_e( 'Bloc Gutenberg', 'wp-piwigo-display' ); ?></h2>
-			<p><?php esc_html_e( 'Le bloc « WP Piwigo Display » est disponible dans la catégorie Médias de l’éditeur Gutenberg. Renseignez l’identifiant de l’album pour créer une galerie sans écrire de shortcode.', 'wp-piwigo-display' ); ?></p>
-			<p><code>WP Piwigo Display → album 154</code></p>
+			<p><?php esc_html_e( 'Le bloc « Piwigo Display » est disponible dans la catégorie Médias de l’éditeur Gutenberg. Renseignez l’identifiant de l’album pour créer une galerie sans écrire de shortcode.', 'wp-piwigo-display' ); ?></p>
+			<p><code>Piwigo Display → album 154</code></p>
 			<p><?php esc_html_e( 'Dans l’éditeur classique, le shortcode [piwigo album="154"] reste disponible.', 'wp-piwigo-display' ); ?></p>
 
 			<hr />
@@ -652,7 +676,6 @@ final class WPD_Settings {
 		</div>
 		<?php
 	}
-
 
 	/**
 	 * Renders shortcode examples.
@@ -696,12 +719,12 @@ final class WPD_Settings {
 	/**
 	 * Renders an input field.
 	 *
-	 * @param string $type Input type.
-	 * @param string $key Option key.
-	 * @param string $value Input value.
-	 * @param string $css_class CSS class.
+	 * @param string $type        Input type.
+	 * @param string $key         Option key.
+	 * @param string $value       Input value.
+	 * @param string $css_class   CSS class.
 	 * @param string $placeholder Input placeholder.
-	 * @param array  $attrs Additional attributes.
+	 * @param array  $attrs       Additional attributes.
 	 */
 	private static function input( string $type, string $key, string $value, string $css_class = '', string $placeholder = '', array $attrs = array() ): void {
 		$attr_html = '';
@@ -715,7 +738,7 @@ final class WPD_Settings {
 	/**
 	 * Renders a select field.
 	 *
-	 * @param string $key Option key.
+	 * @param string $key     Option key.
 	 * @param array  $choices Available choices.
 	 */
 	private static function select( string $key, array $choices ): void {
@@ -746,21 +769,25 @@ final class WPD_Settings {
 	/**
 	 * Sanitizes a value against allowed choices.
 	 *
-	 * @param string $value Input value.
-	 * @param array  $allowed Allowed values.
+	 * @param string $value    Input value.
+	 * @param array  $allowed  Allowed values.
 	 * @param string $fallback Fallback value.
 	 * @return string Sanitized value.
 	 */
 	private static function sanitize_choice( string $value, array $allowed, string $fallback ): string {
-		return in_array( $value, $allowed, true ) ? $value : $fallback; }
+		return in_array( $value, $allowed, true ) ? $value : $fallback;
+	}
+
 	/**
 	 * Sanitizes a boolean value.
 	 *
-	 * @param string $value Input value.
+	 * @param mixed $value Input value.
 	 * @return string Sanitized value.
 	 */
 	private static function sanitize_bool( $value ): string {
-		return filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false'; }
+		return filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false';
+	}
+
 	/**
 	 * Sanitizes a ratio value.
 	 *
@@ -768,7 +795,9 @@ final class WPD_Settings {
 	 * @return string Sanitized value.
 	 */
 	private static function sanitize_ratio( string $ratio ): string {
-		return preg_match( '/^\d+\/\d+$/', $ratio ) === 1 ? $ratio : '16/9'; }
+		return preg_match( '/^\d+\/\d+$/', $ratio ) === 1 ? $ratio : '16/9';
+	}
+
 	/**
 	 * Sanitizes a CSS height value.
 	 *
@@ -777,5 +806,6 @@ final class WPD_Settings {
 	 */
 	private static function sanitize_height( string $height ): string {
 		$height = trim( $height );
-		return preg_match( '/^\d+(px|rem|em|vh|vw|%)$/', $height ) === 1 ? $height : ''; }
+		return preg_match( '/^\d+(px|rem|em|vh|vw|%)$/', $height ) === 1 ? $height : '';
+	}
 }
