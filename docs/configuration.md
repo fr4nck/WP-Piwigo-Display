@@ -83,7 +83,7 @@ Selon le type choisi, l’interface permet notamment de régler :
 - album et profondeur des sous-albums ;
 - tri, ordre et limite ;
 - tags et orientation ;
-- légendes et style ;
+- légendes, style et formes ;
 - lightbox ;
 - largeur, hauteur, ratio et ajustement d’image ;
 - navigation du slider ;
@@ -100,4 +100,19 @@ Les utilisateurs ayant activé la réduction des mouvements dans leur système b
 
 ## Diagnostic
 
-Les fonctions de diagnostic permettent de vérifier la connexion et l’état du plugin sans exposer les identifiants du compte de service.
+L’écran **Piwigo Display → Diagnostic** permet de vérifier la connexion, le cache et l’état du plugin sans exposer les identifiants du compte de service.
+
+Depuis la V3 RC3, le bloc **Santé API & cache** affiche :
+
+- le nombre d’appels réels à l’API Piwigo ;
+- les HIT et MISS du cache ;
+- le taux de HIT ;
+- le temps API cumulé ;
+- le temps moyen par appel ;
+- l’appel le plus lent ;
+- la dernière méthode Piwigo observée ;
+- le dernier statut HTTP ;
+- la dernière erreur nettoyée ;
+- un verdict synthétique de santé.
+
+Ces métriques sont conservées sous forme agrégée et ne stockent ni identifiants, ni mots de passe, ni corps de requête HTTP.
