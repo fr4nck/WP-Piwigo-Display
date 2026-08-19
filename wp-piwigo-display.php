@@ -54,6 +54,7 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Composer_Parity',
 	'WPD_Gutenberg_Parity',
 	'WPD_Shapes',
+	'WPD_SVG_Mask_Sanitizer',
 	'WPD_Piwigo_Response_Compat',
 );
 
@@ -85,6 +86,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-photo-text.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-composer-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-svg-mask-sanitizer.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
 
 /**
