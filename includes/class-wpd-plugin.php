@@ -79,6 +79,17 @@ final class WPD_Plugin {
 		wp_register_style( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.css', array(), '4.1.4' );
 		wp_register_script( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.js', array(), '4.1.4', true );
 		wp_register_script( 'wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', array( 'wpd-splide' ), WPD_VERSION, true );
+		wp_localize_script(
+			'wp-piwigo-display-slider',
+			'WPDSliderI18n',
+			array(
+				'previous'   => __( 'Image précédente', 'wp-piwigo-display' ),
+				'next'       => __( 'Image suivante', 'wp-piwigo-display' ),
+				'navigation' => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
+				/* translators: %d: image number in the slider. */
+				'showImage'  => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
+			)
+		);
 		wp_register_script( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', array(), WPD_VERSION, true );
 	}
 
@@ -136,10 +147,18 @@ final class WPD_Plugin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'wpd_get_albums' ),
 				'labels'  => array(
-					'loading' => __( 'Chargement des albums…', 'wp-piwigo-display' ),
-					'error'   => __( 'Impossible de charger les albums. La saisie manuelle reste disponible.', 'wp-piwigo-display' ),
-					'empty'   => __( 'Aucun album trouvé.', 'wp-piwigo-display' ),
-					'search'  => __( 'Rechercher un album…', 'wp-piwigo-display' ),
+					'loading'       => __( 'Chargement des albums…', 'wp-piwigo-display' ),
+					'error'         => __( 'Impossible de charger les albums. La saisie manuelle reste disponible.', 'wp-piwigo-display' ),
+					'empty'         => __( 'Aucun album trouvé.', 'wp-piwigo-display' ),
+					'search'        => __( 'Rechercher un album…', 'wp-piwigo-display' ),
+					'picker'        => __( 'Sélecteur d’albums Piwigo', 'wp-piwigo-display' ),
+					'results'       => __( 'Résultats des albums', 'wp-piwigo-display' ),
+					'choose'        => __( 'Choisir cet album', 'wp-piwigo-display' ),
+					'validate'      => __( 'Valider', 'wp-piwigo-display' ),
+					'openChildren'  => __( 'Ouvrir les sous-albums de', 'wp-piwigo-display' ),
+					'closeChildren' => __( 'Fermer les sous-albums de', 'wp-piwigo-display' ),
+					'singularCount' => __( 'album affiché.', 'wp-piwigo-display' ),
+					'pluralCount'   => __( 'albums affichés.', 'wp-piwigo-display' ),
 				),
 			)
 		);
@@ -269,7 +288,7 @@ final class WPD_Plugin {
 				$result = 'internal_error';
 
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'WP Piwigo Display connection test: ' . $exception->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logged only when WP_DEBUG is enabled.
+					error_log( 'Piwigo Display connection test: ' . $exception->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logged only when WP_DEBUG is enabled.
 				}
 			}
 		}
