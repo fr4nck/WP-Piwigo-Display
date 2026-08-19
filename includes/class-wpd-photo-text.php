@@ -253,17 +253,17 @@ final class WPD_Photo_Text {
 	 * @return array<int,array{url:string,x:float,y:float,width:float,height:float,rotate:float,cx:float,cy:float}>
 	 */
 	private static function grid_tiles( array $urls, int $density ): array {
-		$target     = self::target_tile_count( count( $urls ), $density );
-		$columns    = min( 8, max( 2, (int) ceil( sqrt( $target * 1.5 ) ) ) );
-		$rows       = max( 1, (int) ceil( $target / $columns ) );
-		$tile_width = 1200 / $columns;
+		$target      = self::target_tile_count( count( $urls ), $density );
+		$columns     = min( 8, max( 2, (int) ceil( sqrt( $target * 1.5 ) ) ) );
+		$rows        = max( 1, (int) ceil( $target / $columns ) );
+		$tile_width  = 1200 / $columns;
 		$tile_height = 360 / $rows;
-		$tiles      = array();
-		$total      = $columns * $rows;
+		$tiles       = array();
+		$total       = $columns * $rows;
 
 		for ( $index = 0; $index < $total; ++$index ) {
-			$column = $index % $columns;
-			$row    = (int) floor( $index / $columns );
+			$column  = $index % $columns;
+			$row     = (int) floor( $index / $columns );
 			$tiles[] = self::tile(
 				$urls[ $index % count( $urls ) ],
 				$column * $tile_width,
@@ -285,26 +285,27 @@ final class WPD_Photo_Text {
 	 * @return array<int,array{url:string,x:float,y:float,width:float,height:float,rotate:float,cx:float,cy:float}>
 	 */
 	private static function masonry_tiles( array $urls, int $density, string $seed ): array {
-		$target      = self::target_tile_count( count( $urls ), $density );
-		$columns     = min( 6, max( 2, (int) ceil( sqrt( $target * 1.25 ) ) ) );
-		$segments    = max( 2, (int) ceil( $target / $columns ) );
+		$target       = self::target_tile_count( count( $urls ), $density );
+		$columns      = min( 6, max( 2, (int) ceil( sqrt( $target * 1.25 ) ) ) );
+		$segments     = max( 2, (int) ceil( $target / $columns ) );
 		$column_width = 1200 / $columns;
-		$tiles       = array();
-		$url_index   = 0;
+		$tiles        = array();
+		$url_index    = 0;
 
 		for ( $column = 0; $column < $columns; ++$column ) {
-			$weights = array();
+			$weights      = array();
 			$total_weight = 0;
 			for ( $row = 0; $row < $segments; ++$row ) {
-				$hash = hexdec( substr( md5( $seed . ':masonry:' . $column . ':' . $row ), 0, 8 ) );
-				$weight = 80 + ( $hash % 41 );
+				$hash      = hexdec( substr( md5( $seed . ':masonry:' . $column . ':' . $row ), 0, 8 ) );
+				$weight    = 80 + ( $hash % 41 );
 				$weights[] = $weight;
+
 				$total_weight += $weight;
 			}
 
 			$y = 0.0;
 			foreach ( $weights as $row => $weight ) {
-				$height = ( $row === $segments - 1 ) ? 360 - $y : 360 * ( $weight / $total_weight );
+				$height  = ( $row === $segments - 1 ) ? 360 - $y : 360 * ( $weight / $total_weight );
 				$tiles[] = self::tile(
 					$urls[ $url_index % count( $urls ) ],
 					$column * $column_width,
@@ -342,16 +343,16 @@ final class WPD_Photo_Text {
 		$tiles       = array();
 
 		for ( $index = 0; $index < $total; ++$index ) {
-			$column = $index % $columns;
-			$row    = (int) floor( $index / $columns );
-			$hash   = hexdec( substr( md5( $seed . ':collage:' . $index ), 0, 8 ) );
-			$rotate = self::signed_value( $hash, $rotation, 0 );
-			$dx     = self::signed_value( $hash, $spread, 8 );
-			$dy     = self::signed_value( $hash, $spread, 16 );
-			$x      = ( $column * $tile_width ) - $pad_x + $dx;
-			$y      = ( $row * $tile_height ) - $pad_y + $dy;
-			$width  = $tile_width + ( 2 * $pad_x );
-			$height = $tile_height + ( 2 * $pad_y );
+			$column  = $index % $columns;
+			$row     = (int) floor( $index / $columns );
+			$hash    = hexdec( substr( md5( $seed . ':collage:' . $index ), 0, 8 ) );
+			$rotate  = self::signed_value( $hash, $rotation, 0 );
+			$dx      = self::signed_value( $hash, $spread, 8 );
+			$dy      = self::signed_value( $hash, $spread, 16 );
+			$x       = ( $column * $tile_width ) - $pad_x + $dx;
+			$y       = ( $row * $tile_height ) - $pad_y + $dy;
+			$width   = $tile_width + ( 2 * $pad_x );
+			$height  = $tile_height + ( 2 * $pad_y );
 			$tiles[] = self::tile( $urls[ $index % count( $urls ) ], $x, $y, $width, $height, (float) $rotate );
 		}
 
