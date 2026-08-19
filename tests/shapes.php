@@ -32,6 +32,7 @@ $assert( false !== strpos( (string) $compact, "add_filter('do_shortcode_tag'" ),
 $assert( false !== strpos( (string) $module, "'star'" ) && false !== strpos( (string) $module, "'hexagon'" ), 'Les formes complexes doivent être autorisées.' );
 $assert( false !== strpos( (string) $css, 'clip-path: polygon' ), 'Les formes complexes doivent utiliser clip-path.' );
 $assert( false !== strpos( (string) $css, '@supports not (clip-path: polygon(0 0))' ), 'Un repli sans clip-path doit être prévu.' );
+$assert( false !== strpos( (string) $module, "'wpd-shapes-editor'" ) && false !== strpos( (string) $module, 'assets/css/wp-piwigo-display-shapes.css' ), 'Gutenberg doit charger le CSS des formes pour que l’aperçu visuel corresponde au rendu public.' );
 $assert( false !== strpos( (string) $block, '"shape"' ) && false !== strpos( (string) $block, '"radius"' ), 'Les attributs Gutenberg doivent être déclarés.' );
 $assert( false !== strpos( (string) $block, '"title": "Piwigo Display"' ), 'Le bloc Gutenberg doit utiliser le nom public Piwigo Display.' );
 $assert( false !== strpos( (string) $block_compact, "'shape'=>'shape'" ) && false !== strpos( (string) $block_compact, "'radius'=>'radius'" ), 'Le bloc serveur doit transmettre forme et rayon au shortcode.' );
