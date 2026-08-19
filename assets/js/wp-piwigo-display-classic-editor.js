@@ -46,6 +46,10 @@
                     '<label>Interlettrage<input type="number" min="-20" max="80" data-wpd="photo_text_letter_spacing" value="0"></label>' +
                     '<label>Largeur maximale (%)<input type="number" min="20" max="100" data-wpd="photo_text_max_width" value="100"></label>' +
                     '<label>Alignement<select data-wpd="photo_text_align"><option value="left">Gauche</option><option value="center" selected>Centre</option><option value="right">Droite</option></select></label>' +
+                    '<label>Remplissage<select data-wpd="photo_text_fill_mode"><option value="grid">Grille</option><option value="masonry">Masonry</option><option value="collage">Pêle-mêle</option></select></label>' +
+                    '<label>Densité (%)<input type="number" min="50" max="200" step="10" data-wpd="photo_text_density" value="100"></label>' +
+                    '<label class="wpd-photo-text-collage-option">Rotation pêle-mêle (°)<input type="number" min="0" max="15" data-wpd="photo_text_rotation" value="6"></label>' +
+                    '<label class="wpd-photo-text-collage-option">Dispersion pêle-mêle<input type="number" min="0" max="50" data-wpd="photo_text_spread" value="18"></label>' +
                     '<label>Nombre maximal de photos<input type="number" min="1" max="40" data-wpd="photo_text_max_images" value="20"></label>' +
                     '<label><input type="checkbox" data-wpd="photo_text_outline" checked> Afficher un contour</label>' +
                     '<label class="wpd-photo-text-outline-option">Épaisseur du contour<input type="number" min="0" max="12" data-wpd="photo_text_outline_width" value="3"></label>' +
@@ -174,6 +178,12 @@
                 add(parts, 'photo_text_letter_spacing', bounded('photo_text_letter_spacing', -20, 80, 0), true);
                 add(parts, 'photo_text_max_width', bounded('photo_text_max_width', 20, 100, 100), true);
                 add(parts, 'photo_text_align', value('photo_text_align') || 'center', true);
+                add(parts, 'photo_text_fill_mode', value('photo_text_fill_mode') || 'grid', true);
+                add(parts, 'photo_text_density', bounded('photo_text_density', 50, 200, 100), true);
+                if ((value('photo_text_fill_mode') || 'grid') === 'collage') {
+                    add(parts, 'photo_text_rotation', bounded('photo_text_rotation', 0, 15, 6), true);
+                    add(parts, 'photo_text_spread', bounded('photo_text_spread', 0, 50, 18), true);
+                }
                 add(parts, 'photo_text_max_images', bounded('photo_text_max_images', 1, 40, 20), true);
                 parts.push('photo_text_outline="' + (checked('photo_text_outline') ? 'true' : 'false') + '"');
                 if (checked('photo_text_outline')) {
@@ -191,6 +201,7 @@
             $dialog.find('.wpd-justified-options').toggle(type === 'justified');
             $dialog.find('.wpd-collage-options').toggle(type === 'collage');
             $dialog.find('.wpd-photo-text-options').toggle(type === 'photo-text');
+            $dialog.find('.wpd-photo-text-collage-option').toggle(type === 'photo-text' && (value('photo_text_fill_mode') || 'grid') === 'collage');
             $dialog.find('.wpd-photo-text-outline-option').toggle(type === 'photo-text' && checked('photo_text_outline'));
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded'); $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             syncShapePicker(); $dialog.find('[data-wpd-preview]').val(buildShortcode());
