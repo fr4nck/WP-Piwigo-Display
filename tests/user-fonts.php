@@ -42,7 +42,7 @@ $assert(false !== strpos((string) $photo, 'WPD_User_Fonts::font_stack'), 'Le ren
 
 $assert(false !== strpos((string) $bundled, "'bebas-neue'"), 'Bebas Neue doit être proposé dans la sélection embarquée.');
 $assert(false !== strpos((string) $bundled, "'bungee'"), 'Bungee doit être proposé dans la sélection embarquée.');
-$assert(false !== strpos((string) $bundled, "'bundled-' . $id"), 'Les polices incluses doivent disposer d’identifiants dédiés.');
+$assert(false !== strpos((string) $bundled, "'bundled-' . \$id"), 'Les polices incluses doivent disposer d’identifiants dédiés.');
 $assert(false !== strpos((string) $bundled, "add_filter( 'wp_piwigo_display_render'"), 'Le rendu Texte-photo doit accepter les polices incluses.');
 $assert(false !== strpos((string) $bundled, "str_replace( 'font-family:inherit;'"), 'La police incluse doit remplacer uniquement le fallback typographique du rendu Texte-photo.');
 $assert(false !== strpos((string) $bundled, 'WPD_PLUGIN_URL . $font[\'path\']'), 'Les polices incluses doivent être servies localement depuis le plugin.');
