@@ -10,6 +10,8 @@ La branche `release/3.0.0-rc.1` porte la première **Release Candidate V3**. Le 
 
 La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
 
+**Piwigo Display pour WordPress — distribution GitHub, README en français, CI maison et zéro bénédiction pontificale de WordPress.org.**
+
 ## Fonctionnalités principales
 
 - bloc Gutenberg dynamique ;
