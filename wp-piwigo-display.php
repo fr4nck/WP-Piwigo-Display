@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Piwigo Display pour WordPress
- * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
+ * Plugin Name: Piwigo Display
+ * Description: Affiche des albums Piwigo sans importer les images dans la médiathèque.
  * Version: 3.0.0-rc.2
  * Requires at least: 6.0
  * Requires PHP: 8.1
@@ -38,6 +38,7 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Settings',
 	'WPD_Service_Account',
 	'WPD_Service_Api',
+	'WPD_Api_Metrics',
 	'WPD_Api',
 	'WPD_Cache',
 	'WPD_Diagnostic',
@@ -65,6 +66,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-service-account.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-service-api.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-api-metrics.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-api.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-cache.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-diagnostic.php';
@@ -85,6 +87,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
  * @return void
  */
 function wp_piwigo_display_bootstrap_plugin(): void {
+	WPD_Api_Metrics::register();
 	WPD_Plugin::init();
 	WPD_Service_Account::register();
 	WPD_Classic_Editor::register();
