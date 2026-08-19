@@ -8,6 +8,13 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
+concurrency:
+  group: piwigo-display-package-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-package:
     runs-on: ubuntu-latest
@@ -19,8 +26,12 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION="$(php -r '$c=file_get_contents("wp-piwigo-display.php"); preg_match("/^[[:space:]]*\\*[[:space:]]*Version:[[:space:]]*([^[:space:]]+)/m", $c, $m); echo $m[1] ?? "dev";')"
+          set -euo pipefail
+          VERSION="$(php -r '$c=file_get_contents("wp-piwigo-display.php"); preg_match("/^[[:space:]]*\\*[[:space:]]*Version:[[:space:]]*([^[:space:]]+)/m", $c, $m); echo $m[1] ?? "";')"
+          test -n "$VERSION"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "zip=piwigo-display-${VERSION}.zip" >> "$GITHUB_OUTPUT"
 
       - name: Prepare Piwigo Display distribution
         shell: bash
@@ -44,17 +55,14 @@ jobs:
             --exclude 'ROADMAP.md' \
             --exclude '*.zip'
 
-          # Public plugin entry point: no legacy prefix.
           mv build/piwigo-display/wp-piwigo-display.php build/piwigo-display/piwigo-display.php
 
-          # Public asset filenames: no legacy prefix.
           while IFS= read -r -d '' path; do
             dir="$(dirname "$path")"
             base="$(basename "$path")"
             mv "$path" "$dir/${base/wp-piwigo-display/piwigo-display}"
           done < <(find build/piwigo-display/assets -type f -name '*wp-piwigo-display*' -print0)
 
-          # Public identifiers and references: use Piwigo Display consistently.
           python3 - <<'PY'
           from pathlib import Path
 
@@ -88,13 +96,62 @@ jobs:
           test "$(find build -mindepth 1 -maxdepth 1 -type d -printf '%f\n')" = 'piwigo-display'
           ! find build -mindepth 1 -maxdepth 1 -type f | grep -q .
 
-      # upload-artifact already produces the ZIP downloaded from GitHub.
-      # Upload the prepared tree, not another ZIP, so the downloaded artifact
-      # is directly installable by WordPress and contains piwigo-display/ once.
-      - name: Upload directly installable package
-        uses: actions/upload-artifact@v4
-        with:
-          name: piwigo-display-${{ steps.version.outputs.version }}
-          path: build/
-          retention-days: 14
-          if-no-files-found: error
+      - name: Build directly installable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd build
+          zip -qr "../${{ steps.version.outputs.zip }}" piwigo-display
+
+      - name: Verify ZIP structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          ZIP="${{ steps.version.outputs.zip }}"
+          test -f "$ZIP"
+          test "$(unzip -Z1 "$ZIP" | grep -c '^piwigo-display/piwigo-display.php$')" -eq 1
+          test "$(unzip -Z1 "$ZIP" | grep -c '^piwigo-display/assets/js/piwigo-display-slider.js$')" -eq 1
+          ! unzip -Z1 "$ZIP" | grep -q 'wp-piwigo-display'
+          ! unzip -Z1 "$ZIP" | grep -Eq '^piwigo-display/.*\.zip$'
+
+      - name: Publish package in GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          ZIP: ${{ steps.version.outputs.zip }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          prerelease_args=()
+          if [[ "$VERSION" == *-* ]]; then
+            prerelease_args+=(--prerelease)
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" \
+              --target "$GITHUB_SHA" \
+              --title "Piwigo Display ${VERSION}" \
+              --notes "Paquet directement installable dans WordPress : ${ZIP}" \
+              "${prerelease_args[@]}"
+          fi
+
+      - name: Verify published release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          ZIP: ${{ steps.version.outputs.zip }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --json assets --jq '.assets[].name' | grep -Fxq "$ZIP"
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "### Piwigo Display ${{ steps.version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Package publié dans **GitHub Releases** : \`${{ steps.version.outputs.zip }}\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Ce ZIP est directement installable dans WordPress. Aucun passage par Artifacts n'est nécessaire." >> "$GITHUB_STEP_SUMMARY"
