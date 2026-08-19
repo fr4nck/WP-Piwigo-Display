@@ -70,10 +70,10 @@ jobs:
         continue-on-error: true
         run: composer standards:report
 
-      - name: Prepare real Plugin Check distribution
+      - name: Prepare WordPress.org Plugin Check distribution
         run: |
-          mkdir -p build/plugin-check/wp-piwigo-display
-          rsync -a ./ build/plugin-check/wp-piwigo-display/ \
+          mkdir -p build/plugin-check/piwigo-display
+          rsync -a ./ build/plugin-check/piwigo-display/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -90,13 +90,15 @@ jobs:
             --exclude 'README.en.md' \
             --exclude '*.zip'
 
-      - name: Run WordPress Plugin Check on real package identity
+      - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/wp-piwigo-display'
+          build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Historical public hooks keep their pre-v3 names for backward compatibility.
+          # The historical public hooks keep their pre-v3 names for backward compatibility.
+          # The WordPress.org slug is `piwigo-display`; GitHub upgrade ZIPs keep the legacy
+          # `wp-piwigo-display` folder so existing installations are not duplicated.
           ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Configure PHP 8.4
