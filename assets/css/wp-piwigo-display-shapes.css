@@ -113,6 +113,36 @@
     clip-path: polygon(50% 5%, 40% 8%, 33% 18%, 34% 30%, 22% 25%, 11% 30%, 6% 41%, 8% 53%, 18% 61%, 31% 59%, 25% 70%, 27% 81%, 39% 82%, 34% 96%, 66% 96%, 61% 82%, 73% 81%, 75% 70%, 69% 59%, 82% 61%, 92% 53%, 94% 41%, 89% 30%, 78% 25%, 66% 30%, 67% 18%, 60% 8%);
 }
 
+@supports ((mask-image: url("data:image/svg+xml,%3Csvg/%3E")) or (-webkit-mask-image: url("data:image/svg+xml,%3Csvg/%3E"))) {
+    .wp-piwigo-display.wpd-shape-card-spade .wp-piwigo-display-item a,
+    .wp-piwigo-display.wpd-shape-card-spade .splide__track,
+    .wp-piwigo-display.wpd-shape-card-spade .wp-piwigo-display-slider-track {
+        clip-path: none;
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23000' d='M50 4C42 18 12 38 12 58c0 15 17 24 31 14-1 10-5 17-14 24h42c-9-7-13-14-14-24 14 10 31 1 31-14C88 38 58 18 50 4Z'/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23000' d='M50 4C42 18 12 38 12 58c0 15 17 24 31 14-1 10-5 17-14 24h42c-9-7-13-14-14-24 14 10 31 1 31-14C88 38 58 18 50 4Z'/%3E%3C/svg%3E");
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+    }
+
+    .wp-piwigo-display.wpd-shape-card-club .wp-piwigo-display-item a,
+    .wp-piwigo-display.wpd-shape-card-club .splide__track,
+    .wp-piwigo-display.wpd-shape-card-club .wp-piwigo-display-slider-track {
+        clip-path: none;
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle fill='%23000' cx='50' cy='27' r='22'/%3E%3Ccircle fill='%23000' cx='28' cy='55' r='22'/%3E%3Ccircle fill='%23000' cx='72' cy='55' r='22'/%3E%3Cpath fill='%23000' d='M43 52h14v23c0 9 7 15 15 21H28c8-6 15-12 15-21Z'/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle fill='%23000' cx='50' cy='27' r='22'/%3E%3Ccircle fill='%23000' cx='28' cy='55' r='22'/%3E%3Ccircle fill='%23000' cx='72' cy='55' r='22'/%3E%3Cpath fill='%23000' d='M43 52h14v23c0 9 7 15 15 21H28c8-6 15-12 15-21Z'/%3E%3C/svg%3E");
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+    }
+}
+
 @supports not (clip-path: polygon(0 0)) {
     .wp-piwigo-display[class*="wpd-shape-"] .wp-piwigo-display-item a,
     .wp-piwigo-display[class*="wpd-shape-"] .splide__track,
