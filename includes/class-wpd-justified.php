@@ -73,10 +73,10 @@ final class WPD_Justified {
 	/**
 	 * Renders a Justified gallery when requested.
 	 *
-	 * @param string|null                 $html   Existing output.
-	 * @param array<int, array<mixed>>    $images Prepared Piwigo images.
-	 * @param array<string, mixed>        $atts   Normalized attributes.
-	 * @param string                      $type   Requested display type, unused.
+	 * @param string|null                       $html   Existing output.
+	 * @param array<int, array<string, mixed>>  $images Prepared Piwigo images.
+	 * @param array<string, mixed>              $atts   Normalized attributes.
+	 * @param string                            $type   Requested display type, unused.
 	 * @return string|null
 	 */
 	public static function render( ?string $html, array $images, array $atts, string $type ): ?string {
@@ -126,11 +126,11 @@ final class WPD_Justified {
 					continue;
 				}
 
-				$dimensions = self::dimensions( $image );
-				$ratio      = $dimensions['width'] / $dimensions['height'];
-				$basis      = max( 1, (int) round( $row_height * $ratio ) );
-				$large_url  = self::large_url( $image );
-				$title      = self::title( $image );
+				$dimensions  = self::dimensions( $image );
+				$ratio       = $dimensions['width'] / $dimensions['height'];
+				$basis       = max( 1, (int) round( $row_height * $ratio ) );
+				$large_url   = self::large_url( $image );
+				$title       = self::title( $image );
 				$description = self::description( $image );
 				$caption     = self::caption_text( $title, $description, $caption_mode );
 				?>
@@ -148,7 +148,12 @@ final class WPD_Justified {
 		return (string) ob_get_clean();
 	}
 
-	/** @return array{width:int,height:int} */
+	/**
+	 * Resolves image dimensions used by the Justified layout.
+	 *
+	 * @param array<string, mixed> $image Piwigo image data.
+	 * @return array{width:int,height:int}
+	 */
 	private static function dimensions( array $image ): array {
 		$width  = absint( $image['width'] ?? 0 );
 		$height = absint( $image['height'] ?? 0 );
@@ -159,45 +164,97 @@ final class WPD_Justified {
 		}
 
 		if ( 0 === $width || 0 === $height ) {
-			return array( 'width' => 4, 'height' => 3 );
+			return array(
+				'width'  => 4,
+				'height' => 3,
+			);
 		}
 
-		return array( 'width' => $width, 'height' => $height );
+		return array(
+			'width'  => $width,
+			'height' => $height,
+		);
 	}
 
+	/**
+	 * Resolves the preferred thumbnail URL.
+	 *
+	 * @param array<string, mixed> $image Piwigo image data.
+	 * @return string
+	 */
 	private static function image_url( array $image ): string {
 		foreach ( array( 'medium', 'small', 'thumb' ) as $size ) {
 			if ( isset( $image['derivatives'][ $size ]['url'] ) ) {
 				return (string) $image['derivatives'][ $size ]['url'];
 			}
 		}
+
 		return isset( $image['element_url'] ) ? (string) $image['element_url'] : '';
 	}
 
+	/**
+	 * Resolves the large image URL used by the lightbox.
+	 *
+	 * @param array<string, mixed> $image Piwigo image data.
+	 * @return string
+	 */
 	private static function large_url( array $image ): string {
 		return isset( $image['derivatives']['large']['url'] ) ? (string) $image['derivatives']['large']['url'] : self::image_url( $image );
 	}
 
+	/**
+	 * Extracts a sanitized image title.
+	 *
+	 * @param array<string, mixed> $image Piwigo image data.
+	 * @return string
+	 */
 	private static function title( array $image ): string {
 		return wp_strip_all_tags( (string) ( $image['name'] ?? $image['file'] ?? '' ) );
 	}
 
+	/**
+	 * Extracts a plain-text image description.
+	 *
+	 * @param array<string, mixed> $image Piwigo image data.
+	 * @return string
+	 */
 	private static function description( array $image ): string {
 		$value = (string) ( $image['comment'] ?? $image['description'] ?? '' );
 		return trim( html_entity_decode( wp_strip_all_tags( $value ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 	}
 
+	/**
+	 * Resolves the requested caption mode.
+	 *
+	 * @param string $mode Requested caption mode.
+	 * @return string
+	 */
 	private static function caption_mode( string $mode ): string {
 		if ( 'default' === $mode ) {
 			$mode = WPD_Settings::get_default_caption();
 		}
+
 		return in_array( $mode, array( 'none', 'title', 'description', 'title-description' ), true ) ? $mode : 'none';
 	}
 
+	/**
+	 * Validates the requested visual style.
+	 *
+	 * @param string $style Requested style.
+	 * @return string
+	 */
 	private static function style( string $style ): string {
 		return in_array( $style, array( 'default', 'theme', 'minimal', 'none' ), true ) ? $style : 'default';
 	}
 
+	/**
+	 * Builds the lightbox caption text.
+	 *
+	 * @param string $title       Image title.
+	 * @param string $description Image description.
+	 * @param string $mode        Caption mode.
+	 * @return string
+	 */
 	private static function caption_text( string $title, string $description, string $mode ): string {
 		if ( 'title' === $mode ) {
 			return $title;
@@ -208,9 +265,18 @@ final class WPD_Justified {
 		if ( 'title-description' === $mode ) {
 			return trim( implode( ' — ', array_filter( array( $title, $description ) ) ) );
 		}
+
 		return '';
 	}
 
+	/**
+	 * Renders an escaped caption when requested.
+	 *
+	 * @param string $title       Image title.
+	 * @param string $description Image description.
+	 * @param string $mode        Caption mode.
+	 * @return string
+	 */
 	private static function render_caption( string $title, string $description, string $mode ): string {
 		$show_title       = in_array( $mode, array( 'title', 'title-description' ), true ) && '' !== $title;
 		$show_description = in_array( $mode, array( 'description', 'title-description' ), true ) && '' !== $description;
@@ -225,6 +291,7 @@ final class WPD_Justified {
 		if ( $show_description ) {
 			$html .= '<span class="wp-piwigo-display-caption-description">' . esc_html( $description ) . '</span>';
 		}
+
 		return $html . '</figcaption>';
 	}
 }
