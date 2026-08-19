@@ -32,7 +32,7 @@ jobs:
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
-            --exclude 'vendor' \
+            --exclude '/vendor/' \
             --exclude 'tests' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
@@ -75,11 +75,14 @@ jobs:
               path.write_text(text, encoding='utf-8')
           PY
 
-      - name: Verify distribution naming
+      - name: Verify distribution contents
         shell: bash
         run: |
           set -euo pipefail
           test -f build/piwigo-display/piwigo-display.php
+          test -f build/piwigo-display/assets/js/piwigo-display-slider.js
+          test -f build/piwigo-display/assets/vendor/splide/splide.min.js
+          test -f build/piwigo-display/assets/vendor/splide/splide.min.css
           ! find build/piwigo-display -type f -name '*wp-piwigo-display*' | grep -q .
           ! grep -RIlE 'wp-piwigo-display|WP_Piwigo_Display|wp_piwigo_display' build/piwigo-display | grep -q .
 
@@ -92,8 +95,13 @@ jobs:
       - name: Verify archive structure
         shell: bash
         run: |
-          unzip -l "piwigo-display-${{ steps.version.outputs.version }}.zip" | grep -q 'piwigo-display/piwigo-display.php'
-          ! unzip -l "piwigo-display-${{ steps.version.outputs.version }}.zip" | grep -q 'wp-piwigo-display'
+          set -euo pipefail
+          ARCHIVE="piwigo-display-${{ steps.version.outputs.version }}.zip"
+          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/piwigo-display.php'
+          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/assets/js/piwigo-display-slider.js'
+          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/assets/vendor/splide/splide.min.js'
+          unzip -l "$ARCHIVE" | grep -q 'piwigo-display/assets/vendor/splide/splide.min.css'
+          ! unzip -l "$ARCHIVE" | grep -q 'wp-piwigo-display'
 
       - name: Upload Piwigo Display ZIP
         uses: actions/upload-artifact@v4
