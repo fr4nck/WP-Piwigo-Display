@@ -7,9 +7,53 @@
     var Fragment = element.Fragment;
     var InspectorControls = blockEditor.InspectorControls;
     var PanelBody = components.PanelBody;
-    var SelectControl = components.SelectControl;
+    var Button = components.Button;
     var RangeControl = components.RangeControl;
     var __ = i18n.__;
+
+    var shapes = [
+        ['rectangle', __('Rectangle', 'wp-piwigo-display')],
+        ['rounded', __('Rectangle arrondi', 'wp-piwigo-display')],
+        ['circle', __('Cercle', 'wp-piwigo-display')],
+        ['oval', __('Ovale', 'wp-piwigo-display')],
+        ['pill', __('Pilule', 'wp-piwigo-display')],
+        ['star', __('Étoile', 'wp-piwigo-display')],
+        ['hexagon', __('Hexagone', 'wp-piwigo-display')],
+        ['diamond', __('Losange', 'wp-piwigo-display')],
+        ['cloud', __('Nuage', 'wp-piwigo-display')],
+        ['heart', __('Cœur', 'wp-piwigo-display')],
+        ['drop', __('Goutte', 'wp-piwigo-display')],
+        ['triangle', __('Triangle', 'wp-piwigo-display')],
+        ['pentagon', __('Pentagone', 'wp-piwigo-display')],
+        ['octagon', __('Octogone', 'wp-piwigo-display')],
+        ['card-spade', __('Pique', 'wp-piwigo-display')],
+        ['card-heart', __('Cœur carte', 'wp-piwigo-display')],
+        ['card-diamond', __('Carreau', 'wp-piwigo-display')],
+        ['card-club', __('Trèfle', 'wp-piwigo-display')]
+    ];
+
+    function shapeButton(item, selected, setShape) {
+        var value = item[0];
+        var label = item[1];
+
+        return createElement(
+            Button,
+            {
+                key: value,
+                className: 'wpd-shape-picker-button',
+                isPressed: selected === value,
+                'aria-pressed': selected === value ? 'true' : 'false',
+                'aria-label': label,
+                title: label,
+                onClick: function () { setShape(value); }
+            },
+            createElement('span', {
+                className: 'wpd-shape-picker-preview wpd-shape-preview-' + value,
+                'aria-hidden': 'true'
+            }),
+            createElement('span', null, label)
+        );
+    }
 
     var withShapeControls = createHigherOrderComponent(function (BlockEdit) {
         return function (props) {
@@ -19,6 +63,9 @@
 
             var attributes = props.attributes || {};
             var shape = attributes.shape || 'rectangle';
+            var setShape = function (value) {
+                props.setAttributes({ shape: value });
+            };
 
             return createElement(
                 Fragment,
@@ -33,33 +80,17 @@
                             title: __('Forme des images', 'wp-piwigo-display'),
                             initialOpen: false
                         },
-                        createElement(SelectControl, {
-                            label: __('Forme', 'wp-piwigo-display'),
-                            value: shape,
-                            options: [
-                                { label: __('Rectangle', 'wp-piwigo-display'), value: 'rectangle' },
-                                { label: __('Rectangle arrondi', 'wp-piwigo-display'), value: 'rounded' },
-                                { label: __('Cercle', 'wp-piwigo-display'), value: 'circle' },
-                                { label: __('Ovale', 'wp-piwigo-display'), value: 'oval' },
-                                { label: __('Pilule', 'wp-piwigo-display'), value: 'pill' },
-                                { label: __('Étoile', 'wp-piwigo-display'), value: 'star' },
-                                { label: __('Hexagone', 'wp-piwigo-display'), value: 'hexagon' },
-                                { label: __('Losange', 'wp-piwigo-display'), value: 'diamond' },
-                                { label: __('Nuage', 'wp-piwigo-display'), value: 'cloud' },
-                                { label: __('Cœur', 'wp-piwigo-display'), value: 'heart' },
-                                { label: __('Goutte', 'wp-piwigo-display'), value: 'drop' },
-                                { label: __('Triangle', 'wp-piwigo-display'), value: 'triangle' },
-                                { label: __('Pentagone', 'wp-piwigo-display'), value: 'pentagon' },
-                                { label: __('Octogone', 'wp-piwigo-display'), value: 'octagon' },
-                                { label: __('Carte — Pique ♠', 'wp-piwigo-display'), value: 'card-spade' },
-                                { label: __('Carte — Cœur ♥', 'wp-piwigo-display'), value: 'card-heart' },
-                                { label: __('Carte — Carreau ♦', 'wp-piwigo-display'), value: 'card-diamond' },
-                                { label: __('Carte — Trèfle ♣', 'wp-piwigo-display'), value: 'card-club' }
-                            ],
-                            onChange: function (value) {
-                                props.setAttributes({ shape: value });
-                            }
-                        }),
+                        createElement(
+                            'div',
+                            {
+                                className: 'wpd-shape-picker-grid',
+                                role: 'group',
+                                'aria-label': __('Choisir une forme', 'wp-piwigo-display')
+                            },
+                            shapes.map(function (item) {
+                                return shapeButton(item, shape, setShape);
+                            })
+                        ),
                         shape === 'rounded' ? createElement(RangeControl, {
                             label: __('Arrondi des angles (%)', 'wp-piwigo-display'),
                             value: Number(attributes.radius || 0),
