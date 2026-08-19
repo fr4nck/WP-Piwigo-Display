@@ -33,6 +33,7 @@
       "php tests/transparent-background.php",
       "php tests/api-health-diagnostics.php",
       "php tests/justified-layout.php",
+      "php tests/shapes.php",
       "node tests/tinymce-preview.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
