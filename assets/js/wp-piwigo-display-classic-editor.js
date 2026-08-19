@@ -90,6 +90,7 @@
 
         function buildShortcode() {
             var type = value('type');
+            var shape = value('shape') || 'rectangle';
             var parts = [];
 
             add(parts, 'album', value('album'), true);
@@ -102,6 +103,8 @@
             add(parts, 'caption', value('caption'), true);
             add(parts, 'style', value('style'), true);
             add(parts, 'fit', value('fit'), true);
+            add(parts, 'shape', shape, true);
+            if (shape === 'rounded') add(parts, 'radius', bounded('radius', 0, 50, 8), true);
             add(parts, 'tag', value('tag'), true);
             add(parts, 'tags', value('tags'), true);
             add(parts, 'tag_mode', value('tag_mode'), true);
@@ -116,18 +119,27 @@
             if (type === 'slider') {
                 parts.push('autoplay="' + (checked('autoplay') ? 'true' : 'false') + '"');
                 parts.push('thumbnails="' + (checked('thumbnails') ? 'true' : 'false') + '"');
-                ['interval', 'speed', 'ratio', 'navigation', 'align'].forEach(function (key) {
+                ['interval', 'speed', 'transition', 'direction', 'ratio', 'navigation', 'align'].forEach(function (key) {
                     add(parts, key, value(key), true);
                 });
                 add(parts, 'width', bounded('width', 20, 100, 100) + '%', true);
+            }
+
+            if (type === 'masonry') {
+                add(parts, 'masonry_columns', bounded('masonry_columns', 2, 6, 4), true);
+                add(parts, 'masonry_gap', bounded('masonry_gap', 0, 64, 16), true);
             }
 
             return '[piwigo ' + parts.join(' ') + ']';
         }
 
         function refresh() {
-            var slider = value('type') === 'slider';
+            var type = value('type');
+            var slider = type === 'slider';
+            var masonry = type === 'masonry';
             $dialog.find('.wpd-slider-options, .wpd-slider-layout-option').toggle(slider);
+            $dialog.find('.wpd-masonry-options').toggle(masonry);
+            $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded');
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
@@ -141,9 +153,7 @@
 
             if (window.tinymce && tinymce.get(currentEditor) && !tinymce.get(currentEditor).isHidden()) {
                 var editor = tinymce.get(currentEditor);
-                if (editingNode && editingNode.parentNode) {
-                    editor.selection.select(editingNode);
-                }
+                if (editingNode && editingNode.parentNode) editor.selection.select(editingNode);
                 editor.execCommand('mceInsertContent', false, shortcode);
             } else if (window.QTags && typeof QTags.insertContent === 'function') {
                 QTags.insertContent(shortcode);
@@ -194,9 +204,7 @@
             $dialog.dialog('open');
         });
 
-        $dialog.on('input', '[data-wpd="height"]', function () {
-            editingLegacyHeight = '';
-        });
+        $dialog.on('input', '[data-wpd="height"]', function () { editingLegacyHeight = ''; });
         $dialog.on('change input', 'input, select', refresh);
     });
 })(jQuery);
