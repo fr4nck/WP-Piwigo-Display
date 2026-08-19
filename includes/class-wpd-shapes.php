@@ -1,6 +1,6 @@
 <?php
 /**
- * Shape support for WP Piwigo Display renderings.
+ * Shape support for Piwigo Display renderings.
  *
  * @package WP_Piwigo_Display
  */
@@ -19,7 +19,26 @@ final class WPD_Shapes {
 	 *
 	 * @var string[]
 	 */
-	private const SHAPES = array( 'rectangle', 'rounded', 'circle', 'oval', 'pill', 'star', 'hexagon', 'diamond' );
+	private const SHAPES = array(
+		'rectangle',
+		'rounded',
+		'circle',
+		'oval',
+		'pill',
+		'star',
+		'hexagon',
+		'diamond',
+		'cloud',
+		'heart',
+		'drop',
+		'triangle',
+		'pentagon',
+		'octagon',
+		'card-spade',
+		'card-heart',
+		'card-diamond',
+		'card-club',
+	);
 
 	/**
 	 * Registers hooks for shape support.
@@ -148,16 +167,30 @@ final class WPD_Shapes {
 	private static function sanitize_shape( string $shape ): string {
 		$shape   = sanitize_key( $shape );
 		$aliases = array(
-			''         => 'rectangle',
-			'none'     => 'rectangle',
-			'arrondi'  => 'rounded',
-			'rond'     => 'circle',
-			'cercle'   => 'circle',
-			'ovale'    => 'oval',
-			'etoile'   => 'star',
-			'étoile'   => 'star',
-			'hexagone' => 'hexagon',
-			'losange'  => 'diamond',
+			''            => 'rectangle',
+			'none'        => 'rectangle',
+			'arrondi'     => 'rounded',
+			'rond'        => 'circle',
+			'cercle'      => 'circle',
+			'ovale'       => 'oval',
+			'etoile'      => 'star',
+			'étoile'      => 'star',
+			'hexagone'    => 'hexagon',
+			'losange'     => 'diamond',
+			'nuage'       => 'cloud',
+			'coeur'       => 'heart',
+			'cœur'        => 'heart',
+			'goutte'      => 'drop',
+			'pentagone'   => 'pentagon',
+			'octogone'    => 'octagon',
+			'pique'       => 'card-spade',
+			'trefle'      => 'card-club',
+			'trèfle'      => 'card-club',
+			'carreau'     => 'card-diamond',
+			'card-coeur'  => 'card-heart',
+			'card-cœur'   => 'card-heart',
+			'card-trefle' => 'card-club',
+			'card-trèfle' => 'card-club',
 		);
 		$shape   = $aliases[ $shape ] ?? $shape;
 
