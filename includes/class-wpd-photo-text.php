@@ -101,7 +101,7 @@ final class WPD_Photo_Text {
 		}
 
 		$urls          = self::seeded_urls( $urls, (string) ( $atts['photo_text_seed'] ?? '0' ) );
-		$font          = self::font_stack( (string) ( $atts['photo_text_font'] ?? 'inherit' ) );
+		$font          = WPD_User_Fonts::font_stack( (string) ( $atts['photo_text_font'] ?? 'inherit' ) );
 		$weight        = min( 900, max( 100, absint( $atts['photo_text_weight'] ?? 800 ) ) );
 		$outline       = filter_var( $atts['photo_text_outline'] ?? 'true', FILTER_VALIDATE_BOOLEAN );
 		$outline_width = min( 12, max( 0, absint( $atts['photo_text_outline_width'] ?? 3 ) ) );
@@ -201,21 +201,6 @@ final class WPD_Photo_Text {
 		$offset = (int) ( sprintf( '%u', crc32( $seed ) ) % $count );
 
 		return array_merge( array_slice( $urls, $offset ), array_slice( $urls, 0, $offset ) );
-	}
-
-	/**
-	 * Resolves a local/theme-safe font stack.
-	 *
-	 * @param string $font Requested font mode.
-	 * @return string
-	 */
-	private static function font_stack( string $font ): string {
-		return match ( sanitize_key( $font ) ) {
-			'system' => 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-			'serif'  => 'Georgia, "Times New Roman", serif',
-			'mono'   => 'ui-monospace, "SFMono-Regular", Consolas, monospace',
-			default  => 'inherit',
-		};
 	}
 
 	/**
