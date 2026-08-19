@@ -16,15 +16,34 @@ final class WPD_Api_Metrics {
 	private const TRANSIENT_KEY = 'wpd_api_health_metrics';
 	private const TRANSIENT_TTL = 7 * DAY_IN_SECONDS;
 
+	/** @var int API calls performed during the current request. */
 	private static int $api_calls = 0;
+
+	/** @var int Plugin cache hits during the current request. */
 	private static int $cache_hits = 0;
+
+	/** @var int Plugin cache misses during the current request. */
 	private static int $cache_misses = 0;
+
+	/** @var float Cumulative Piwigo HTTP time during the current request. */
 	private static float $elapsed_ms = 0.0;
+
+	/** @var float Slowest Piwigo HTTP request during the current request. */
 	private static float $slowest_ms = 0.0;
+
+	/** @var string Last Piwigo API method observed. */
 	private static string $last_method = '';
+
+	/** @var string Last plugin cache layer observed. */
 	private static string $last_cache_source = '';
+
+	/** @var int Last Piwigo HTTP status observed. */
 	private static int $last_http_status = 0;
+
+	/** @var string Last Piwigo HTTP error observed. */
 	private static string $last_error = '';
+
+	/** @var array<string, float> Request start times indexed by an opaque local key. */
 	private static array $request_started = array();
 
 	/**
@@ -57,22 +76,24 @@ final class WPD_Api_Metrics {
 	/**
 	 * Observes a completed Piwigo HTTP request without retaining credentials.
 	 *
-	 * @param mixed                $response HTTP response or WP_Error.
-	 * @param string               $context  HTTP API debug context.
-	 * @param string               $class    Transport class name.
-	 * @param array<string, mixed> $args     Request arguments.
-	 * @param string               $url      Requested URL.
+	 * @param mixed                $response  HTTP response or WP_Error.
+	 * @param string               $context   HTTP API debug context.
+	 * @param string               $transport Transport class name.
+	 * @param array<string, mixed> $args      Request arguments.
+	 * @param string               $url       Requested URL.
 	 * @return void
 	 */
-	public static function observe_http( $response, string $context, string $class, array $args, string $url ): void {
-		unset( $class );
+	public static function observe_http( $response, string $context, string $transport, array $args, string $url ): void {
+		unset( $transport );
 
 		if ( 'response' !== $context || ! self::is_piwigo_url( $url ) ) {
 			return;
 		}
 
-		$key        = self::request_key( $url, $args );
-		$started    = self::$request_started[ $key ] ?? microtime( true );
+		$key = self::request_key( $url, $args );
+
+		$started = self::$request_started[ $key ] ?? microtime( true );
+
 		$elapsed_ms = ( microtime( true ) - $started ) * 1000;
 		unset( self::$request_started[ $key ] );
 
@@ -85,7 +106,8 @@ final class WPD_Api_Metrics {
 		}
 
 		$status = is_wp_error( $response ) ? 0 : wp_remote_retrieve_response_code( $response );
-		$error  = is_wp_error( $response ) ? $response->get_error_message() : '';
+
+		$error = is_wp_error( $response ) ? $response->get_error_message() : '';
 
 		self::api_call( $method, $elapsed_ms, $status, $error );
 	}
@@ -123,11 +145,11 @@ final class WPD_Api_Metrics {
 	 */
 	public static function api_call( string $method, float $elapsed_ms, int $http_status = 0, string $error = '' ): void {
 		++self::$api_calls;
-		self::$elapsed_ms      += max( 0.0, $elapsed_ms );
-		self::$slowest_ms       = max( self::$slowest_ms, $elapsed_ms );
-		self::$last_method      = sanitize_text_field( $method );
+		self::$elapsed_ms += max( 0.0, $elapsed_ms );
+		self::$slowest_ms = max( self::$slowest_ms, $elapsed_ms );
+		self::$last_method = sanitize_text_field( $method );
 		self::$last_http_status = absint( $http_status );
-		self::$last_error       = sanitize_text_field( $error );
+		self::$last_error = sanitize_text_field( $error );
 	}
 
 	/**
@@ -145,13 +167,22 @@ final class WPD_Api_Metrics {
 			$stored = self::empty_summary();
 		}
 
-		$stored['api_calls']     = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
-		$stored['cache_hits']    = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
-		$stored['cache_misses']  = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
-		$stored['elapsed_ms']    = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
-		$stored['slowest_ms']    = max( (float) ( $stored['slowest_ms'] ?? 0.0 ), self::$slowest_ms );
-		$stored['updated_at']    = time();
-		$stored['started_at']    = absint( $stored['started_at'] ?? 0 ) ?: time();
+		$stored['api_calls'] = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
+
+		$stored['cache_hits'] = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
+
+		$stored['cache_misses'] = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
+
+		$stored['elapsed_ms'] = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
+
+		$stored['slowest_ms'] = max( (float) ( $stored['slowest_ms'] ?? 0.0 ), self::$slowest_ms );
+
+		$stored['updated_at'] = time();
+
+		$stored['started_at'] = absint( $stored['started_at'] ?? 0 );
+		if ( 0 === $stored['started_at'] ) {
+			$stored['started_at'] = time();
+		}
 
 		if ( '' !== self::$last_method ) {
 			$stored['last_method'] = self::$last_method;
@@ -180,11 +211,15 @@ final class WPD_Api_Metrics {
 			$stored = self::empty_summary();
 		}
 
-		$api_calls    = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
-		$cache_hits   = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
+		$api_calls = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
+
+		$cache_hits = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
+
 		$cache_misses = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
-		$elapsed_ms   = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
-		$total_cache  = $cache_hits + $cache_misses;
+
+		$elapsed_ms = (float) ( $stored['elapsed_ms'] ?? 0.0 ) + self::$elapsed_ms;
+
+		$total_cache = $cache_hits + $cache_misses;
 
 		return array(
 			'api_calls'         => $api_calls,
@@ -219,7 +254,10 @@ final class WPD_Api_Metrics {
 		}
 
 		$metrics = self::summary();
-		$status  = self::health_status( $metrics );
+
+		$status = self::health_status( $metrics );
+
+		$last_method = '' !== (string) $metrics['last_method'] ? (string) $metrics['last_method'] : '—';
 		?>
 		<div class="notice notice-info wpd-api-health">
 			<h2><?php esc_html_e( 'Santé API & cache', 'wp-piwigo-display' ); ?></h2>
@@ -242,10 +280,20 @@ final class WPD_Api_Metrics {
 				?>
 			</p>
 			<?php if ( '' !== $metrics['last_method'] || 0 < $metrics['last_http_status'] ) : ?>
-				<p><?php echo esc_html( sprintf( __( 'Dernier appel : %1$s — HTTP %2$d.', 'wp-piwigo-display' ), $metrics['last_method'] ?: '—', $metrics['last_http_status'] ) ); ?></p>
+				<p>
+					<?php
+					/* translators: 1: last Piwigo API method, 2: HTTP status code. */
+					echo esc_html( sprintf( __( 'Dernier appel : %1$s — HTTP %2$d.', 'wp-piwigo-display' ), $last_method, $metrics['last_http_status'] ) );
+					?>
+				</p>
 			<?php endif; ?>
 			<?php if ( '' !== $metrics['last_error'] ) : ?>
-				<p><?php echo esc_html( sprintf( __( 'Dernière erreur : %s', 'wp-piwigo-display' ), $metrics['last_error'] ) ); ?></p>
+				<p>
+					<?php
+					/* translators: %s: last sanitized Piwigo HTTP error. */
+					echo esc_html( sprintf( __( 'Dernière erreur : %s', 'wp-piwigo-display' ), $metrics['last_error'] ) );
+					?>
+				</p>
 			<?php endif; ?>
 		</div>
 		<?php
