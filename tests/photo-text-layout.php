@@ -7,6 +7,7 @@ $block     = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
 $controls  = file_get_contents( __DIR__ . '/../blocks/piwigo/masonry-controls.js' );
 $block_php = file_get_contents( __DIR__ . '/../includes/class-wpd-block.php' );
 $classic   = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js' );
+$composer  = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-composer-parity.js' );
 
 $assert = static function ( bool $condition, string $message ): void {
 	if ( ! $condition ) {
@@ -31,5 +32,8 @@ $assert( false !== strpos( $controls, 'Même graine + mêmes photos = même remp
 $assert( 1 === preg_match( "/'photoText'\\s*=>\\s*'photo_text'/", $block_php ), 'Le bloc doit transmettre le texte au shortcode.' );
 $assert( false !== strpos( $classic, 'Texte rempli de photos' ) && false !== strpos( $classic, "type === 'photo-text'" ), 'Classic Editor doit proposer et générer le mode Texte rempli de photos.' );
 $assert( false !== strpos( $classic, 'photo_text_outline_color' ), 'Classic Editor doit exposer les réglages du texte photo.' );
+$assert( false !== strpos( $composer, "[ 'photo-text', 'Texte rempli de photos' ]" ), 'Le composeur doit proposer le mode Texte rempli de photos.' );
+$assert( false !== strpos( $composer, "type.value === 'photo-text'" ) && false !== strpos( $composer, 'photo_text_outline_color' ), 'Le composeur doit générer les attributs du texte photo.' );
+$assert( false !== strpos( $composer, "[ 'collage', 'Collage / Pêle-mêle' ]" ) && false !== strpos( $composer, 'wpd-c-shape' ), 'Le mode Texte photo ne doit pas supprimer les contrôles Core existants.' );
 
 fwrite( STDOUT, "Photo-filled semantic text layout and editor parity: OK\n" );
