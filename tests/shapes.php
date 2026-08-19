@@ -1,29 +1,39 @@
 <?php
+/**
+ * Static regression checks for shape support.
+ *
+ * @package WP_Piwigo_Display
+ */
 
-$bootstrap = file_get_contents(__DIR__ . '/../wp-piwigo-display.php');
-$module = file_get_contents(__DIR__ . '/../includes/class-wpd-shapes.php');
-$css = file_get_contents(__DIR__ . '/../assets/css/wp-piwigo-display-shapes.css');
-$block = file_get_contents(__DIR__ . '/../blocks/piwigo/block.json');
-$editor = file_get_contents(__DIR__ . '/../blocks/piwigo/shapes.js');
-$classic = file_get_contents(__DIR__ . '/../includes/class-wpd-classic-editor.php');
-$classic_js = file_get_contents(__DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js');
-$composer = file_get_contents(__DIR__ . '/../includes/class-wpd-composer-parity.php');
+declare(strict_types=1);
 
-$assert = static function (bool $condition, string $message): void {
-    if (!$condition) {
-        fwrite(STDERR, $message . PHP_EOL);
-        exit(1);
-    }
+$bootstrap  = file_get_contents( __DIR__ . '/../wp-piwigo-display.php' );
+$module     = file_get_contents( __DIR__ . '/../includes/class-wpd-shapes.php' );
+$css        = file_get_contents( __DIR__ . '/../assets/css/wp-piwigo-display-shapes.css' );
+$block      = file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' );
+$editor     = file_get_contents( __DIR__ . '/../blocks/piwigo/shapes.js' );
+$classic    = file_get_contents( __DIR__ . '/../includes/class-wpd-classic-editor.php' );
+$classic_js = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-classic-editor.js' );
+$composer   = file_get_contents( __DIR__ . '/../assets/js/wp-piwigo-display-composer-parity.js' );
+$compact    = preg_replace( '/\s+/', '', (string) $module );
+
+$assert = static function ( bool $condition, string $message ): void {
+	if ( ! $condition ) {
+		fwrite( STDERR, $message . PHP_EOL );
+		exit( 1 );
+	}
 };
 
-$assert(strpos($bootstrap, "class-wpd-shapes.php") !== false, 'Le module de formes doit être chargé.');
-$assert(strpos($bootstrap, 'WPD_Shapes::register()') !== false, 'Le module de formes doit être enregistré.');
-$assert(strpos($module, "add_filter('do_shortcode_tag'") !== false, 'Le rendu final du shortcode doit recevoir la forme.');
-$assert(strpos($module, "'star'") !== false && strpos($module, "'hexagon'") !== false, 'Les formes complexes doivent être autorisées.');
-$assert(strpos($css, 'clip-path: polygon') !== false, 'Les formes complexes doivent utiliser clip-path.');
-$assert(strpos($css, '@supports not (clip-path: polygon(0 0))') !== false, 'Un repli sans clip-path doit être prévu.');
-$assert(strpos($block, '"shape"') !== false && strpos($block, '"radius"') !== false, 'Les attributs Gutenberg doivent être déclarés.');
-$assert(strpos($editor, 'Arrondi des angles (%)') !== false, 'Le réglage fin de l’arrondi doit être disponible dans Gutenberg.');
-$assert(strpos($classic, 'data-wpd="shape"') !== false && strpos($classic, 'data-wpd="radius"') !== false, 'Classic Editor doit proposer la forme et le rayon.');
-$assert(strpos($classic_js, "add(parts, 'shape'") !== false && strpos($classic_js, "add(parts, 'radius'") !== false, 'Classic Editor doit générer les attributs de forme.');
-$assert(strpos($composer, 'wpd-c-shape') !== false && strpos($composer, 'wpd-c-radius') !== false, 'Le composeur d’administration doit proposer la forme et le rayon.');
+$assert( false !== strpos( (string) $bootstrap, 'class-wpd-shapes.php' ), 'Le module de formes doit être chargé.' );
+$assert( false !== strpos( (string) $bootstrap, 'WPD_Shapes::register()' ), 'Le module de formes doit être enregistré.' );
+$assert( false !== strpos( (string) $compact, "add_filter('do_shortcode_tag'" ), 'Le rendu final du shortcode doit recevoir la forme.' );
+$assert( false !== strpos( (string) $module, "'star'" ) && false !== strpos( (string) $module, "'hexagon'" ), 'Les formes complexes doivent être autorisées.' );
+$assert( false !== strpos( (string) $css, 'clip-path: polygon' ), 'Les formes complexes doivent utiliser clip-path.' );
+$assert( false !== strpos( (string) $css, '@supports not (clip-path: polygon(0 0))' ), 'Un repli sans clip-path doit être prévu.' );
+$assert( false !== strpos( (string) $block, '"shape"' ) && false !== strpos( (string) $block, '"radius"' ), 'Les attributs Gutenberg doivent être déclarés.' );
+$assert( false !== strpos( (string) $editor, 'Arrondi des angles (%)' ), 'Le réglage fin de l’arrondi doit être disponible dans Gutenberg.' );
+$assert( false !== strpos( (string) $classic, 'data-wpd="shape"' ) && false !== strpos( (string) $classic, 'data-wpd="radius"' ), 'Classic Editor doit proposer la forme et le rayon.' );
+$assert( false !== strpos( (string) $classic_js, "add(parts, 'shape'" ) && false !== strpos( (string) $classic_js, "add(parts, 'radius'" ), 'Classic Editor doit générer les attributs de forme.' );
+$assert( false !== strpos( (string) $composer, 'wpd-c-shape' ) && false !== strpos( (string) $composer, 'wpd-c-radius' ), 'Le composeur d’administration doit proposer la forme et le rayon.' );
+
+echo "Shape support checks passed.\n";
