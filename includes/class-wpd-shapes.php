@@ -46,6 +46,7 @@ final class WPD_Shapes {
 		add_filter( 'do_shortcode_tag', array( self::class, 'apply_shape' ), 10, 4 );
 		add_action( 'wp_enqueue_scripts', array( self::class, 'register_style' ) );
 		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue_editor_assets' ) );
+		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_admin_picker_style' ) );
 	}
 
 	/**
@@ -73,18 +74,41 @@ final class WPD_Shapes {
 
 	/** Enqueues shape controls and visual previews in the block editor. */
 	public static function enqueue_editor_assets(): void {
-		wp_enqueue_style(
-			'wpd-shape-picker',
-			WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-shape-picker.css',
-			array(),
-			WPD_VERSION
-		);
+		self::enqueue_picker_style();
 		wp_enqueue_script(
 			'wpd-shapes-editor',
 			WPD_PLUGIN_URL . 'blocks/piwigo/shapes.js',
 			array( 'wp-hooks', 'wp-compose', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n' ),
 			WPD_VERSION,
 			true
+		);
+	}
+
+	/**
+	 * Enqueues visual shape previews only on the Classic Editor and plugin composer screens.
+	 *
+	 * @param string $hook Current administration screen hook.
+	 * @return void
+	 */
+	public static function enqueue_admin_picker_style( string $hook ): void {
+		$is_classic = in_array( $hook, array( 'post.php', 'post-new.php' ), true );
+		// The page query argument only selects an administration screen and does not mutate data.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$is_composer = 'wp-piwigo-display-compose' === $page;
+
+		if ( $is_classic || $is_composer ) {
+			self::enqueue_picker_style();
+		}
+	}
+
+	/** Enqueues the shared visual picker stylesheet. */
+	private static function enqueue_picker_style(): void {
+		wp_enqueue_style(
+			'wpd-shape-picker',
+			WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-shape-picker.css',
+			array(),
+			WPD_VERSION
 		);
 	}
 
