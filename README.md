@@ -2,6 +2,8 @@
 
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
+> English version: [README.en.md](README.en.md) — pour celles et ceux qui n’arrivent pas encore à utiliser Google Translate. 😄
+
 ## État du projet
 
 **Version candidate actuelle : 3.0.0-rc.3.**
