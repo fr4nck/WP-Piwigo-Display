@@ -1,4 +1,4 @@
-# WP Piwigo Display
+# Piwigo Display
 
 Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
 
@@ -37,7 +37,7 @@ La V3 est actuellement en phase de Release Candidate et doit encore être consid
 
 ## Santé API & cache
 
-La V3 RC3 restaure et protège le compteur de diagnostic dans **WP Piwigo Display → Diagnostic**.
+La V3 RC3 restaure et protège le compteur de diagnostic dans **Piwigo Display → Diagnostic**.
 
 Le bloc **Santé API & cache** permet de suivre notamment :
 
@@ -56,7 +56,7 @@ Les métriques sont agrégées sans conserver les identifiants, mots de passe ou
 
 1. Télécharger le ZIP de la Release Candidate depuis les artefacts/release GitHub prévus pour la V3.
 2. Dans WordPress : **Extensions → Ajouter une extension → Téléverser une extension**.
-3. Activer **WP Piwigo Display**.
+3. Activer **Piwigo Display**.
 4. Renseigner l’URL HTTPS de Piwigo dans les réglages du plugin.
 5. Tester la connexion.
 6. Insérer le bloc Gutenberg, utiliser le composeur ou saisir un shortcode tel que `[piwigo album="154"]`.
