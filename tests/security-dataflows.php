@@ -30,6 +30,10 @@ $forbidden = array(
     'passthru(' => 'Shell execution',
 );
 
+$allowed_upload_surfaces = array(
+    'includes/class-wpd-custom-svg-masks.php',
+);
+
 foreach ($files as $path) {
     $relative = ltrim(str_replace($root, '', $path), '/');
     $contents = file_get_contents($path);
@@ -40,6 +44,9 @@ foreach ($files as $path) {
     }
 
     foreach ($forbidden as $needle => $reason) {
+        if ('$_FILES' === $needle && in_array($relative, $allowed_upload_surfaces, true)) {
+            continue;
+        }
         if (false !== strpos($contents, $needle)) {
             $failures[] = sprintf('%s in %s: %s', $reason, $relative, $needle);
         }
@@ -82,6 +89,13 @@ $required = array(
         'wp_safe_remote_post(',
         "'sslverify'   => true",
         'sanitize_text_field(',
+    ),
+    'includes/class-wpd-custom-svg-masks.php' => array(
+        "current_user_can( 'manage_options' )",
+        "check_admin_referer( 'wpd_upload_svg_mask' )",
+        'is_uploaded_file( $tmp_name )',
+        "WPD_SVG_Mask_Sanitizer::sanitize( $raw )",
+        "check_admin_referer( 'wpd_delete_svg_mask' )",
     ),
 );
 
