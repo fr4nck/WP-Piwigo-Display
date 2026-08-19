@@ -148,6 +148,8 @@ final class WPD_User_Fonts {
 
 		$library   = self::all();
 		$max_bytes = self::max_bytes();
+		/* translators: %s: maximum local font upload size. */
+		$max_size_label = sprintf( __( 'Taille maximale : %s. WOFF2 est recommandé.', 'wp-piwigo-display' ), size_format( $max_bytes ) );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Polices locales — Texte rempli de photos', 'wp-piwigo-display' ); ?></h1>
@@ -159,7 +161,7 @@ final class WPD_User_Fonts {
 					<?php wp_nonce_field( 'wpd_upload_user_font' ); ?>
 					<p><label><?php esc_html_e( 'Nom affiché', 'wp-piwigo-display' ); ?> <input type="text" name="wpd_user_font_name" maxlength="80"></label></p>
 					<p><label><?php esc_html_e( 'Fichier WOFF2 ou WOFF', 'wp-piwigo-display' ); ?> <input type="file" name="wpd_user_font" accept=".woff2,.woff,font/woff2,font/woff" required></label></p>
-					<p class="description"><?php echo esc_html( sprintf( __( 'Taille maximale : %s. WOFF2 est recommandé.', 'wp-piwigo-display' ), size_format( $max_bytes ) ) ); ?></p>
+					<p class="description"><?php echo esc_html( $max_size_label ); ?></p>
 					<?php submit_button( __( 'Importer la police', 'wp-piwigo-display' ), 'primary', 'submit', false ); ?>
 				</form>
 			</div>
@@ -373,7 +375,7 @@ final class WPD_User_Fonts {
 	 * @return int
 	 */
 	private static function max_bytes(): int {
-		$max = (int) apply_filters( 'wp_piwigo_display_user_font_max_bytes', self::DEFAULT_MAX_BYTES );
+		$max = (int) apply_filters( 'wpd_user_font_max_bytes', self::DEFAULT_MAX_BYTES );
 		return max( 65536, min( 8388608, $max ) );
 	}
 
