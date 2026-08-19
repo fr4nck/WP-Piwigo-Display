@@ -3,6 +3,8 @@ name: Build plugin ZIP
 on:
   workflow_dispatch:
   push:
+    branches:
+      - 'release/**'
     tags:
       - 'v*'
 
@@ -18,11 +20,12 @@ jobs:
           git archive \
             --format=zip \
             --prefix=wp-piwigo-display/ \
-            -o wp-piwigo-display-${GITHUB_REF_NAME}.zip \
+            -o wp-piwigo-display-${GITHUB_REF_NAME//\//-}.zip \
             HEAD
 
       - name: Upload plugin ZIP
         uses: actions/upload-artifact@v4
         with:
           name: wp-piwigo-display-${{ github.ref_name }}
-          path: wp-piwigo-display-${{ github.ref_name }}.zip
+          path: wp-piwigo-display-*.zip
+          retention-days: 14
