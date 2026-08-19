@@ -6,7 +6,7 @@ Piwigo Display utilise un shortcode unique :
 [piwigo]
 ```
 
-Le paramètre `album` est obligatoire.
+Le paramètre `album` est obligatoire. Les interfaces Gutenberg, Classic Editor et le composeur d’administration sont recommandées pour construire visuellement les réglages ; le shortcode reste l’interface avancée et portable.
 
 ## Album
 
@@ -18,9 +18,7 @@ Le paramètre `album` est obligatoire.
 [piwigo album="/ALSH/Été 2026/Séjour voile"]
 ```
 
-L’identifiant numérique reste le choix le plus robuste dans un shortcode écrit manuellement.
-
-`url` permet ponctuellement d’utiliser une autre galerie :
+`url` permet ponctuellement d’utiliser une autre galerie Piwigo :
 
 ```text
 [piwigo url="https://autre-galerie.example.org" album="154"]
@@ -28,93 +26,118 @@ L’identifiant numérique reste le choix le plus robuste dans un shortcode écr
 
 ## Modes d’affichage
 
-Le paramètre `type` détermine la façon dont les photos sont présentées. Les trois modes utilisent les mêmes sources Piwigo et peuvent partager les filtres, légendes et options générales ; le choix dépend surtout de l’usage éditorial recherché.
+`type` accepte notamment :
 
-### Galerie — `gallery`
+- `gallery` : grille responsive classique ;
+- `slider` : diaporama Splide ;
+- `masonry` : colonnes CSS ;
+- `justified` : lignes justifiées ;
+- `collage` : Pêle-mêle déterministe ;
+- `photo-text` : texte rempli de photos.
 
-La galerie est le mode polyvalent. Les images sont présentées dans une grille responsive régulière qui s’adapte à la largeur disponible.
-
-À choisir pour :
-
-- une page d’album classique ;
-- présenter un ensemble de photos de façon homogène ;
-- une consultation rapide avec plusieurs images visibles simultanément ;
-- le choix par défaut lorsqu’aucune mise en scène particulière n’est nécessaire.
+### Galerie
 
 ```text
 [piwigo album="154" type="gallery"]
 ```
 
-La lightbox peut ensuite permettre d’ouvrir les images en grand sans quitter la page.
-
-### Slider — `slider`
-
-Le slider présente principalement une image à la fois sous forme de diaporama. Il convient davantage à une sélection éditoriale qu’à la consultation rapide d’un grand nombre de photos.
-
-À choisir pour :
-
-- mettre en avant quelques photos fortes ;
-- une bannière ou une zone visuelle importante ;
-- un diaporama d’actualité ou de séjour ;
-- une présentation avec navigation par points ou miniatures ;
-- un défilement automatique facultatif.
+### Slider
 
 ```text
-[piwigo album="154" type="slider" navigation="thumbnails"]
+[piwigo album="154" type="slider" navigation="thumbnails" autoplay="true" interval="5000" speed="500" transition="fade"]
 ```
 
-Le slider dispose de réglages spécifiques : navigation, autoplay, intervalle, vitesse, transition, direction et dimensions. Les préférences système de réduction des mouvements sont respectées : l’autoplay et les animations sont réduits ou désactivés lorsque nécessaire.
+Réglages principaux :
 
-### Masonry — `masonry`
+- `navigation` : `thumbnails`, `dots`, `none` ;
+- `autoplay` : `true` / `false` ;
+- `interval` : temps entre deux images en millisecondes ;
+- `speed` : durée de transition en millisecondes ;
+- `transition` : `slide`, `fade`, `none` ;
+- `direction` : `ltr`, `rtl` ;
+- `width`, `height`, `ratio`, `align`.
 
-Masonry organise les photos en colonnes en conservant davantage leurs proportions naturelles. Contrairement à une grille régulière, les lignes ne sont pas forcées à avoir la même hauteur.
+Le slider possède un fallback natif si Splide tarde à se charger ou n’est pas disponible.
 
-À choisir pour :
-
-- mélanger agréablement portraits et paysages ;
-- obtenir une présentation de type photothèque ou portfolio ;
-- afficher beaucoup d’images sans imposer un recadrage visuel uniforme ;
-- privilégier la variété des formats originaux.
+### Masonry
 
 ```text
 [piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
 ```
 
-Le nombre de colonnes diminue automatiquement sur les écrans plus étroits.
+- `masonry_columns` : 2 à 6 ;
+- `masonry_gap` : 0 à 64 pixels.
 
-### Quel mode choisir ?
-
-| Besoin | Mode conseillé |
-| --- | --- |
-| Album photo standard et lisible | `gallery` |
-| Mettre quelques photos en avant | `slider` |
-| Mélanger portraits et paysages avec leurs proportions | `masonry` |
-| Afficher rapidement beaucoup de photos | `gallery` ou `masonry` |
-| Diaporama automatique | `slider` |
-| Présentation type portfolio / photothèque | `masonry` |
-
-Le mode peut être changé sans modifier l’album Piwigo : seule sa présentation dans WordPress change.
-
-## Masonry
-
-`masonry_columns` définit de 2 à 6 colonnes sur grand écran.
-
-`masonry_gap` définit l’espacement entre les éléments, de 0 à 64 pixels.
+### Justified Gallery
 
 ```text
-[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
+[piwigo album="154" type="justified" justified_row_height="220" justified_gap="8"]
 ```
+
+- `justified_row_height` : hauteur cible des lignes ;
+- `justified_gap` : espacement entre images.
+
+Le moteur conserve les proportions d’origine et prévoit un repli lorsque les dimensions Piwigo manquent.
+
+### Collage / Pêle-mêle
+
+```text
+[piwigo album="154" type="collage" collage_seed="2026" collage_rotation="6" collage_spread="18" collage_overlap="12"]
+```
+
+Réglages :
+
+- `collage_seed` : graine déterministe ;
+- `collage_rotation` : rotation maximale ;
+- `collage_spread` : dispersion ;
+- `collage_overlap` : chevauchement ;
+- `collage_size` : taille moyenne ;
+- `collage_variation` : variation de taille.
+
+Même graine + mêmes images = même composition.
+
+### Texte rempli de photos
+
+```text
+[piwigo album="154" type="photo-text" photo_text="ÉTÉ 2026" photo_text_font="bundled-bebas-neue" photo_text_fill_mode="collage"]
+```
+
+Réglages principaux :
+
+- `photo_text` : texte ; `\n` permet plusieurs lignes ;
+- `photo_text_seed` : graine déterministe ;
+- `photo_text_font` : police ;
+- `photo_text_weight` : graisse ;
+- `photo_text_size` : taille ;
+- `photo_text_letter_spacing` : interlettrage ;
+- `photo_text_line_height` : hauteur de ligne ;
+- `photo_text_max_width` : largeur maximale ;
+- `photo_text_align` : `left`, `center`, `right` ;
+- `photo_text_fill_mode` : `grid`, `masonry`, `collage` ;
+- `photo_text_density` : densité du remplissage ;
+- `photo_text_rotation` : rotation du remplissage pêle-mêle ;
+- `photo_text_spread` : dispersion du remplissage pêle-mêle ;
+- `photo_text_max_images` : nombre maximal de photos source ;
+- `photo_text_outline` : contour activé/désactivé ;
+- `photo_text_outline_width` : épaisseur du contour ;
+- `photo_text_outline_color` : couleur hexadécimale ;
+- `photo_text_background` : `transparent` ou couleur hexadécimale.
+
+Polices disponibles sans réseau :
+
+- `inherit` : police du thème ;
+- `system` ;
+- `serif` ;
+- `mono` ;
+- `bundled-bebas-neue` ;
+- `bundled-bungee` ;
+- `user-<identifiant>` pour une police WOFF2/WOFF importée depuis la bibliothèque Piwigo Display.
+
+Aucune police tierce distante n’est chargée automatiquement.
 
 ## Sous-albums
 
-`recursive="true"` inclut les sous-albums.
-
-`depth` limite la profondeur :
-
-- `0` : album seul ;
-- `1` : enfants directs ;
-- `2` : enfants et petits-enfants ;
-- `10` : toute la descendance prise en charge.
+`recursive="true"` inclut les sous-albums. `depth` limite la profondeur.
 
 ```text
 [piwigo album="154" recursive="true" depth="2"]
@@ -122,13 +145,7 @@ Le mode peut être changé sans modifier l’album Piwigo : seule sa présentati
 
 ## Tri et limites
 
-`sort` accepte :
-
-- `manual` ;
-- `date` ;
-- `name` ;
-- `id` ;
-- `random`.
+`sort` accepte `manual`, `date`, `name`, `id`, `random`.
 
 `order` accepte `asc` ou `desc`.
 
@@ -138,193 +155,86 @@ Le mode peut être changé sans modifier l’album Piwigo : seule sa présentati
 [piwigo album="154" sort="date" order="desc" limit="20"]
 ```
 
-Les anciens paramètres `max`, `latest` et `random` restent pris en charge pour compatibilité, mais `limit`, `sort` et `order` sont préférables.
+Les anciens paramètres `max`, `latest` et `random` restent pris en charge pour compatibilité.
 
 ## Tags
 
-`tag` et `tags` filtrent les images par tags Piwigo.
-
 ```text
 [piwigo album="154" tag="nature"]
-[piwigo album="154" tags="nature,animaux"]
-```
-
-`tag_mode` accepte :
-
-- `any` : au moins un tag demandé ;
-- `all` : tous les tags demandés.
-
-```text
 [piwigo album="154" tags="nature,animaux" tag_mode="all"]
 ```
 
+`tag_mode` accepte `any` ou `all`.
+
 ## Orientation
 
-`orientation` accepte :
-
-- `all` ;
-- `portrait` ;
-- `paysage` ;
-- `carré`.
-
-Les alias `landscape`, `square` et `carre` restent acceptés.
+`orientation` accepte `all`, `portrait`, `paysage`, `carré`. Les alias `landscape`, `square` et `carre` restent acceptés.
 
 ```text
 [piwigo album="154" orientation="portrait"]
-[piwigo album="154" orientation="paysage,carré"]
 ```
 
 ## Légendes
 
-`caption` accepte :
-
-- `default` ;
-- `none` ;
-- `title` ;
-- `description` ;
-- `title-description`.
+`caption` accepte `default`, `none`, `title`, `description`, `title-description`.
 
 ```text
 [piwigo album="154" caption="title-description"]
 ```
 
-## Style
+## Style et cadrage
 
-`style` accepte :
+`style` accepte `default`, `theme`, `minimal`, `none`.
 
-- `default` ;
-- `theme` ;
-- `minimal` ;
-- `none`.
+`fit` accepte `contain`, `cover`, `auto`, `raw`.
 
 ```text
-[piwigo album="154" style="theme"]
+[piwigo album="154" style="theme" fit="contain"]
 ```
 
-## Lightbox et forme
+## Lightbox et formes
 
 `lightbox="false"` désactive la lightbox.
 
-`rounded="true"` active les angles arrondis lorsque le style le permet.
+`shape` accepte les formes intégrées documentées dans `docs/FORMES.md`, par exemple :
 
 ```text
-[piwigo album="154" lightbox="false" rounded="true"]
+[piwigo album="154" shape="circle"]
+[piwigo album="154" type="collage" shape="cloud"]
 ```
 
-## Ajustement des images
+Un masque utilisateur sanitizé est représenté par `shape="custom-<identifiant>"` ; il est préférable de le choisir dans l’interface visuelle.
 
-`fit` accepte :
+`radius` règle l’arrondi pour `shape="rounded"`. L’ancien `rounded="true"` reste compatible.
 
-- `contain` : photo entière sans recadrage ;
-- `cover` : cadre rempli avec recadrage possible ;
-- `auto` : choix automatique selon l’orientation ;
-- `raw` : respect maximal des dimensions naturelles.
+## Accessibilité
 
-```text
-[piwigo album="154" fit="contain"]
-```
+`prefers-reduced-motion` réduit ou désactive l’autoplay et les animations concernées.
 
-## Slider
-
-### Navigation
-
-`navigation` accepte :
-
-- `thumbnails` ;
-- `dots` ;
-- `none`.
-
-```text
-[piwigo album="154" type="slider" navigation="thumbnails"]
-```
-
-### Autoplay, intervalle et vitesse
-
-`autoplay` active ou désactive le défilement automatique.
-
-`interval` est le temps entre deux images, en millisecondes.
-
-`speed` est la durée de transition, en millisecondes.
-
-```text
-[piwigo album="154" type="slider" autoplay="true" interval="5000" speed="500"]
-```
-
-`interval` et `speed` sont indépendants.
-
-### Transition
-
-`transition` accepte :
-
-- `slide` : déplacement horizontal classique ;
-- `fade` : fondu entre les images ;
-- `none` : changement immédiat, sans animation de transition.
-
-```text
-[piwigo album="154" type="slider" transition="fade" speed="700"]
-```
-
-### Direction
-
-`direction` accepte :
-
-- `ltr` : progression de gauche à droite ;
-- `rtl` : progression de droite à gauche.
-
-```text
-[piwigo album="154" type="slider" transition="slide" direction="rtl"]
-```
-
-### Dimensions
-
-`width`, `height`, `ratio` et `align` règlent la mise en page.
-
-```text
-[piwigo album="154" type="slider" width="72%" height="480px" ratio="16/9" align="center"]
-```
-
-`align` accepte `left`, `center` ou `right`.
-
-La largeur publique est plafonnée à 100 % et s’adapte aux petits écrans.
-
-## Accessibilité du slider
-
-Lorsque l’utilisateur a activé `prefers-reduced-motion: reduce` dans son système, Piwigo Display désactive l’autoplay et réduit ou supprime les transitions animées.
-
-## Presets
-
-`preset` accepte notamment :
-
-- `galerie` ;
-- `slider` ;
-- `actualites`.
-
-```text
-[piwigo album="154" preset="actualites"]
-```
+Le mode Texte rempli de photos conserve le texte sous forme sémantique pour les technologies d’assistance ; son SVG décoratif n’est pas exposé au lecteur d’écran.
 
 ## Exemples complets
 
-Galerie de 20 dernières images dans une arborescence :
+Galerie récursive récente :
 
 ```text
 [piwigo album="154" type="gallery" recursive="true" depth="2" sort="date" order="desc" limit="20"]
 ```
 
-Slider avec fondu, miniatures et légende :
+Justified avec légende :
 
 ```text
-[piwigo album="154" type="slider" transition="fade" navigation="thumbnails" caption="title"]
+[piwigo album="154" type="justified" justified_row_height="220" justified_gap="8" caption="title"]
 ```
 
-Masonry filtré par orientation :
+Collage stable :
 
 ```text
-[piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16" orientation="paysage"]
+[piwigo album="154" type="collage" collage_seed="ete-2026" collage_rotation="7" collage_spread="20"]
 ```
 
-Album filtré par tags :
+Texte-photo multiligne avec Bungee :
 
 ```text
-[piwigo album="154" tags="nature,animaux" tag_mode="all" style="theme"]
+[piwigo album="154" type="photo-text" photo_text="PÊLE-MÊLE\nÉTÉ 2026" photo_text_font="bundled-bungee" photo_text_fill_mode="grid" photo_text_outline="true"]
 ```

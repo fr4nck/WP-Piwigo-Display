@@ -1,69 +1,90 @@
 # Feuille de route
 
-Cette feuille de route décrit l’état réel du développement. Les fonctions déjà fusionnées dans `3.x-dev` constituent un socle non régressable.
+Cette feuille de route décrit l’état réel du développement de Piwigo Display.
 
-## Version stable distribuée — 2.0.0
+## Historique public
 
-La version 2.0.0 reste la référence publique tant qu’une préversion 3.x n’a pas terminé sa recette WordPress.
+La dernière version stable effectivement publiée avant la V3 est **1.8.0**.
 
-Elle fournit notamment :
+La ligne **2.0.0** a été un jalon de développement mais **n’a jamais été publiée comme release publique**. Son travail a été repris dans la V3.
 
-- bloc Gutenberg dynamique ;
-- éditeur classique avec aperçu TinyMCE ;
-- composeur d’administration ;
-- galerie responsive et diaporama Splide ;
-- sélection d’album par identifiant, nom, chemin ou arborescence ;
-- sous-albums et profondeur configurable ;
-- tri, limites, orientations, tags, légendes et styles ;
-- cache WordPress séparé par contexte d’accès ;
-- diagnostic, purge du cache et compte de service Piwigo.
+## V3 RC — socle acquis
 
-## Socle 3.x désormais acquis
+Le socle 3.0 apporte notamment :
 
-Le développement 3.x ajoute sans supprimer le socle 2.x :
+- Gutenberg dynamique, Classic Editor / TinyMCE et composeur d’administration ;
+- sélecteur d’albums visuel, hiérarchique et recherchable ;
+- galerie responsive, slider Splide et Masonry ;
+- lightbox ;
+- compte de service Piwigo ;
+- cache séparé par contexte d’accès ;
+- diagnostic et purge ;
+- transitions de slider `slide`, `fade`, `none` et direction `ltr` / `rtl` ;
+- fallback natif du slider si Splide tarde ou échoue ;
+- métriques persistantes Santé API & cache ;
+- contrôles automatisés de sécurité, accessibilité, compatibilité PHP, WPCS et Plugin Check.
 
-- transitions de diaporama `slide`, `fade` et `none` ;
-- direction horizontale `ltr` ou `rtl` ;
-- distinction entre durée d’affichage, vitesse, effet et direction ;
-- redimensionnement visuel et adaptation mobile à 100 % ;
-- mode Masonry natif en colonnes CSS ;
-- réglage du nombre de colonnes et de l’espacement Masonry ;
-- presets et URL Piwigo spécifique dans Gutenberg ;
-- sélecteur visuel, hiérarchique et recherchable des albums dans Gutenberg ;
-- saisie manuelle par identifiant, nom ou chemin conservée en secours ;
-- parité fonctionnelle entre le composeur d’administration, Classic Editor et Gutenberg ;
-- matrice de parité et checklist de non-régression documentées.
+## 3.1.0-rc.1 — gel fonctionnel
 
-La matrice de référence est disponible dans `docs/PARITE-COMPOSEURS.md`.
+La 3.1 est désormais en Release Candidate. Les fonctionnalités prévues pour cette version sont fusionnées dans `3.1.x-dev`.
 
-## Prochaine étape — stabilisation et recette 3.x
+### Justified Gallery
 
-Suivi : issue #46.
+- lignes justifiées conservant les proportions ;
+- hauteur cible et espacement configurables ;
+- responsive et lightbox ;
+- parité Gutenberg / Classic / composeur.
 
-Avant toute préversion 3.x :
+### Collage / Pêle-mêle
 
-1. exécuter les tests PHP statiques et le lint sur toutes les versions PHP prises en charge ;
-2. installer le ZIP construit par GitHub Actions sur un WordPress de recette ;
-3. tester Administration, Classic Editor et Gutenberg avec une instance Piwigo réelle ;
-4. vérifier les anciens shortcodes sans nouveaux attributs ;
-5. tester les galeries, diaporamas et Masonry sur ordinateur, tablette et mobile ;
-6. vérifier le clavier, les libellés et les états de chargement ou d’erreur ;
-7. simuler une API Piwigo indisponible et confirmer que la saisie manuelle reste utilisable ;
-8. contrôler le cache, sa séparation par contexte d’accès et sa purge ;
-9. vérifier la cohérence des numéros de version, du README et du ZIP ;
-10. consigner explicitement toute vérification manuelle non automatisable.
+- placement déterministe par graine ;
+- rotation, dispersion, chevauchement, taille et variation ;
+- ordre DOM et clavier préservés ;
+- compatibilité avec les formes.
 
-## Étapes ultérieures
+### Formes et masques SVG
 
-Après stabilisation du socle 3.x :
+- bibliothèque intégrée étendue : nuage, cœur, goutte, triangle, pentagone, octogone et enseignes de cartes ;
+- sélecteurs visuels ;
+- import de masques SVG personnalisés ;
+- sanitation stricte sans ressource externe ni contenu actif ;
+- bibliothèque locale, aperçu et suppression sécurisée ;
+- parité des trois interfaces.
 
-- amélioration progressive de l’accessibilité ;
-- meilleure adoption des variables CSS du thème WordPress ;
-- optimisation mesurée du cache et des appels Piwigo ;
-- réduction de la duplication entre les composeurs lorsque cela ne fragilise pas leur fonctionnement ;
-- styles et effets supplémentaires uniquement lorsqu’un besoin concret les justifie ;
-- préparation d’une documentation utilisateur orientée cas d’usage.
+### Texte rempli de photos
+
+- masque typographique SVG rendu côté serveur ;
+- plusieurs photos Piwigo dans les glyphes ;
+- texte sémantique conservé pour l’accessibilité ;
+- multiligne ;
+- taille, largeur, interlettrage, hauteur de ligne et alignement ;
+- remplissage grille, masonry ou pêle-mêle ;
+- densité, rotation, dispersion, contour, fond et graine ;
+- polices thème/système ;
+- polices libres embarquées Bebas Neue et Bungee ;
+- import administrateur WOFF2/WOFF avec validation stricte et stockage dédié ;
+- aucune police tierce distante chargée automatiquement.
+
+## Ce qui reste avant 3.1 stable
+
+1. produire et installer le ZIP `3.1.0-rc.1` ;
+2. effectuer la recette manuelle WordPress avec Piwigo réel ;
+3. vérifier les nouveaux modes sur Gutenberg, Classic Editor et composeur ;
+4. vérifier desktop, tablette et mobile ;
+5. corriger uniquement les régressions et bugs observés ;
+6. refaire une RC si une correction fonctionnelle l’exige ;
+7. publier `3.1.0` stable après GO de recette.
+
+La checklist de référence est `docs/RECETTE-3X.md`.
+
+## Maintenance non bloquante
+
+L’issue #102 suit le nettoyage progressif de la dette WPCS historique des tests. Cette dette n’est pas bloquante pour la RC tant que les contrôles `standards:checked` et la CI de livraison restent verts.
+
+## Après 3.1
+
+Le chantier d’architecture multi-plateformes de l’issue #104 commence seulement après stabilisation 3.1. L’objectif sera d’extraire progressivement un Core portable sans transformer le plugin WordPress en package multi-CMS.
 
 ## Principe
 
-WP Piwigo Display doit rester léger : Piwigo gère les photos, WordPress les affiche. Une évolution ne doit ni recopier inutilement les médias ni transformer le plugin en gestionnaire de photothèque.
+Piwigo Display doit rester léger : **Piwigo gère les photos, WordPress les affiche**. Une évolution ne doit ni recopier inutilement les médias ni introduire une dépendance externe sans nécessité réelle.

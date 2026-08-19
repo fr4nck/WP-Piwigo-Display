@@ -1,98 +1,130 @@
-# Piwigo Display pour WordPress
+# Piwigo Display
 
-Plugin WordPress pour afficher des albums Piwigo via l’API officielle, sans copier les images dans la médiathèque WordPress.
+Plugin WordPress pour construire et afficher des galeries Piwigo directement dans WordPress via l’API officielle, sans recopier les images dans la médiathèque WordPress.
+
+> English version: [README.en.md](README.en.md) — pour celles et ceux qui n’arrivent pas encore à utiliser Google Translate. 😄
 
 ## État du projet
 
-La branche `3.x-dev` prépare **3.0.0-rc.2**, version corrective de la Release Candidate V3. Elle corrige l’incompatibilité PHP 8.1 entre le filtre de rendu Masonry et la valeur initiale `null` utilisée par le moteur de rendu, ainsi que les chemins CSS et JavaScript incorrectement réécrits dans le premier paquet de test.
+**Version candidate actuelle : 3.1.0-rc.1.**
 
-La version 2.0.0 reste la dernière version stable distribuée tant que cette RC n’a pas terminé sa recette fonctionnelle réelle.
+La dernière version stable effectivement publiée avant la V3 est **1.8.0**. La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
+
+La 3.1 est désormais en phase de recette réelle dans WordPress. Le développement fonctionnel est gelé pendant cette RC : les corrections de bugs restent admises, les nouvelles fonctions attendront une version ultérieure.
+
+## Une interface visuelle avant tout
+
+Piwigo Display propose plusieurs outils partageant le même moteur de rendu :
+
+- **bloc Gutenberg dynamique** avec sélection d’album et réglages visuels ;
+- **composeur d’administration** avec prévisualisation ;
+- **Classic Editor / TinyMCE** avec bouton dédié et aperçu ;
+- **sélecteur d’albums hiérarchique et recherchable** ;
+- **parité fonctionnelle** entre Gutenberg, Classic Editor et le composeur ;
+- **shortcodes** conservés pour l’automatisation, les usages avancés et la compatibilité historique.
+
+## Nouveautés 3.1
+
+### Justified Gallery
+
+Disposition en lignes justifiées conservant le ratio des images, avec hauteur cible et espacement configurables.
+
+### Collage / Pêle-mêle
+
+Disposition déterministe de photos inclinées, décalées et légèrement superposées. Une même graine et les mêmes photos produisent la même composition.
+
+### Formes et masques SVG personnalisés
+
+La bibliothèque de formes intégrées est étendue avec notamment nuage, cœur, goutte, triangle, pentagone, octogone et enseignes de cartes.
+
+Les administrateurs peuvent aussi importer des masques SVG personnalisés. Le SVG est filtré avant stockage : scripts, événements, styles actifs, références externes, `DOCTYPE`/`ENTITY` et contenus dangereux sont rejetés. Seule la version sanitizée est conservée.
+
+### Texte rempli de photos
+
+Un mot, un titre ou plusieurs lignes peuvent servir de masque typographique rempli par plusieurs photos Piwigo.
+
+Réglages disponibles :
+
+- texte jusqu’à quatre lignes ;
+- taille, largeur maximale, interlettrage et hauteur de ligne ;
+- alignement gauche, centre ou droite ;
+- remplissage **grille**, **masonry** ou **pêle-mêle** ;
+- densité et nombre maximal de photos ;
+- rotation et dispersion du pêle-mêle ;
+- contour, couleur, épaisseur et fond ;
+- graine déterministe ;
+- police du thème, système, serif ou monospace ;
+- polices libres incluses **Bebas Neue** et **Bungee** ;
+- import local administrateur de polices **WOFF2/WOFF** validées et stockées dans les uploads WordPress.
+
+Aucune police distante tierce n’est chargée automatiquement.
 
 ## Fonctionnalités principales
 
-- bloc Gutenberg dynamique ;
-- intégration Classic Editor avec aperçu TinyMCE ;
-- composeur d’administration ;
-- parité fonctionnelle entre Gutenberg, Classic Editor et le composeur ;
-- galerie responsive ;
-- diaporama Splide ;
-- Masonry natif basé sur les colonnes CSS ;
+- connexion à Piwigo via l’API officielle ;
+- albums publics et albums privés autorisés via compte de service côté serveur ;
+- galerie responsive classique ;
+- diaporama / carousel Splide avec fallback natif si Splide tarde ou échoue ;
+- Masonry en colonnes CSS ;
+- Justified Gallery ;
+- Collage / Pêle-mêle ;
+- Texte rempli de photos ;
 - lightbox ;
 - sélection d’album par identifiant, nom, chemin ou arborescence ;
-- sélecteur visuel hiérarchique et recherchable ;
 - sous-albums et profondeur configurable ;
 - tri, limites, orientations, tags, légendes et styles ;
+- formes intégrées et masques SVG personnalisés ;
 - transitions de slider `slide`, `fade` et `none` ;
 - direction `ltr` ou `rtl` ;
-- fond de diaporama transparent, indépendamment du style visuel ;
 - largeur, hauteur, ratio, vitesse et intervalle configurables ;
 - cache WordPress séparé par contexte d’accès ;
 - diagnostic et purge du cache ;
-- compte de service Piwigo pour publier côté WordPress des albums privés autorisés ;
-- navigation clavier renforcée, focus visible et réduction des animations lorsque `prefers-reduced-motion` est activé.
+- navigation clavier, focus visible et prise en compte de `prefers-reduced-motion`.
 
-## Installation
+## Santé API & cache
 
-1. Installer le ZIP depuis **Extensions > Ajouter une extension > Téléverser une extension**.
-2. Activer **Piwigo Display pour WordPress**.
-3. Ouvrir les réglages du plugin et renseigner l’URL HTTPS de Piwigo.
-4. Tester la connexion.
-5. Insérer le bloc Gutenberg, utiliser le composeur ou saisir un shortcode tel que `[piwigo album="154"]`.
+Le bloc **Piwigo Display → Diagnostic → Santé API & cache** suit notamment :
 
-Pour les albums privés, configurer un compte de service Piwigo dédié et limité aux seuls albums destinés à être publiés sur WordPress.
+- nombre d’appels réels à l’API Piwigo ;
+- HIT et MISS du cache ;
+- taux de HIT ;
+- temps API cumulé, moyen et appel le plus lent ;
+- dernière méthode Piwigo observée ;
+- dernier statut HTTP ;
+- dernière erreur détectée ;
+- verdict synthétique de santé.
 
-## Compte de service Piwigo
+Les métriques sont agrégées sans conserver les identifiants, mots de passe ou corps de requête.
 
-Le compte de service est un compte Piwigo dédié à WordPress. Il permet au serveur WordPress de récupérer les albums privés auxquels ce compte a accès. Les visiteurs ne se connectent pas à Piwigo.
+## Installation de la RC
 
-Une photo privée affichée sur une page publique WordPress devient publiquement consultable via cette page. Le compte doit donc être limité aux seuls albums destinés à cette diffusion.
+1. Télécharger le ZIP `piwigo-display-3.1.0-rc.1.zip` produit par GitHub Actions.
+2. Dans WordPress : **Extensions → Ajouter une extension → Téléverser une extension**.
+3. Activer **Piwigo Display**.
+4. Renseigner l’URL HTTPS de Piwigo dans les réglages.
+5. Tester la connexion.
+6. Créer un affichage avec Gutenberg, le composeur d’administration ou Classic Editor.
+7. Tester les nouveaux modes 3.1 avant tout usage de production.
 
-Configuration recommandée dans `wp-config.php` :
+Pour les albums privés, utiliser un compte Piwigo dédié et limité aux seuls albums destinés à être publiés dans WordPress.
 
-```php
-define('WPD_PIWIGO_SERVICE_ENABLED', true);
-define('WPD_PIWIGO_SERVICE_USERNAME', 'wordpress-publication');
-define('WPD_PIWIGO_SERVICE_PASSWORD', 'mot-de-passe-fort');
-```
-
-Les identifiants restent côté serveur et ne sont pas insérés dans le HTML, JavaScript, les blocs ou les shortcodes.
-
-## Exemples
+## Shortcodes : interface avancée
 
 ```text
 [piwigo album="154"]
 [piwigo album="154" type="slider" width="72%" height="480px"]
-[piwigo album="154" type="slider" transition="fade" speed="700"]
-[piwigo album="154" type="slider" transition="slide" direction="rtl"]
 [piwigo album="154" type="masonry" masonry_columns="4" masonry_gap="16"]
-[piwigo album="154" recursive="true" depth="2"]
-[piwigo album="154" sort="date" order="desc" limit="20"]
-[piwigo album="154" tags="nature,animaux" tag_mode="all"]
+[piwigo album="154" type="justified" justified_row_height="220" justified_gap="8"]
+[piwigo album="154" type="collage" collage_seed="2026"]
+[piwigo album="154" type="photo-text" photo_text="ÉTÉ 2026" photo_text_font="bundled-bebas-neue"]
 ```
-
-## Masonry
-
-Le mode Masonry utilise les colonnes CSS natives du navigateur :
-
-- `type="masonry"` active la disposition ;
-- `masonry_columns="4"` définit de 2 à 6 colonnes sur grand écran ;
-- `masonry_gap="16"` définit un espacement de 0 à 64 pixels ;
-- le nombre de colonnes diminue automatiquement sur tablette et mobile ;
-- lightbox, légendes, styles et albums privés restent compatibles.
-
-## Slider
-
-La durée d’affichage (`interval`) et la vitesse de transition (`speed`) sont deux réglages indépendants.
-
-Les transitions disponibles sont `slide`, `fade` et `none`. La direction peut être `ltr` ou `rtl`.
-
-Lorsque l’utilisateur demande une réduction des animations via son système (`prefers-reduced-motion`), l’autoplay est neutralisé et les transitions sont supprimées ou réduites.
 
 ## Compatibilité
 
 - WordPress 6.0 ou supérieur ;
 - PHP 8.1 à 8.4 validé par CI ;
-- Piwigo accessible en HTTPS pour le compte de service.
+- Piwigo accessible en HTTPS pour le compte de service ;
+- contrôles automatisés de syntaxe, sécurité, accessibilité, rendu frontend, compatibilité PHP, WPCS, packaging et WordPress Plugin Check.
 
 ## Documentation
 
@@ -100,7 +132,9 @@ Lorsque l’utilisateur demande une réduction des animations via son système (
 - [Configuration](docs/configuration.md)
 - [Shortcodes](docs/shortcodes.md)
 - [Compte de service](docs/COMPTE-DE-SERVICE.md)
+- [Formes](docs/FORMES.md)
 - [Parité des composeurs](docs/PARITE-COMPOSEURS.md)
+- [Recette 3.x](docs/RECETTE-3X.md)
 - [Architecture](docs/architecture.md)
 - [Feuille de route](ROADMAP.md)
 
