@@ -102,6 +102,7 @@ final class WPD_Block {
 				'photoTextWeight'        => 'photo_text_weight',
 				'photoTextSize'          => 'photo_text_size',
 				'photoTextLetterSpacing' => 'photo_text_letter_spacing',
+				'photoTextLineHeight'    => 'photo_text_line_height',
 				'photoTextMaxWidth'      => 'photo_text_max_width',
 				'photoTextAlign'         => 'photo_text_align',
 				'photoTextFillMode'      => 'photo_text_fill_mode',
