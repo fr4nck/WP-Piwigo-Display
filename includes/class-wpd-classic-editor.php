@@ -25,13 +25,22 @@ final class WPD_Classic_Editor {
 		add_filter( 'mce_external_plugins', array( self::class, 'register_tinymce_plugin' ) );
 	}
 
-	/** @param array<string,string> $plugins Registered TinyMCE plugins. @return array<string,string> */
+	/**
+	 * Registers the TinyMCE shortcode preview plugin.
+	 *
+	 * @param array<string,string> $plugins Registered TinyMCE plugins.
+	 * @return array<string,string>
+	 */
 	public static function register_tinymce_plugin( array $plugins ): array {
 		$plugins['wpd_shortcode_preview'] = WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-tinymce.js';
 		return $plugins;
 	}
 
-	/** @param string $hook Current administration screen hook. */
+	/**
+	 * Enqueues Classic Editor assets on post editing screens.
+	 *
+	 * @param string $hook Current administration screen hook.
+	 */
 	public static function enqueue_assets( string $hook ): void {
 		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 			return;
@@ -43,7 +52,11 @@ final class WPD_Classic_Editor {
 		wp_enqueue_script( 'wpd-classic-editor', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-classic-editor.js', array( 'jquery', 'jquery-ui-dialog' ), WPD_VERSION, true );
 	}
 
-	/** @param string $editor_id Target editor identifier. */
+	/**
+	 * Renders the Piwigo gallery button in Classic Editor.
+	 *
+	 * @param string $editor_id Target editor identifier.
+	 */
 	public static function render_button( string $editor_id = 'content' ): void {
 		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
 			return;
