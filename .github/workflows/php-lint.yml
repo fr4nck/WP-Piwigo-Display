@@ -135,6 +135,8 @@ jobs:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
+          # Three historical public hooks keep their pre-v3 names for backward compatibility.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
   package:
     name: Paquet ZIP
