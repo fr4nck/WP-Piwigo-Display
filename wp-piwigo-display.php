@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WP Piwigo Display
+ * Plugin Name: Piwigo Display pour WordPress
  * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
  * Version: 3.0.0-rc.2
  * Requires at least: 6.0
