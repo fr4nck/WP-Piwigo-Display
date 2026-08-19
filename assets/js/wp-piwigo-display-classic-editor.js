@@ -38,12 +38,13 @@
                 var $anchor = $dialog.find('.wpd-collage-options').last();
                 var $controls = $(
                     '<div class="wpd-photo-text-options">' +
-                    '<label>Texte<input type="text" data-wpd="photo_text" value="PÊLE-MÊLE"></label>' +
+                    '<label>Texte<textarea data-wpd="photo_text" rows="3">PÊLE-MÊLE</textarea><span class="description">Jusqu’à quatre lignes.</span></label>' +
                     '<label>Graine<input type="text" data-wpd="photo_text_seed" value="0"></label>' +
                     '<label>Police<select data-wpd="photo_text_font"><option value="inherit">Police du thème</option><option value="system">Système</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label>' +
                     '<label>Graisse<input type="number" min="100" max="900" step="100" data-wpd="photo_text_weight" value="800"></label>' +
                     '<label>Taille du texte<input type="number" min="120" max="300" data-wpd="photo_text_size" value="230"></label>' +
                     '<label>Interlettrage<input type="number" min="-20" max="80" data-wpd="photo_text_letter_spacing" value="0"></label>' +
+                    '<label>Hauteur de ligne (%)<input type="number" min="70" max="160" step="5" data-wpd="photo_text_line_height" value="100"></label>' +
                     '<label>Largeur maximale (%)<input type="number" min="20" max="100" data-wpd="photo_text_max_width" value="100"></label>' +
                     '<label>Alignement<select data-wpd="photo_text_align"><option value="left">Gauche</option><option value="center" selected>Centre</option><option value="right">Droite</option></select></label>' +
                     '<label>Remplissage<select data-wpd="photo_text_fill_mode"><option value="grid">Grille</option><option value="masonry">Masonry</option><option value="collage">Pêle-mêle</option></select></label>' +
@@ -104,7 +105,7 @@
 
         function value(name) { return $dialog.find('[data-wpd="' + name + '"]').val(); }
         function checked(name) { return $dialog.find('[data-wpd="' + name + '"]').is(':checked'); }
-        function escapeValue(input) { return String(input).replace(/\\/g, '\\\\').replace(/"/g, '\\"'); }
+        function escapeValue(input) { return String(input).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/"/g, '\\"'); }
         function add(parts, key, item, allowZero) {
             if (item === undefined || item === null || item === '') return;
             if (!allowZero && item === '0') return;
@@ -138,6 +139,7 @@
                 if ($field.is(':checkbox')) { $field.prop('checked', attributes[name] === 'true' || attributes[name] === '1'); return; }
                 if (name === 'height' && !/^\d+px$/.test(attributes[name])) { editingLegacyHeight = attributes[name]; $field.val(''); return; }
                 if (name === 'height' || name === 'width') { $field.val(parseInt(attributes[name], 10)); return; }
+                if (name === 'photo_text') { $field.val(attributes[name].replace(/\\n/g, '\n')); return; }
                 $field.val(attributes[name]);
             });
         }
@@ -176,6 +178,7 @@
                 add(parts, 'photo_text_weight', bounded('photo_text_weight', 100, 900, 800), true);
                 add(parts, 'photo_text_size', bounded('photo_text_size', 120, 300, 230), true);
                 add(parts, 'photo_text_letter_spacing', bounded('photo_text_letter_spacing', -20, 80, 0), true);
+                add(parts, 'photo_text_line_height', bounded('photo_text_line_height', 70, 160, 100), true);
                 add(parts, 'photo_text_max_width', bounded('photo_text_max_width', 20, 100, 100), true);
                 add(parts, 'photo_text_align', value('photo_text_align') || 'center', true);
                 add(parts, 'photo_text_fill_mode', value('photo_text_fill_mode') || 'grid', true);
@@ -224,6 +227,6 @@
         $(document).on('wpd:edit-shortcode', function (event, editorId, shortcode, node) { currentEditor = editorId || 'content'; editingNode = node || null; populateShortcode(shortcode || ''); $dialog.dialog('open'); });
         $dialog.on('click', '[data-wpd-shape-value]', function () { $dialog.find('[data-wpd="shape"]').val($(this).attr('data-wpd-shape-value')).trigger('change'); });
         $dialog.on('input', '[data-wpd="height"]', function () { editingLegacyHeight = ''; });
-        $dialog.on('change input', 'input, select', refresh);
+        $dialog.on('change input', 'input, textarea, select', refresh);
     });
 })(jQuery);
