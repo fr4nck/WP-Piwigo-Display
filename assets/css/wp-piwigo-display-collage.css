@@ -30,6 +30,79 @@
 	height: auto;
 }
 
+.wp-piwigo-display-collage.wpd-shape-rounded .wp-piwigo-display-collage-item a {
+	border-radius: var(--wpd-shape-radius, 8%);
+	overflow: hidden;
+}
+
+.wp-piwigo-display-collage.wpd-shape-pill .wp-piwigo-display-collage-item a {
+	border-radius: 9999px;
+	overflow: hidden;
+}
+
+.wp-piwigo-display-collage.wpd-shape-circle .wp-piwigo-display-collage-item a {
+	aspect-ratio: 1 / 1;
+	border-radius: 50%;
+	overflow: hidden;
+}
+
+.wp-piwigo-display-collage.wpd-shape-circle .wp-piwigo-display-collage-item img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.wp-piwigo-display-collage.wpd-shape-oval .wp-piwigo-display-collage-item a {
+	border-radius: 50%;
+	overflow: hidden;
+}
+
+.wp-piwigo-display-collage.wpd-shape-star .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 94%, 50% 72%, 21% 94%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-hexagon .wp-piwigo-display-collage-item a {
+	clip-path: polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0 50%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-diamond .wp-piwigo-display-collage-item a,
+.wp-piwigo-display-collage.wpd-shape-card-diamond .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0 50%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-triangle .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 0%, 100% 100%, 0 100%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-pentagon .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0 38%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-octagon .wp-piwigo-display-collage-item a {
+	clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-drop .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 0%, 78% 28%, 92% 55%, 89% 76%, 73% 94%, 50% 100%, 27% 94%, 11% 76%, 8% 55%, 22% 28%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-cloud .wp-piwigo-display-collage-item a {
+	clip-path: polygon(18% 74%, 8% 65%, 8% 52%, 15% 42%, 27% 39%, 34% 24%, 50% 18%, 64% 25%, 70% 38%, 83% 39%, 94% 49%, 94% 63%, 85% 73%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-heart .wp-piwigo-display-collage-item a,
+.wp-piwigo-display-collage.wpd-shape-card-heart .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 92%, 8% 51%, 5% 32%, 13% 17%, 27% 10%, 41% 14%, 50% 25%, 59% 14%, 73% 10%, 87% 17%, 95% 32%, 92% 51%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-card-spade .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 3%, 16% 39%, 8% 54%, 11% 69%, 24% 78%, 38% 76%, 43% 69%, 43% 83%, 34% 96%, 66% 96%, 57% 83%, 57% 69%, 62% 76%, 76% 78%, 89% 69%, 92% 54%, 84% 39%);
+}
+
+.wp-piwigo-display-collage.wpd-shape-card-club .wp-piwigo-display-collage-item a {
+	clip-path: polygon(50% 5%, 40% 8%, 33% 18%, 34% 30%, 22% 25%, 11% 30%, 6% 41%, 8% 53%, 18% 61%, 31% 59%, 25% 70%, 27% 81%, 39% 82%, 34% 96%, 66% 96%, 61% 82%, 73% 81%, 75% 70%, 69% 59%, 82% 61%, 92% 53%, 94% 41%, 89% 30%, 78% 25%, 66% 30%, 67% 18%, 60% 8%);
+}
+
 .wp-piwigo-display-collage-item:focus-within,
 .wp-piwigo-display-collage-item:hover {
 	z-index: 30;
@@ -39,6 +112,12 @@
 .wp-piwigo-display-collage-item a:focus-visible {
 	outline: 3px solid currentColor;
 	outline-offset: 3px;
+}
+
+@supports not (clip-path: polygon(0 0)) {
+	.wp-piwigo-display-collage[class*="wpd-shape-"] .wp-piwigo-display-collage-item a {
+		clip-path: none;
+	}
 }
 
 @media (max-width: 600px) {
