@@ -1,0 +1,109 @@
+name: One-shot stale branch cleanup
+
+on:
+  push:
+    branches:
+      - '3.x-dev'
+    paths:
+      - '.github/workflows/one-shot-branch-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 3.x-dev
+        uses: actions/checkout@v4
+        with:
+          ref: 3.x-dev
+          fetch-depth: 0
+
+      - name: Delete stale branches
+        shell: bash
+        run: |
+          set -u
+          branches=(
+            'agent/fix-rc1-frontend-fatal'
+            'audit/accessibility-v3'
+            'audit/plugin-check-wordpress-org'
+            'audit/security-wordpress-v3'
+            'chore/wpcs-tooling'
+            'ci/unify-main-workflow'
+            'codex/ajouter-bloc-gutenberg-pour-galeries-piwigo'
+            'codex/corrige-lerreur-fatale-a-lactivation'
+            'codex/creer-des-documents-de-developpement'
+            'codex/mettre-a-jour-la-documentation-du-projet'
+            'codex/optimiser-chargement-des-assets-wp-piwigo'
+            'codex/preparer-la-version-1.9.1-et-mettre-a-jour-les-shortcodes'
+            'codex/preparer-metadonnees-version-1.9.0-rc1'
+            'docs/roadmap-3x'
+            'feat/explorateur-albums-repliable'
+            'feature/album-selector'
+            'feature/album-tree-picker'
+            'feature/cache-resilience'
+            'feature/classic-album-name-slider-layout'
+            'feature/composer-parity'
+            'feature/gutenberg-album-picker'
+            'feature/gutenberg-parity'
+            'feature/masonry-layout'
+            'feature/piwigo-service-account'
+            'feature/slider-shapes'
+            'feature/slider-transitions'
+            'feature/sync-1.13.6'
+            'feature/visual-slider-resize'
+            'fix/gutenberg-inserter-registration'
+            'fix/97-openstreetmap'
+            'refactor/admin-composer-script'
+            'refactor/cache-audit'
+            'refactor/diagnostic-audit'
+            'refactor/service-account-audit'
+            'refactor/service-api-audit'
+            'refactor/wpcs-api'
+            'refactor/wpcs-block'
+            'refactor/wpcs-bootstrap'
+            'refactor/wpcs-cache'
+            'refactor/wpcs-classic-editor'
+            'refactor/wpcs-gutenberg-parity'
+            'refactor/wpcs-masonry'
+            'refactor/wpcs-plugin-bootstrap'
+            'refactor/wpcs-renderer'
+            'refactor/wpcs-settings'
+            'refactor/wpcs-shapes'
+            'refactor/wpcs-shortcode'
+            'refactor/wpcs-slider-transitions'
+            'test/recette-3x'
+          )
+
+          failed=()
+          deleted=0
+          for branch in "${branches[@]}"; do
+            if git ls-remote --exit-code --heads origin "refs/heads/${branch}" >/dev/null 2>&1; then
+              echo "Deleting ${branch}"
+              if git push origin --delete "${branch}"; then
+                deleted=$((deleted + 1))
+              else
+                failed+=("${branch}")
+              fi
+            else
+              echo "Already absent: ${branch}"
+            fi
+          done
+
+          echo "Deleted: ${deleted}"
+          if (( ${#failed[@]} > 0 )); then
+            printf 'Failed: %s\n' "${failed[@]}"
+            exit 1
+          fi
+
+      - name: Remove this one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/one-shot-branch-cleanup.yml
+          git commit -m 'chore: remove one-shot branch cleanup workflow'
+          git push origin HEAD:3.x-dev
