@@ -90,6 +90,11 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Api_Metrics::register();
 	WPD_Plugin::init();
 	WPD_Service_Account::register();
+
+	if ( ! WPD_Service_Account::is_configured() ) {
+		remove_action( 'wp_ajax_wpd_get_albums', array( WPD_Service_Account::class, 'ajax_get_albums' ), 1 );
+	}
+
 	WPD_Classic_Editor::register();
 	WPD_Slider_Transitions::register();
 	WPD_Masonry::register();
