@@ -15,18 +15,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read plugin version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(php -r '$c=file_get_contents("wp-piwigo-display.php"); preg_match("/^[[:space:]]*\\*[[:space:]]*Version:[[:space:]]*([^[:space:]]+)/m", $c, $m); echo $m[1] ?? "dev";')"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Build WordPress plugin archive
         run: |
-          SAFE_REF="${GITHUB_REF_NAME//\//-}"
           git archive \
             --format=zip \
             --prefix=wp-piwigo-display/ \
-            -o "wp-piwigo-display-${SAFE_REF}.zip" \
+            -o "piwigo-display-${{ steps.version.outputs.version }}.zip" \
             HEAD
+
+      - name: Verify archive structure
+        run: |
+          unzip -l "piwigo-display-${{ steps.version.outputs.version }}.zip" | grep -q 'wp-piwigo-display/wp-piwigo-display.php'
 
       - name: Upload plugin ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: wp-piwigo-display-${{ github.run_id }}
-          path: wp-piwigo-display-*.zip
+          name: piwigo-display-${{ steps.version.outputs.version }}
+          path: piwigo-display-${{ steps.version.outputs.version }}.zip
           retention-days: 14
