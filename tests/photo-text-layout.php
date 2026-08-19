@@ -29,15 +29,26 @@ $assert( false !== strpos( $module, 'WPD_User_Fonts::font_stack' ), 'Le moteur T
 $assert( false !== strpos( $fonts, "'system' => 'system-ui" ), 'Une pile système locale doit être disponible.' );
 $assert( false !== strpos( $fonts, "'serif'  => 'Georgia" ) && false !== strpos( $fonts, "'mono'   => 'ui-monospace" ), 'Les piles serif et monospace locales doivent rester disponibles.' );
 $assert( false === strpos( $module, 'fonts.googleapis.com' ) && false === strpos( $module, 'use.typekit.net' ) && false === strpos( $fonts, 'fonts.googleapis.com' ) && false === strpos( $fonts, 'use.typekit.net' ), 'Aucune police distante tierce ne doit être chargée.' );
+$assert( false !== strpos( $module, "photo_text_size']" ) && false !== strpos( $module, "photo_text_letter_spacing']" ), 'Le moteur doit exposer taille et interlettrage.' );
+$assert( false !== strpos( $module, "photo_text_max_width']" ) && false !== strpos( $module, "photo_text_align']" ), 'Le moteur doit exposer largeur maximale et alignement.' );
+$assert( false !== strpos( $module, 'letter-spacing:%4$dpx' ), 'L’interlettrage doit modifier réellement le SVG.' );
+$assert( false === strpos( $module, 'textLength="1100"' ), 'Le SVG ne doit plus forcer une largeur fixe qui neutralise la taille et l’interlettrage.' );
+$assert( false !== strpos( $module, 'text_position( $align )' ) && false !== strpos( $module, "'anchor' => 'start'" ) && false !== strpos( $module, "'anchor' => 'end'" ), 'L’alignement doit modifier la position SVG.' );
 $assert( false !== strpos( $css, '.wpd-photo-text-semantic' ), 'Le texte sémantique doit disposer d’un masquage visuel accessible.' );
+$assert( false !== strpos( $css, '--wpd-photo-text-max-width' ) && false !== strpos( $css, '.wpd-photo-text-align-right' ), 'La largeur responsive et l’alignement du conteneur doivent être stylés.' );
 $assert( false !== strpos( $block, '"photoText"' ) && false !== strpos( $block, '"photoTextMaxImages"' ), 'Les attributs Gutenberg du texte photo doivent être déclarés.' );
+$assert( false !== strpos( $block, '"photoTextSize"' ) && false !== strpos( $block, '"photoTextLetterSpacing"' ) && false !== strpos( $block, '"photoTextMaxWidth"' ) && false !== strpos( $block, '"photoTextAlign"' ), 'Les attributs typographiques Gutenberg doivent être déclarés.' );
 $assert( false !== strpos( $controls, "value: 'photo-text'" ), 'Gutenberg doit proposer le mode Texte rempli de photos.' );
 $assert( false !== strpos( $controls, 'Même graine + mêmes photos = même remplissage.' ), 'Gutenberg doit expliquer la stabilité du remplissage.' );
+$assert( false !== strpos( $controls, 'Taille du texte' ) && false !== strpos( $controls, 'Interlettrage' ) && false !== strpos( $controls, 'Largeur maximale (%)' ) && false !== strpos( $controls, 'Alignement' ), 'Gutenberg doit exposer les réglages typographiques.' );
 $assert( 1 === preg_match( "/'photoText'\\s*=>\\s*'photo_text'/", $block_php ), 'Le bloc doit transmettre le texte au shortcode.' );
+$assert( 1 === preg_match( "/'photoTextSize'\\s*=>\\s*'photo_text_size'/", $block_php ) && 1 === preg_match( "/'photoTextAlign'\\s*=>\\s*'photo_text_align'/", $block_php ), 'Le bloc doit transmettre les réglages typographiques au shortcode.' );
 $assert( false !== strpos( $classic, 'Texte rempli de photos' ) && false !== strpos( $classic, "type === 'photo-text'" ), 'Classic Editor doit proposer et générer le mode Texte rempli de photos.' );
 $assert( false !== strpos( $classic, 'photo_text_outline_color' ), 'Classic Editor doit exposer les réglages du texte photo.' );
+$assert( false !== strpos( $classic, 'photo_text_size' ) && false !== strpos( $classic, 'photo_text_letter_spacing' ) && false !== strpos( $classic, 'photo_text_max_width' ) && false !== strpos( $classic, 'photo_text_align' ), 'Classic Editor doit exposer la typographie Texte-photo.' );
 $assert( false !== strpos( $composer, "[ 'photo-text', 'Texte rempli de photos' ]" ), 'Le composeur doit proposer le mode Texte rempli de photos.' );
 $assert( false !== strpos( $composer, "type.value === 'photo-text'" ) && false !== strpos( $composer, 'photo_text_outline_color' ), 'Le composeur doit générer les attributs du texte photo.' );
+$assert( false !== strpos( $composer, 'photo_text_size' ) && false !== strpos( $composer, 'photo_text_letter_spacing' ) && false !== strpos( $composer, 'photo_text_max_width' ) && false !== strpos( $composer, 'photo_text_align' ), 'Le composeur doit générer la typographie Texte-photo.' );
 $assert( false !== strpos( $composer, "[ 'collage', 'Collage / Pêle-mêle' ]" ) && false !== strpos( $composer, 'wpd-c-shape' ), 'Le mode Texte photo ne doit pas supprimer les contrôles Core existants.' );
 
 fwrite( STDOUT, "Photo-filled semantic text layout and editor parity: OK\n" );
