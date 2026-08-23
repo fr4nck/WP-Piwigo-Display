@@ -63,7 +63,7 @@ final class WPD_Piwigo_Response_Compat {
 	 * Normalizes one Piwigo response body.
 	 *
 	 * Clean JSON is returned untouched. Recovery only succeeds when a complete
-	 * JSON object containing the Piwigo `stat` member can be isolated.
+	 * JSON object containing a valid Piwigo `stat` value can be isolated.
 	 *
 	 * @param string $body Raw HTTP response body.
 	 * @return string
@@ -150,8 +150,9 @@ final class WPD_Piwigo_Response_Compat {
 					if ( 0 === $depth ) {
 						$candidate = substr( $body, $start, $position - $start + 1 );
 						$decoded   = json_decode( $candidate, true );
+						$stat      = is_array( $decoded ) ? (string) ( $decoded['stat'] ?? '' ) : '';
 
-						if ( is_array( $decoded ) && isset( $decoded['stat'] ) ) {
+						if ( in_array( $stat, array( 'ok', 'fail' ), true ) ) {
 							return $candidate;
 						}
 						break;
