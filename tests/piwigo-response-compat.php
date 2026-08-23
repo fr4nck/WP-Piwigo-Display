@@ -42,44 +42,75 @@ $assert = static function ( bool $condition, string $message ): void {
 	}
 };
 
-$url = 'https://photos.example.test/ws.php?format=json';
+$url         = 'https://photos.example.test/ws.php?format=json';
+$plugin_args = array( 'user-agent' => 'Piwigo Display/3.0.0-rc.3' );
 
 $clean = array( 'body' => '{"stat":"ok","result":{"value":"clean"}}' );
 $assert(
-	$clean === WPD_Piwigo_Response_Compat::clean_response( $clean, array(), $url ),
+	$clean === WPD_Piwigo_Response_Compat::clean_response( $clean, $plugin_args, $url ),
 	'A clean Piwigo JSON response must remain untouched.'
 );
 
 $polluted = array(
 	'body' => '<script>window.osm=true;</script>noise {"not":"piwigo"} before {"stat":"ok","result":{"label":"brace } and \\"quote\\""}} trailing markup',
 );
-$recovered = WPD_Piwigo_Response_Compat::clean_response( $polluted, array(), $url );
+$recovered = WPD_Piwigo_Response_Compat::clean_response( $polluted, $plugin_args, $url );
 $assert( is_array( $recovered ), 'A recoverable Piwigo response must remain an HTTP response array.' );
 $assert(
 	'{"stat":"ok","result":{"label":"brace } and \\"quote\\""}}' === ( $recovered['body'] ?? '' ),
 	'The compatibility layer must isolate the complete Piwigo JSON object and ignore surrounding output.'
 );
 
-$unrelated = array( 'body' => 'prefix {"stat":"ok"} suffix' );
+$foreign_same_endpoint = array( 'body' => 'prefix {"stat":"ok","result":{"value":1}} suffix' );
 $assert(
-	$unrelated === WPD_Piwigo_Response_Compat::clean_response( $unrelated, array(), 'https://example.test/api.php?format=json' ),
+	$foreign_same_endpoint === WPD_Piwigo_Response_Compat::clean_response(
+		$foreign_same_endpoint,
+		array( 'user-agent' => 'WordPress/7.1' ),
+		$url
+	),
+	'An unrelated WordPress request to ws.php?format=json must never be rewritten.'
+);
+
+$missing_identity = array( 'body' => 'prefix {"stat":"ok"} suffix' );
+$assert(
+	$missing_identity === WPD_Piwigo_Response_Compat::clean_response( $missing_identity, array(), $url ),
+	'A request without the Piwigo Display user-agent must never be rewritten.'
+);
+
+$unrelated_endpoint = array( 'body' => 'prefix {"stat":"ok"} suffix' );
+$assert(
+	$unrelated_endpoint === WPD_Piwigo_Response_Compat::clean_response(
+		$unrelated_endpoint,
+		$plugin_args,
+		'https://example.test/api.php?format=json'
+	),
 	'Non-Piwigo endpoints must never be rewritten.'
 );
 
 $missing_format = array( 'body' => 'prefix {"stat":"ok"} suffix' );
 $assert(
-	$missing_format === WPD_Piwigo_Response_Compat::clean_response( $missing_format, array(), 'https://photos.example.test/ws.php' ),
+	$missing_format === WPD_Piwigo_Response_Compat::clean_response( $missing_format, $plugin_args, 'https://photos.example.test/ws.php' ),
 	'Piwigo ws.php requests without format=json must never be rewritten.'
 );
 
 $invalid = array( 'body' => '<div>noise</div>{"result":{"value":1}}tail' );
 $assert(
-	$invalid === WPD_Piwigo_Response_Compat::clean_response( $invalid, array(), $url ),
+	$invalid === WPD_Piwigo_Response_Compat::clean_response( $invalid, $plugin_args, $url ),
 	'A polluted body without a Piwigo stat member must not be accepted as recovered API JSON.'
+);
+
+$valid_foreign_json = '{"service":"other","result":{"value":1}}';
+$assert(
+	$valid_foreign_json === WPD_Piwigo_Response_Compat::normalize_body( $valid_foreign_json ),
+	'Already-valid JSON must remain byte-for-byte unchanged.'
 );
 
 $bootstrap = file_get_contents( dirname( __DIR__ ) . '/wp-piwigo-display.php' );
 $assert( false !== strpos( (string) $bootstrap, 'class-wpd-piwigo-response-compat.php' ), 'The compatibility class must be loaded by the plugin bootstrap.' );
 $assert( false !== strpos( (string) $bootstrap, 'WPD_Piwigo_Response_Compat::register()' ), 'The compatibility layer must be registered by the plugin bootstrap.' );
+
+$compatibility_source = file_get_contents( dirname( __DIR__ ) . '/includes/class-wpd-piwigo-response-compat.php' );
+$assert( false !== strpos( (string) $compatibility_source, "'user-agent'" ), 'Recovery must explicitly check the request user-agent.' );
+$assert( false !== strpos( (string) $compatibility_source, "'Piwigo Display/'" ), 'Recovery must be scoped to Piwigo Display HTTP requests.' );
 
 echo "Piwigo polluted-response compatibility: OK\n";
