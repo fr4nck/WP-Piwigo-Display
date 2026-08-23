@@ -43,6 +43,7 @@ The goal is to let users build galleries without writing code while preserving s
 - configurable width, height, ratio, speed and interval;
 - WordPress cache separated by access context;
 - diagnostics and cache purge;
+- defensive recovery of valid Piwigo JSON when an extension accidentally surrounds the API response with HTML or JavaScript;
 - improved keyboard navigation, visible focus and `prefers-reduced-motion` support.
 
 ## API & cache health
@@ -61,6 +62,14 @@ The **API & cache health** section reports:
 - compact health verdict.
 
 Metrics are aggregated without storing credentials, passwords or request bodies. A regression test protects this diagnostic feature from accidental removal during future refactoring.
+
+## Polluted Piwigo JSON compatibility
+
+Some Piwigo extensions can accidentally add HTML or JavaScript around the JSON returned by `ws.php?format=json`. One reported case involves OpenStreetMap.
+
+RC3 can isolate a complete Piwigo JSON response containing the `stat` member from that surrounding output. Recovery is deliberately narrow: it only applies to requests emitted by **Piwigo Display** to Piwigo's JSON endpoint. Other WordPress HTTP requests are not modified.
+
+The behavior is covered by automated regression tests. The OpenStreetMap case still needs validation on an actually affected Piwigo installation before that compatibility issue can be considered fully closed.
 
 ## Installing the RC
 
@@ -114,6 +123,7 @@ Shortcodes remain available for manual integrations, templates, generated conten
 
 - Installation: `docs/installation.md`
 - Configuration: `docs/configuration.md`
+- Troubleshooting (French): `docs/DEPANNAGE.md`
 - Shortcodes: `docs/shortcodes.md`
 - Service account: `docs/COMPTE-DE-SERVICE.md`
 - Shapes: `docs/FORMES.md`
