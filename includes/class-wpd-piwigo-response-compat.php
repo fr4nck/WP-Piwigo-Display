@@ -1,6 +1,6 @@
 <?php
 /**
- * Compatibility layer for Piwigo web-service responses.
+ * Compatibility layer for Piwigo web-service response bodies.
  *
  * Some Piwigo extensions can accidentally print HTML or JavaScript around the
  * JSON returned by ws.php. OpenStreetMap has been observed doing this for
@@ -15,67 +15,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Keeps Piwigo JSON API responses usable when a Piwigo plugin adds output.
+ * Keeps Piwigo JSON API response bodies usable when a Piwigo plugin adds output.
  */
 final class WPD_Piwigo_Response_Compat {
 	/**
-	 * Registers the HTTP response filter.
+	 * Normalizes one response body returned by a Piwigo API client.
 	 *
-	 * @return void
+	 * Clean JSON is returned untouched. Recovery only succeeds when a complete
+	 * JSON object containing the Piwigo `stat` member can be isolated. The method
+	 * is called explicitly by Piwigo Display's own API clients so unrelated
+	 * WordPress HTTP traffic is never filtered or rewritten globally.
+	 *
+	 * @param string $body Raw HTTP response body.
+	 * @return string
 	 */
-	public static function register(): void {
-		add_filter( 'http_response', array( self::class, 'clean_response' ), 10, 3 );
-	}
-
-	/**
-	 * Removes accidental output surrounding a valid Piwigo JSON response.
-	 *
-	 * Clean responses are returned untouched. Recovery is deliberately limited
-	 * to Piwigo ws.php JSON requests and only succeeds when a complete JSON
-	 * object containing the Piwigo `stat` member can be isolated.
-	 *
-	 * @param array|WP_Error $response HTTP response.
-	 * @param array          $parsed_args HTTP request arguments.
-	 * @param string         $url Requested URL.
-	 * @return array|WP_Error
-	 */
-	public static function clean_response( $response, array $parsed_args, string $url ) {
-		unset( $parsed_args );
-
-		if ( is_wp_error( $response ) || ! self::is_piwigo_json_request( $url ) ) {
-			return $response;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
+	public static function normalize_body( string $body ): string {
 		if ( '' === $body || is_array( json_decode( $body, true ) ) ) {
-			return $response;
+			return $body;
 		}
 
 		$json = self::extract_piwigo_json( $body );
-		if ( null === $json ) {
-			return $response;
-		}
-
-		$response['body'] = $json;
-		return $response;
-	}
-
-	/**
-	 * Checks whether the URL targets Piwigo's JSON web service.
-	 *
-	 * @param string $url Requested URL.
-	 * @return bool
-	 */
-	private static function is_piwigo_json_request( string $url ): bool {
-		$path  = (string) wp_parse_url( $url, PHP_URL_PATH );
-		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
-
-		if ( 'ws.php' !== basename( $path ) ) {
-			return false;
-		}
-
-		parse_str( $query, $parameters );
-		return isset( $parameters['format'] ) && 'json' === strtolower( (string) $parameters['format'] );
+		return null === $json ? $body : $json;
 	}
 
 	/**
