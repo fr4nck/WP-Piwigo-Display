@@ -43,6 +43,7 @@ L’objectif est de permettre à un utilisateur de construire une galerie sans �
 - largeur, hauteur, ratio, vitesse et intervalle configurables ;
 - cache WordPress séparé par contexte d’accès ;
 - diagnostic et purge du cache ;
+- récupération défensive du JSON Piwigo lorsqu’une extension ajoute accidentellement du HTML ou du JavaScript autour de la réponse API ;
 - navigation clavier renforcée, focus visible et prise en compte de `prefers-reduced-motion`.
 
 ## Santé API & cache
@@ -61,6 +62,14 @@ Le bloc **Santé API & cache** permet de suivre notamment :
 - verdict synthétique de santé.
 
 Les métriques sont agrégées sans conserver les identifiants, mots de passe ou corps de requête. Un test de non-régression empêche leur disparition accidentelle lors d’un futur refactoring.
+
+## Compatibilité avec les réponses Piwigo polluées
+
+Certaines extensions Piwigo peuvent ajouter accidentellement du HTML ou du JavaScript autour du JSON renvoyé par `ws.php?format=json`. Un cas a notamment été signalé avec OpenStreetMap.
+
+La RC3 sait isoler une réponse Piwigo JSON complète contenant le champ `stat` au milieu de ce contenu parasite. Cette récupération est volontairement étroite : elle ne s’applique qu’aux requêtes émises par **Piwigo Display** vers l’endpoint JSON de Piwigo. Les autres requêtes HTTP de WordPress ne sont pas modifiées.
+
+Le correctif est couvert par des tests automatisés, mais le cas OpenStreetMap reste à valider sur une installation Piwigo réellement affectée avant de considérer ce point comme définitivement clos.
 
 ## Installation de la RC
 
@@ -118,6 +127,7 @@ Les shortcodes restent disponibles pour les intégrations manuelles, les modèle
 
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
+- [Dépannage](docs/DEPANNAGE.md)
 - [Shortcodes](docs/shortcodes.md)
 - [Compte de service](docs/COMPTE-DE-SERVICE.md)
 - [Formes](docs/FORMES.md)
