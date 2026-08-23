@@ -1,6 +1,6 @@
 <?php
 /**
- * Compatibility layer for Piwigo web-service response bodies.
+ * Compatibility layer for Piwigo web-service responses.
  *
  * Some Piwigo extensions can accidentally print HTML or JavaScript around the
  * JSON returned by ws.php. OpenStreetMap has been observed doing this for
@@ -15,16 +15,55 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Keeps Piwigo JSON API response bodies usable when a Piwigo plugin adds output.
+ * Keeps Piwigo JSON API responses usable when a Piwigo plugin adds output.
  */
 final class WPD_Piwigo_Response_Compat {
 	/**
-	 * Normalizes one response body returned by a Piwigo API client.
+	 * Registers the narrowly scoped HTTP response filter.
+	 *
+	 * @return void
+	 */
+	public static function register(): void {
+		add_filter( 'http_response', array( self::class, 'clean_response' ), 10, 3 );
+	}
+
+	/**
+	 * Removes accidental output surrounding a valid Piwigo JSON response.
+	 *
+	 * The recovery path is deliberately restricted to requests emitted by
+	 * Piwigo Display itself, identified by its private HTTP user-agent, and to
+	 * Piwigo's ws.php JSON endpoint. Other WordPress HTTP traffic is returned
+	 * byte-for-byte unchanged.
+	 *
+	 * @param array|WP_Error $response    HTTP response.
+	 * @param array          $parsed_args HTTP request arguments.
+	 * @param string         $url         Requested URL.
+	 * @return array|WP_Error
+	 */
+	public static function clean_response( $response, array $parsed_args, string $url ) {
+		if (
+			is_wp_error( $response )
+			|| ! self::is_piwigo_display_request( $parsed_args )
+			|| ! self::is_piwigo_json_request( $url )
+		) {
+			return $response;
+		}
+
+		$body       = wp_remote_retrieve_body( $response );
+		$normalized = self::normalize_body( $body );
+		if ( $normalized === $body ) {
+			return $response;
+		}
+
+		$response['body'] = $normalized;
+		return $response;
+	}
+
+	/**
+	 * Normalizes one Piwigo response body.
 	 *
 	 * Clean JSON is returned untouched. Recovery only succeeds when a complete
-	 * JSON object containing the Piwigo `stat` member can be isolated. The method
-	 * is called explicitly by Piwigo Display's own API clients so unrelated
-	 * WordPress HTTP traffic is never filtered or rewritten globally.
+	 * JSON object containing the Piwigo `stat` member can be isolated.
 	 *
 	 * @param string $body Raw HTTP response body.
 	 * @return string
@@ -36,6 +75,35 @@ final class WPD_Piwigo_Response_Compat {
 
 		$json = self::extract_piwigo_json( $body );
 		return null === $json ? $body : $json;
+	}
+
+	/**
+	 * Checks whether the request was emitted by Piwigo Display.
+	 *
+	 * @param array $parsed_args WordPress HTTP request arguments.
+	 * @return bool
+	 */
+	private static function is_piwigo_display_request( array $parsed_args ): bool {
+		$user_agent = isset( $parsed_args['user-agent'] ) ? (string) $parsed_args['user-agent'] : '';
+		return 0 === strpos( $user_agent, 'Piwigo Display/' );
+	}
+
+	/**
+	 * Checks whether the URL targets Piwigo's JSON web service.
+	 *
+	 * @param string $url Requested URL.
+	 * @return bool
+	 */
+	private static function is_piwigo_json_request( string $url ): bool {
+		$path  = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
+
+		if ( 'ws.php' !== basename( $path ) ) {
+			return false;
+		}
+
+		parse_str( $query, $parameters );
+		return isset( $parameters['format'] ) && 'json' === strtolower( (string) $parameters['format'] );
 	}
 
 	/**
