@@ -35,10 +35,13 @@ Version 3.0.0-rc.3 includes:
 * WordPress caching separated by access context;
 * diagnostics and cache purge;
 * persistent API/cache health metrics with API call count, HIT/MISS rate, timings, latest method/status/error, and health verdict;
+* defensive recovery of valid Piwigo JSON when a Piwigo extension adds accidental output around the API response;
 * server-side Piwigo service account for authorized private albums;
 * keyboard navigation, visible focus, and reduced-motion support.
 
 API health metrics do not store credentials, passwords, or HTTP request bodies.
+
+Polluted-response recovery is restricted to HTTP requests emitted by Piwigo Display towards Piwigo's `ws.php?format=json` endpoint. Other WordPress HTTP traffic is returned unchanged.
 
 The service account does not sign visitors into Piwigo. A private album rendered on a public WordPress page becomes visible on that page, so the dedicated account must only have access to albums intended for publication.
 
@@ -120,6 +123,10 @@ No. Authentication and session cookies remain server-side.
 
 It shows aggregated API calls, cache HIT/MISS counts and rate, cumulative/average/slowest API time, the latest API method and HTTP status, the latest sanitized error, and a compact health verdict.
 
+= What if a Piwigo extension adds HTML or JavaScript around the JSON API response? =
+
+RC3 can recover a complete Piwigo JSON object containing the `stat` member from surrounding output. The recovery path is restricted to Piwigo Display requests to Piwigo's JSON web-service endpoint and does not rewrite unrelated WordPress HTTP responses.
+
 = Does the slider respect reduced-motion preferences? =
 
 Yes. When the operating system requests reduced motion, autoplay is disabled and transitions are removed or reduced.
@@ -131,6 +138,9 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Restored persistent API and cache health diagnostics.
 * Added API call count, cache HIT/MISS statistics, hit rate, cumulative/average/slowest timings, latest API method, HTTP status, latest error, and health verdict.
 * Added a regression test protecting the diagnostic counter from accidental removal.
+* Added defensive recovery for Piwigo JSON polluted by extension output, including the reported OpenStreetMap scenario.
+* Restricted polluted-response recovery to Piwigo Display requests so unrelated WordPress HTTP traffic remains untouched.
+* Added regression coverage for a foreign request targeting another `ws.php?format=json` endpoint.
 * Kept metrics credential-free and request-body-free.
 * Consolidated the public version history: 1.8.0 was the last stable public release before V3; 2.0.0 was never published as a public release.
 * Aligned the public product name to Piwigo Display.
