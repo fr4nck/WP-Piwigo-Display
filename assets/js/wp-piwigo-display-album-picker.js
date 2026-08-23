@@ -137,7 +137,8 @@
                     $toggle.append($('<span class="dashicons" aria-hidden="true"></span>').addClass(branchExpanded ? 'dashicons-arrow-down-alt2' : 'dashicons-arrow-right-alt2'));
                     $toggle.on('click', function () {
                         expanded[id] = !expanded[id];
-                        draw($search.val(), id);
+                        draw($search.val());
+                        $list.find('#' + rowId + ' .wpd-album-toggle').trigger('focus');
                     });
                 } else {
                     $toggle.attr({ 'aria-hidden': 'true', tabindex: '-1' }).prop('disabled', true);

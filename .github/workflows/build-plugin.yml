@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   build-package:
-    if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'release/')
+    if: github.event_name != 'pull_request' || startsWith(github.base_ref, 'release/') || startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

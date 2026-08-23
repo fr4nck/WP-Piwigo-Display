@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class WPD_Piwigo_Response_Compat {
 	/**
-	 * Registers the HTTP response filter.
+	 * Registers the narrowly scoped HTTP response filter.
 	 *
 	 * @return void
 	 */
@@ -30,34 +30,62 @@ final class WPD_Piwigo_Response_Compat {
 	/**
 	 * Removes accidental output surrounding a valid Piwigo JSON response.
 	 *
-	 * Clean responses are returned untouched. Recovery is deliberately limited
-	 * to Piwigo ws.php JSON requests and only succeeds when a complete JSON
-	 * object containing the Piwigo `stat` member can be isolated.
+	 * The recovery path is deliberately restricted to requests emitted by
+	 * Piwigo Display itself, identified by its private HTTP user-agent, and to
+	 * Piwigo's ws.php JSON endpoint. Other WordPress HTTP traffic is returned
+	 * byte-for-byte unchanged.
 	 *
-	 * @param array|WP_Error $response HTTP response.
+	 * @param array|WP_Error $response    HTTP response.
 	 * @param array          $parsed_args HTTP request arguments.
-	 * @param string         $url Requested URL.
+	 * @param string         $url         Requested URL.
 	 * @return array|WP_Error
 	 */
 	public static function clean_response( $response, array $parsed_args, string $url ) {
-		unset( $parsed_args );
-
-		if ( is_wp_error( $response ) || ! self::is_piwigo_json_request( $url ) ) {
+		if (
+			is_wp_error( $response )
+			|| ! self::is_piwigo_display_request( $parsed_args )
+			|| ! self::is_piwigo_json_request( $url )
+		) {
 			return $response;
 		}
 
-		$body = wp_remote_retrieve_body( $response );
-		if ( '' === $body || is_array( json_decode( $body, true ) ) ) {
+		$body       = wp_remote_retrieve_body( $response );
+		$normalized = self::normalize_body( $body );
+		if ( $normalized === $body ) {
 			return $response;
+		}
+
+		$response['body'] = $normalized;
+		return $response;
+	}
+
+	/**
+	 * Normalizes one Piwigo response body.
+	 *
+	 * Clean JSON is returned untouched. Recovery only succeeds when a complete
+	 * JSON object containing a valid Piwigo `stat` value can be isolated.
+	 *
+	 * @param string $body Raw HTTP response body.
+	 * @return string
+	 */
+	public static function normalize_body( string $body ): string {
+		if ( '' === $body || is_array( json_decode( $body, true ) ) ) {
+			return $body;
 		}
 
 		$json = self::extract_piwigo_json( $body );
-		if ( null === $json ) {
-			return $response;
-		}
+		return null === $json ? $body : $json;
+	}
 
-		$response['body'] = $json;
-		return $response;
+	/**
+	 * Checks whether the request was emitted by Piwigo Display.
+	 *
+	 * @param array $parsed_args WordPress HTTP request arguments.
+	 * @return bool
+	 */
+	private static function is_piwigo_display_request( array $parsed_args ): bool {
+		$user_agent = isset( $parsed_args['user-agent'] ) ? (string) $parsed_args['user-agent'] : '';
+		return 0 === strpos( $user_agent, 'Piwigo Display/' );
 	}
 
 	/**
@@ -122,8 +150,9 @@ final class WPD_Piwigo_Response_Compat {
 					if ( 0 === $depth ) {
 						$candidate = substr( $body, $start, $position - $start + 1 );
 						$decoded   = json_decode( $candidate, true );
+						$stat      = is_array( $decoded ) ? (string) ( $decoded['stat'] ?? '' ) : '';
 
-						if ( is_array( $decoded ) && isset( $decoded['stat'] ) ) {
+						if ( in_array( $stat, array( 'ok', 'fail' ), true ) ) {
 							return $candidate;
 						}
 						break;
