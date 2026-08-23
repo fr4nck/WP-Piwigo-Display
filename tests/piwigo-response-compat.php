@@ -52,13 +52,20 @@ $assert(
 );
 
 $polluted = array(
-	'body' => '<script>window.osm=true;</script>noise {"not":"piwigo"} before {"stat":"ok","result":{"label":"brace } and \\"quote\\""}} trailing markup',
+	'body' => '<script>window.osm=true;</script>noise {"not":"piwigo"} {"stat":"maybe"} before {"stat":"ok","result":{"label":"brace } and \\"quote\\""}} trailing markup',
 );
 $recovered = WPD_Piwigo_Response_Compat::clean_response( $polluted, $plugin_args, $url );
 $assert( is_array( $recovered ), 'A recoverable Piwigo response must remain an HTTP response array.' );
 $assert(
 	'{"stat":"ok","result":{"label":"brace } and \\"quote\\""}}' === ( $recovered['body'] ?? '' ),
-	'The compatibility layer must isolate the complete Piwigo JSON object and ignore surrounding output.'
+	'The compatibility layer must isolate a complete Piwigo JSON object and skip unrelated or invalid stat objects.'
+);
+
+$failed_piwigo = array( 'body' => '<b>warning</b>{"stat":"fail","err":999,"message":"Example"}tail' );
+$failed_recovered = WPD_Piwigo_Response_Compat::clean_response( $failed_piwigo, $plugin_args, $url );
+$assert(
+	'{"stat":"fail","err":999,"message":"Example"}' === ( $failed_recovered['body'] ?? '' ),
+	'A valid Piwigo failure response must also be recoverable so the API client can report its error.'
 );
 
 $foreign_same_endpoint = array( 'body' => 'prefix {"stat":"ok","result":{"value":1}} suffix' );
@@ -93,10 +100,10 @@ $assert(
 	'Piwigo ws.php requests without format=json must never be rewritten.'
 );
 
-$invalid = array( 'body' => '<div>noise</div>{"result":{"value":1}}tail' );
+$invalid = array( 'body' => '<div>noise</div>{"result":{"value":1}}{"stat":"unknown"}tail' );
 $assert(
 	$invalid === WPD_Piwigo_Response_Compat::clean_response( $invalid, $plugin_args, $url ),
-	'A polluted body without a Piwigo stat member must not be accepted as recovered API JSON.'
+	'A polluted body without a valid Piwigo stat value must not be accepted as recovered API JSON.'
 );
 
 $valid_foreign_json = '{"service":"other","result":{"value":1}}';
@@ -112,5 +119,6 @@ $assert( false !== strpos( (string) $bootstrap, 'WPD_Piwigo_Response_Compat::reg
 $compatibility_source = file_get_contents( dirname( __DIR__ ) . '/includes/class-wpd-piwigo-response-compat.php' );
 $assert( false !== strpos( (string) $compatibility_source, "'user-agent'" ), 'Recovery must explicitly check the request user-agent.' );
 $assert( false !== strpos( (string) $compatibility_source, "'Piwigo Display/'" ), 'Recovery must be scoped to Piwigo Display HTTP requests.' );
+$assert( false !== strpos( (string) $compatibility_source, "array( 'ok', 'fail' )" ), 'Recovery must only accept documented Piwigo stat values.' );
 
 echo "Piwigo polluted-response compatibility: OK\n";
