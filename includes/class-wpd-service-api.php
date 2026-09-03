@@ -242,7 +242,7 @@ final class WPD_Service_Api
             }
         }
 
-        $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
+        $response = wp_safe_remote_post($this->base_url . '/ws.php?format=json', [
             'timeout' => 10,
             'redirection' => 0,
             'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,

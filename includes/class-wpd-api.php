@@ -295,7 +295,7 @@ final class WPD_Api
             return self::$request_cache[$cache_key];
         }
 
-        $response = wp_remote_post($this->base_url . '/ws.php?format=json', [
+        $response = wp_safe_remote_post($this->base_url . '/ws.php?format=json', [
             'timeout' => 10,
             'redirection' => 3,
             'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
