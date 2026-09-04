@@ -47,6 +47,9 @@ jobs:
       - name: Check PHP 8.1 syntax
         run: composer lint
 
+      - name: Run PHP 8.1 regression tests
+        run: composer test
+
       - name: Check PHP compatibility
         run: composer compatibility
 
@@ -62,6 +65,9 @@ jobs:
 
       - name: Check PHP 8.4 syntax
         run: composer lint
+
+      - name: Run PHP 8.4 regression tests
+        run: composer test
 
   package:
     name: Paquet ZIP
