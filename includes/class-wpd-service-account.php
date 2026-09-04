@@ -10,6 +10,7 @@ final class WPD_Service_Account
     public const ENABLED_CONSTANT = 'WPD_PIWIGO_SERVICE_ENABLED';
     public const USERNAME_CONSTANT = 'WPD_PIWIGO_SERVICE_USERNAME';
     public const PASSWORD_CONSTANT = 'WPD_PIWIGO_SERVICE_PASSWORD';
+    public const API_KEY_CONSTANT = 'WPD_PIWIGO_SERVICE_API_KEY';
 
     public static function register(): void
     {
@@ -24,7 +25,7 @@ final class WPD_Service_Account
         register_setting('wp_piwigo_display', self::OPTION_NAME, [
             'type' => 'array',
             'sanitize_callback' => [self::class, 'sanitize_options'],
-            'default' => ['enabled' => 'false', 'username' => '', 'password' => ''],
+            'default' => ['enabled' => 'false', 'username' => '', 'password' => '', 'api_key' => ''],
         ]);
 
         add_settings_section(
@@ -34,6 +35,7 @@ final class WPD_Service_Account
             'wp-piwigo-display'
         );
         add_settings_field('wpd_service_enabled', __('Activer', 'wp-piwigo-display'), [self::class, 'render_enabled_field'], 'wp-piwigo-display', 'wp_piwigo_display_service_account');
+        add_settings_field('wpd_service_api_key', __('Clé API Piwigo', 'wp-piwigo-display'), [self::class, 'render_api_key_field'], 'wp-piwigo-display', 'wp_piwigo_display_service_account');
         add_settings_field('wpd_service_username', __('Utilisateur Piwigo', 'wp-piwigo-display'), [self::class, 'render_username_field'], 'wp-piwigo-display', 'wp_piwigo_display_service_account');
         add_settings_field('wpd_service_password', __('Mot de passe Piwigo', 'wp-piwigo-display'), [self::class, 'render_password_field'], 'wp-piwigo-display', 'wp_piwigo_display_service_account');
     }
@@ -43,16 +45,19 @@ final class WPD_Service_Account
         $options = is_array($options) ? $options : [];
         $previous = self::get_options();
         $password = isset($options['password']) ? (string) $options['password'] : '';
+        $api_key = isset($options['api_key']) ? trim((string) $options['api_key']) : '';
 
         $sanitized = [
             'enabled' => filter_var($options['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
             'username' => sanitize_text_field((string) ($options['username'] ?? '')),
             'password' => $password !== '' ? $password : (string) ($previous['password'] ?? ''),
+            'api_key' => $api_key !== '' ? sanitize_text_field($api_key) : (string) ($previous['api_key'] ?? ''),
         ];
 
         $changed = ($previous['enabled'] ?? 'false') !== $sanitized['enabled']
             || ($previous['username'] ?? '') !== $sanitized['username']
-            || ($previous['password'] ?? '') !== $sanitized['password'];
+            || ($previous['password'] ?? '') !== $sanitized['password']
+            || ($previous['api_key'] ?? '') !== $sanitized['api_key'];
 
         if ($changed && class_exists('WPD_Cache')) {
             WPD_Cache::clear_all();
@@ -65,8 +70,9 @@ final class WPD_Service_Account
     {
         echo '<p>' . esc_html__('Ce compte permet à WordPress de publier des albums privés autorisés dans Piwigo. Les visiteurs ne se connectent pas à Piwigo.', 'wp-piwigo-display') . '</p>';
         echo '<p><strong>' . esc_html__('Attention : les photos sélectionnées deviennent publiques sur la page WordPress.', 'wp-piwigo-display') . '</strong></p>';
+        echo '<p class="description">' . esc_html__('Piwigo 16+ : utilisez de préférence une clé API. Le couple utilisateur/mot de passe reste disponible pour compatibilité.', 'wp-piwigo-display') . '</p>';
         if (self::is_managed_by_constants()) {
-            echo '<p class="description">' . esc_html__('Les identifiants sont définis dans wp-config.php et sont prioritaires sur les champs ci-dessous.', 'wp-piwigo-display') . '</p>';
+            echo '<p class="description">' . esc_html__('Les identifiants définis dans wp-config.php sont prioritaires sur les champs ci-dessous.', 'wp-piwigo-display') . '</p>';
         }
     }
 
@@ -78,6 +84,17 @@ final class WPD_Service_Account
             checked(self::is_enabled(), true, false),
             disabled(defined(self::ENABLED_CONSTANT), true, false),
             esc_html__('Utiliser le compte technique pour les albums privés', 'wp-piwigo-display')
+        );
+    }
+
+    public static function render_api_key_field(): void
+    {
+        printf(
+            '<input type="password" class="regular-text" name="%1$s[api_key]" value="" placeholder="%2$s" autocomplete="new-password" %3$s><p class="description">%4$s</p>',
+            esc_attr(self::OPTION_NAME),
+            esc_attr(self::get_api_key() !== '' ? __('Clé API enregistrée — laisser vide pour la conserver', 'wp-piwigo-display') : ''),
+            disabled(defined(self::API_KEY_CONSTANT), true, false),
+            esc_html__('Prioritaire sur le login/mot de passe. La clé n’est jamais réaffichée dans l’administration.', 'wp-piwigo-display')
         );
     }
 
@@ -98,7 +115,7 @@ final class WPD_Service_Account
             esc_attr(self::OPTION_NAME),
             esc_attr(self::get_password() !== '' ? __('Mot de passe enregistré — laisser vide pour le conserver', 'wp-piwigo-display') : ''),
             disabled(defined(self::PASSWORD_CONSTANT), true, false),
-            esc_html__('Le mot de passe n’est jamais réaffiché dans l’administration.', 'wp-piwigo-display')
+            esc_html__('Compatibilité Piwigo historique. Le mot de passe n’est jamais réaffiché.', 'wp-piwigo-display')
         );
 
         $url = wp_nonce_url(admin_url('admin-post.php?action=wpd_test_service_account'), 'wpd_test_service_account');
@@ -143,7 +160,7 @@ final class WPD_Service_Account
             'success' => __('Connexion du compte de service réussie.', 'wp-piwigo-display'),
             'not_configured' => __('Compte de service incomplet ou désactivé.', 'wp-piwigo-display'),
             'missing_url' => __('URL Piwigo manquante.', 'wp-piwigo-display'),
-            'error' => __('Échec de connexion. Vérifiez HTTPS, l’identifiant, le mot de passe et les droits Piwigo.', 'wp-piwigo-display'),
+            'error' => __('Échec de connexion. Vérifiez HTTPS, la clé API ou les identifiants et les droits Piwigo.', 'wp-piwigo-display'),
         ];
         $message = $messages[$result] ?? $messages['error'];
         printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), esc_html($message));
@@ -209,6 +226,19 @@ final class WPD_Service_Account
         return filter_var(self::get_options()['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
+    public static function get_api_key(): string
+    {
+        if (defined(self::API_KEY_CONSTANT)) {
+            return trim((string) constant(self::API_KEY_CONSTANT));
+        }
+        return trim((string) (self::get_options()['api_key'] ?? ''));
+    }
+
+    public static function uses_api_key(): bool
+    {
+        return self::is_enabled() && self::get_api_key() !== '';
+    }
+
     public static function get_username(): string
     {
         if (defined(self::USERNAME_CONSTANT)) {
@@ -227,12 +257,19 @@ final class WPD_Service_Account
 
     public static function is_configured(): bool
     {
-        return self::is_enabled() && self::get_username() !== '' && self::get_password() !== '';
+        if (!self::is_enabled()) {
+            return false;
+        }
+
+        return self::get_api_key() !== '' || (self::get_username() !== '' && self::get_password() !== '');
     }
 
     public static function is_managed_by_constants(): bool
     {
-        return defined(self::ENABLED_CONSTANT) || defined(self::USERNAME_CONSTANT) || defined(self::PASSWORD_CONSTANT);
+        return defined(self::ENABLED_CONSTANT)
+            || defined(self::API_KEY_CONSTANT)
+            || defined(self::USERNAME_CONSTANT)
+            || defined(self::PASSWORD_CONSTANT);
     }
 
     public static function get_context_hash(): string
@@ -240,7 +277,12 @@ final class WPD_Service_Account
         if (!self::is_configured()) {
             return 'anonymous';
         }
-        return hash('sha256', WPD_Settings::get_piwigo_url() . '|' . self::get_username());
+
+        $identity = self::uses_api_key()
+            ? 'api:' . hash('sha256', self::get_api_key())
+            : 'user:' . self::get_username();
+
+        return hash('sha256', WPD_Settings::get_piwigo_url() . '|' . $identity);
     }
 
     public static function get_public_status(): array
@@ -248,7 +290,8 @@ final class WPD_Service_Account
         return [
             'enabled' => self::is_enabled(),
             'configured' => self::is_configured(),
-            'username' => self::get_username(),
+            'authentication' => self::uses_api_key() ? 'api_key' : 'password',
+            'username' => self::uses_api_key() ? '' : self::get_username(),
             'source' => self::is_managed_by_constants() ? 'wp-config.php' : 'database',
         ];
     }
