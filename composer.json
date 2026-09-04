@@ -20,6 +20,7 @@
   },
   "scripts": {
     "lint": "find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+    "test": "for f in tests/*.php; do php \"$f\" || exit 1; done",
     "compatibility": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --extensions=php --ignore=vendor .",
     "standards:report": "phpcs --standard=phpcs.xml.dist --report=summary",
     "standards:fix": "phpcbf --standard=phpcs.xml.dist"
