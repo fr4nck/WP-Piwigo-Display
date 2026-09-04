@@ -7,8 +7,9 @@ if (!defined('ABSPATH')) {
 /**
  * Client Piwigo authentifié utilisé exclusivement côté serveur.
  *
- * La session Piwigo n'est jamais persistée : les cookies restent dans cette
- * instance PHP et disparaissent à la fin de la requête WordPress.
+ * Les clés API Piwigo 16+ sont prioritaires. Le login/mot de passe historique
+ * reste disponible en compatibilité ; ses cookies restent en mémoire uniquement
+ * pendant la requête WordPress courante.
  */
 final class WPD_Service_Api
 {
@@ -201,6 +202,11 @@ final class WPD_Service_Api
             return new WP_Error('wpd_service_not_configured', __('Compte de service Piwigo non configuré.', 'wp-piwigo-display'));
         }
 
+        if (WPD_Service_Account::uses_api_key()) {
+            $this->authenticated = true;
+            return true;
+        }
+
         $response = $this->request([
             'method' => 'pwg.session.login',
             'username' => WPD_Service_Account::get_username(),
@@ -242,14 +248,21 @@ final class WPD_Service_Api
             }
         }
 
-        $response = wp_safe_remote_post($this->base_url . '/ws.php?format=json', [
+        $args = [
             'timeout' => 10,
             'redirection' => 0,
             'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
             'body' => $body,
-            'cookies' => $this->cookies,
             'sslverify' => true,
-        ]);
+        ];
+
+        if (WPD_Service_Account::uses_api_key()) {
+            $args['headers'] = ['X-PIWIGO-API' => WPD_Service_Account::get_api_key()];
+        } else {
+            $args['cookies'] = $this->cookies;
+        }
+
+        $response = wp_safe_remote_post($this->base_url . '/ws.php?format=json', $args);
 
         if (is_wp_error($response)) {
             return new WP_Error(
@@ -258,7 +271,9 @@ final class WPD_Service_Api
             );
         }
 
-        $this->merge_response_cookies(wp_remote_retrieve_cookies($response));
+        if (!WPD_Service_Account::uses_api_key()) {
+            $this->merge_response_cookies(wp_remote_retrieve_cookies($response));
+        }
 
         $status_code = wp_remote_retrieve_response_code($response);
         if ($status_code < 200 || $status_code >= 300) {
