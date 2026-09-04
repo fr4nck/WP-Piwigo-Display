@@ -30,6 +30,7 @@ function wp_safe_remote_post(string $url, array $args = []) {
 }
 
 require_once __DIR__ . '/../includes/class-wpd-api.php';
+require_once __DIR__ . '/../includes/class-wpd-cache.php';
 
 function wpd_assert_true(bool $condition, string $message): void
 {
@@ -102,6 +103,14 @@ wpd_set_response(200, json_encode(['stat' => 'fail', 'message' => 'forbidden']))
 $result = $api->test_connection();
 wpd_assert_true(is_wp_error($result), 'Une erreur Piwigo stat=fail doit être remontée.');
 wpd_assert_same('wpd_api_error', $result->get_error_code(), 'Le code d’erreur Piwigo doit rester stable.');
+
+// Les caches public et authentifié doivent produire des clés distinctes pour la
+// même galerie et le même album afin d’éviter toute fuite d’images privées.
+$get_cache_key = new ReflectionMethod(WPD_Cache::class, 'get_album_cache_key');
+$get_cache_key->setAccessible(true);
+$anonymous_key = $get_cache_key->invoke(null, 7, 0, 'https://gallery.example.test', false, 10, 'anonymous');
+$service_key = $get_cache_key->invoke(null, 7, 0, 'https://gallery.example.test', false, 10, 'service-user-hash');
+wpd_assert_true($anonymous_key !== $service_key, 'Les caches anonyme et authentifié doivent être strictement séparés.');
 
 // Vérifie que le transport configuré passe bien par la variante safe de WordPress.
 wpd_assert_true(function_exists('wp_safe_remote_post'), 'Le test doit intercepter wp_safe_remote_post().');
