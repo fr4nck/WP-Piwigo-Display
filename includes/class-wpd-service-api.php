@@ -255,8 +255,9 @@ final class WPD_Service_Api
             'body' => $body,
             'sslverify' => true,
         ];
+        $uses_api_key = WPD_Service_Account::uses_api_key();
 
-        if (WPD_Service_Account::uses_api_key()) {
+        if ($uses_api_key) {
             $args['headers'] = ['X-PIWIGO-API' => WPD_Service_Account::get_api_key()];
         } else {
             $args['cookies'] = $this->cookies;
@@ -265,13 +266,20 @@ final class WPD_Service_Api
         $response = wp_safe_remote_post($this->base_url . '/ws.php?format=json', $args);
 
         if (is_wp_error($response)) {
+            if ($uses_api_key) {
+                return new WP_Error(
+                    'wpd_http_error',
+                    __('Impossible de contacter la galerie Piwigo.', 'wp-piwigo-display')
+                );
+            }
+
             return new WP_Error(
                 'wpd_http_error',
                 sprintf(__('Impossible de contacter la galerie Piwigo : %s', 'wp-piwigo-display'), $response->get_error_message())
             );
         }
 
-        if (!WPD_Service_Account::uses_api_key()) {
+        if (!$uses_api_key) {
             $this->merge_response_cookies(wp_remote_retrieve_cookies($response));
         }
 
@@ -289,6 +297,13 @@ final class WPD_Service_Api
         }
 
         if (($data['stat'] ?? '') !== 'ok') {
+            if ($uses_api_key) {
+                return new WP_Error(
+                    'wpd_api_error',
+                    __('Piwigo a refusé la requête authentifiée par clé API.', 'wp-piwigo-display')
+                );
+            }
+
             return new WP_Error(
                 'wpd_api_error',
                 sprintf(
