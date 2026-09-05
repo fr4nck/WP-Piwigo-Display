@@ -63,7 +63,6 @@ final class WPD_Api
         return array_values($images);
     }
 
-
     public function get_images_by_tags(array $tags, string $tag_mode = 'any')
     {
         if (empty($tags)) {
@@ -305,7 +304,7 @@ final class WPD_Api
         if (is_wp_error($response)) {
             return new WP_Error(
                 'wpd_http_error',
-                sprintf(__('Impossible de contacter la galerie Piwigo : %s', 'wp-piwigo-display'), $response->get_error_message())
+                __('Impossible de contacter la galerie Piwigo.', 'wp-piwigo-display')
             );
         }
 
@@ -314,7 +313,7 @@ final class WPD_Api
         if ($status_code < 200 || $status_code >= 300) {
             return new WP_Error(
                 'wpd_http_status',
-                sprintf(__('La galerie Piwigo a répondu avec le code HTTP %d.', 'wp-piwigo-display'), $status_code)
+                __('La galerie Piwigo a renvoyé une erreur HTTP.', 'wp-piwigo-display')
             );
         }
 
@@ -327,7 +326,7 @@ final class WPD_Api
         if (($data['stat'] ?? '') !== 'ok') {
             return new WP_Error(
                 'wpd_api_error',
-                sprintf(__('Erreur renvoyée par Piwigo : %s', 'wp-piwigo-display'), isset($data['message']) ? sanitize_text_field((string) $data['message']) : __('erreur inconnue', 'wp-piwigo-display'))
+                __('La galerie Piwigo a refusé la requête.', 'wp-piwigo-display')
             );
         }
 
@@ -365,5 +364,4 @@ final class WPD_Api
 
         return untrailingslashit($url);
     }
-
 }
