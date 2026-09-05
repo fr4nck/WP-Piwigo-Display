@@ -118,7 +118,7 @@ final class WPD_Diagnostic
 
         $endpoint = add_query_arg(['format' => 'json', 'method' => 'pwg.session.getStatus'], untrailingslashit($piwigo_url) . '/ws.php');
         $start = microtime(true);
-        $response = wp_remote_get($endpoint, [
+        $response = wp_safe_remote_get($endpoint, [
             'timeout' => 10,
             'redirection' => 3,
             'user-agent' => 'WP Piwigo Display/' . WPD_VERSION,
@@ -172,17 +172,13 @@ final class WPD_Diagnostic
         }
 
         $scheme = (string) wp_parse_url($piwigo_url, PHP_URL_SCHEME);
-        $host = (string) wp_parse_url($piwigo_url, PHP_URL_HOST);
-        $port = wp_parse_url($piwigo_url, PHP_URL_PORT);
-        $path = (string) wp_parse_url($piwigo_url, PHP_URL_PATH);
-
-        if ($scheme === '' || $host === '') {
+        if (!in_array($scheme, ['http', 'https'], true)) {
             return __('Non configurée', 'wp-piwigo-display');
         }
 
-        $authority = $host . (is_int($port) ? ':' . $port : '');
-
-        return untrailingslashit($scheme . '://' . $authority . $path) . '/ws.php?format=json';
+        return $scheme === 'https'
+            ? __('Configurée en HTTPS (hôte masqué)', 'wp-piwigo-display')
+            : __('Configurée en HTTP (hôte masqué)', 'wp-piwigo-display');
     }
 
     private static function ssl_status(string $piwigo_url): string
@@ -201,7 +197,7 @@ final class WPD_Diagnostic
             'json' => extension_loaded('json'),
             'mbstring' => extension_loaded('mbstring'),
             'openssl' => extension_loaded('openssl'),
-            'curl' => extension_loaded('curl'),
+            'curl' => function_exists('curl_version'),
         ];
 
         $parts = [];
