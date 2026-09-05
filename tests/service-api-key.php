@@ -65,6 +65,16 @@ function wpd_key_response(array $result): void
     ];
 }
 
+function wpd_key_fail_response(string $message): void
+{
+    $GLOBALS['wpd_http_calls'] = [];
+    $GLOBALS['wpd_http_response'] = [
+        'response' => ['code' => 200],
+        'body' => json_encode(['stat' => 'fail', 'message' => $message]),
+        'cookies' => [],
+    ];
+}
+
 wpd_key_response(['username' => 'service-user']);
 $api = new WPD_Service_Api('https://gallery.example.test');
 $result = $api->test_connection();
@@ -79,5 +89,31 @@ wpd_key_response(['images' => [['id' => 9, 'latitude' => '48.1', 'longitude' => 
 $images = $api->get_images_from_album(2, 1);
 wpd_key_assert(!is_wp_error($images), 'La récupération d’images avec clé API doit réussir.');
 wpd_key_assert(($images[0]['id'] ?? 0) === 9, 'La réponse Piwigo authentifiée doit rester intacte.');
+wpd_key_assert(($images[0]['latitude'] ?? '') === '48.1', 'La latitude doit rester intacte.');
+wpd_key_assert(($images[0]['longitude'] ?? '') === '-1.6', 'La longitude doit rester intacte.');
 $args = $GLOBALS['wpd_http_calls'][0][1] ?? [];
 wpd_key_assert(($args['headers']['X-PIWIGO-API'] ?? '') === 'secret-api-key', 'Chaque appel authentifié doit porter X-PIWIGO-API.');
+
+wpd_key_fail_response('invalid key secret-api-key');
+$result = $api->get_images_from_album(2, 1);
+wpd_key_assert(is_wp_error($result), 'Une clé API refusée doit produire une erreur explicite.');
+wpd_key_assert($result->get_error_code() === 'wpd_api_error', 'Une clé API refusée doit conserver le code wpd_api_error.');
+wpd_key_assert(strpos($result->get_error_message(), 'secret-api-key') === false, 'La clé API ne doit jamais apparaître dans le message d’erreur.');
+wpd_key_assert(strpos($result->get_error_message(), 'invalid key') === false, 'Le message brut de Piwigo ne doit pas être relayé en mode clé API.');
+
+WPD_Service_Account::$api_key = false;
+$GLOBALS['wpd_http_calls'] = [];
+$GLOBALS['wpd_http_response'] = [
+    'response' => ['code' => 200],
+    'body' => json_encode(['stat' => 'ok', 'result' => ['username' => 'legacy-user']]),
+    'cookies' => [new WP_Http_Cookie()],
+];
+$GLOBALS['wpd_http_response']['cookies'][0]->name = 'pwg_id';
+$legacy = new WPD_Service_Api('https://gallery.example.test');
+$result = $legacy->test_connection();
+wpd_key_assert(!is_wp_error($result), 'Le fallback login/mot de passe doit rester fonctionnel.');
+wpd_key_assert(count($GLOBALS['wpd_http_calls']) === 2, 'Le fallback historique doit faire login puis getStatus.');
+wpd_key_assert(($GLOBALS['wpd_http_calls'][0][1]['body']['method'] ?? '') === 'pwg.session.login', 'Le fallback doit appeler pwg.session.login.');
+wpd_key_assert(($GLOBALS['wpd_http_calls'][0][1]['body']['username'] ?? '') === 'legacy-user', 'Le login historique doit rester inchangé.');
+wpd_key_assert(($GLOBALS['wpd_http_calls'][0][1]['body']['password'] ?? '') === 'legacy-password', 'Le mot de passe historique doit rester inchangé.');
+wpd_key_assert(isset($GLOBALS['wpd_http_calls'][1][1]['cookies']), 'Le fallback historique doit réutiliser le cookie de session.');
