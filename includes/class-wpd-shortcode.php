@@ -73,7 +73,7 @@ final class WPD_Shortcode
         $images = WPD_Cache::get_album_images(absint($album_id), $fetch_max, $piwigo_url, $recursive, $depth);
 
         if (is_wp_error($images)) {
-            return self::render_error($images->get_error_message());
+            return self::render_api_error();
         }
 
         if (empty($images)) {
@@ -84,7 +84,7 @@ final class WPD_Shortcode
             $images = WPD_Cache::get_album_images_by_tags(absint($album_id), $tag_filter, (string) $atts['tag_mode'], $piwigo_url, $recursive, $depth);
 
             if (is_wp_error($images)) {
-                return self::render_error($images->get_error_message());
+                return self::render_api_error();
             }
 
             $images_prefiltered_by_tag = true;
@@ -375,6 +375,11 @@ final class WPD_Shortcode
         }
 
         return $atts;
+    }
+
+    private static function render_api_error(): string
+    {
+        return self::render_error(__('Impossible de charger les données Piwigo.', 'wp-piwigo-display'));
     }
 
     private static function render_error(string $message): string
