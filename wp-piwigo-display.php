@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: WP Piwigo Display
- * Description: Affiche simplement des albums Piwigo dans WordPress à l'aide d'un shortcode.
- * Version: 2.0.0
+ * Plugin Name: Piwigo Display
+ * Description: Affiche simplement des albums Piwigo dans WordPress à l'aide d'un shortcode, de l’éditeur classique ou du bloc Gutenberg.
+ * Version: 3.0.0-rc.4
  * Author: Franck Bellardie
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('WPD_VERSION')) {
-    define('WPD_VERSION', '2.0.0');
+    define('WPD_VERSION', '3.0.0-rc.4');
 }
 
 if (!defined('WPD_PLUGIN_FILE')) {
