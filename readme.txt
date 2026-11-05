@@ -16,7 +16,7 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-The last public stable release before the V3 release-candidate train was 1.8.0. The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
+The latest non-prerelease GitHub release before V3 was 1.10.0 (July 15, 2026). The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
 
 Version 3.0.0-rc.4 candidate includes:
 
@@ -140,7 +140,7 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Added API call count, cache HIT/MISS statistics, hit rate, cumulative/average/slowest timings, latest API method, HTTP status, latest error, and health verdict.
 * Added a regression test protecting the diagnostic counter from accidental removal.
 * Kept metrics credential-free and request-body-free.
-* Consolidated the public version history: 1.8.0 was the last stable public release before V3; 2.0.0 was never published as a public release.
+* Historical note from rc.3: previously claimed that 1.8.0 was the last stable release; GitHub also contains published 1.9.0 and 1.10.0 stable releases. Version 2.0.0 was never publicly released.
 * Aligned the public product name to Piwigo Display.
 * Reframed V3 documentation around its visual editing tools, with shortcodes documented as an advanced interface rather than the primary workflow.
 

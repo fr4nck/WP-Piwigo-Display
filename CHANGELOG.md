@@ -12,6 +12,7 @@
 - Correction de la conversion shortcode vers bloc Gutenberg et du traitement littéral des dollars dans TinyMCE.
 - Tests de non-régression PHP et JavaScript correspondants.
 - Harmonisation des versions dans l'en-tête, les métadonnées Gutenberg, les assets et la documentation.
+- Rectification de l'historique public : GitHub a également publié 1.9.0 et 1.10.0 comme releases non-préversions ; la dernière est 1.10.0.
 
 ## 3.0.0-rc.3 — 19 août 2026
 

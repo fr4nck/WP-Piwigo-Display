@@ -8,7 +8,7 @@ WordPress plugin for building and displaying Piwigo galleries directly inside Wo
 
 **Release candidate in preparation: 3.0.0-rc.4 (not yet published).**
 
-The last stable public release before the V3 release-candidate line was **1.8.0**. The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
+The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026). The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
 
 V3 is currently a Release Candidate and should still be considered a test version before the final 3.0.0 release.
 
