@@ -28,6 +28,21 @@ final class WPD_Custom_SVG_Masks {
 		add_action( 'admin_menu', array( self::class, 'register_page' ), 30 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_admin_assets' ), 30 );
 		add_action( 'enqueue_block_editor_assets', array( self::class, 'localize_block_editor_masks' ), 30 );
+		add_action( 'wp_enqueue_scripts', array( self::class, 'register_style' ) );
+	}
+
+	/**
+	 * Registers the frontend stylesheet used by custom SVG masks.
+	 *
+	 * @return void
+	 */
+	public static function register_style(): void {
+		wp_register_style(
+			'wpd-custom-masks',
+			WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display-custom-masks.css',
+			array( 'wp-piwigo-display' ),
+			WPD_VERSION
+		);
 	}
 
 	/**
@@ -274,8 +289,9 @@ final class WPD_Custom_SVG_Masks {
 	 * @param array<int,mixed>    $shortcode_match Shortcode match data, unused.
 	 * @return string
 	 */
-	public static function apply_mask( string $output, string $tag, array $attr, array $shortcode_match ): string {
+	public static function apply_mask( string $output, string $tag, $attr, array $shortcode_match ): string {
 		unset( $shortcode_match );
+		$attr = is_array( $attr ) ? $attr : array();
 
 		if ( 'piwigo' !== $tag || '' === $output ) {
 			return $output;
@@ -297,6 +313,7 @@ final class WPD_Custom_SVG_Masks {
 		}
 
 		wp_enqueue_style( 'wpd-shapes' );
+		wp_enqueue_style( 'wpd-custom-masks' );
 		$data_uri = 'data:image/svg+xml,' . rawurlencode( $sanitized );
 
 		return (string) preg_replace_callback(

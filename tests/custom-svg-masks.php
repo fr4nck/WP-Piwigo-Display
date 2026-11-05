@@ -37,4 +37,10 @@ $assert( false !== strpos( $gutenberg, 'customMaskButton' ) && false !== strpos(
 $assert( false !== strpos( $css, '-webkit-mask-image: var(--wpd-custom-svg-mask)' ) && false !== strpos( $css, 'mask-image: var(--wpd-custom-svg-mask)' ), 'Le rendu doit utiliser CSS mask-image avec compatibilité WebKit.' );
 $assert( false !== strpos( $css, '@supports not' ), 'Un fallback sans mask-image doit exister.' );
 
+$block = file_get_contents( __DIR__ . '/../includes/class-wpd-block.php' );
+$assert( false !== strpos( $block, 'WPD_Shapes::apply_shape( $output' ), 'Le bloc Gutenberg doit appliquer explicitement les formes.' );
+$assert( false !== strpos( $block, 'WPD_Custom_SVG_Masks::apply_mask( $output' ), 'Le bloc Gutenberg doit appliquer les masques SVG.' );
+$assert( false !== strpos( $library, "wp_enqueue_style( 'wpd-custom-masks' )" ), 'Le CSS des masques personnalisés doit être chargé au rendu.' );
+$assert( false !== strpos( $library, "add_action( 'wp_enqueue_scripts', array( self::class, 'register_style' ) )" ), 'Le CSS des masques doit être enregistré côté public.' );
+
 fwrite( STDOUT, "Sanitized custom SVG mask pipeline and editor parity: OK\n" );
