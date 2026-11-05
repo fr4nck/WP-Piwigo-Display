@@ -1,9 +1,17 @@
 # Journal des versions
 
-## Correctifs en cours — non publiés
+## 3.0.0-rc.4 — candidate en recette (non publiée)
 
-- Le sélecteur d'albums affiche les erreurs AJAX et Piwigo lisibles, au lieu de `[object Object]`.
-- Un test JavaScript couvre les principaux échecs HTTP, JSON et réseau.
+- Suppression du mécanisme automatique qui écrasait les releases et leurs tags.
+- Correction des erreurs fatales lorsque WordPress transmet des attributs vides aux shortcodes.
+- Application effective des presets, sans écraser les réglages explicitement fournis.
+- Masquage des messages techniques issus de Piwigo sur les pages publiques.
+- Nettoyage des options et transients du plugin lors de la désinstallation.
+- Suppression du repli sur cache périmé pour les albums privés du compte de service.
+- Correction des erreurs AJAX, des retours invalides et de la fermeture du sélecteur pendant le chargement.
+- Correction de la conversion shortcode vers bloc Gutenberg et du traitement littéral des dollars dans TinyMCE.
+- Tests de non-régression PHP et JavaScript correspondants.
+- Harmonisation des versions dans l'en-tête, les métadonnées Gutenberg, les assets et la documentation.
 
 ## 3.0.0-rc.3 — 19 août 2026
 
