@@ -37,7 +37,7 @@ final class WPD_Cache {
 	 */
 	public static function get_album_images( int $album_id, int $max = 0, string $piwigo_url = '', bool $recursive = false, int $depth = 10 ) {
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
-		$context    = WPD_Service_Account::is_configured() ? WPD_Service_Account::get_context_hash() : 'anonymous';
+		$context    = self::get_access_context( $piwigo_url );
 		$cache_key  = self::get_album_cache_key( $album_id, $max, $piwigo_url, $recursive, $depth, $context );
 
 		return self::remember(
@@ -70,7 +70,7 @@ final class WPD_Cache {
 		}
 
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
-		$context    = WPD_Service_Account::is_configured() ? WPD_Service_Account::get_context_hash() : 'anonymous';
+		$context    = self::get_access_context( $piwigo_url );
 		$cache_key  = self::get_album_tag_cache_key( $album_id, $tags, $tag_mode, $piwigo_url, $recursive, $depth, $context );
 
 		return self::remember(
@@ -273,9 +273,36 @@ final class WPD_Cache {
 	 * @return WPD_Api|WPD_Service_Api
 	 */
 	private static function create_api( string $piwigo_url ) {
-		return WPD_Service_Account::is_configured()
+		return self::should_use_service_account( $piwigo_url )
 			? new WPD_Service_Api( $piwigo_url )
 			: new WPD_Api( $piwigo_url );
+	}
+
+	/**
+	 * Returns the cache context for the requested URL.
+	 *
+	 * @param string $piwigo_url Requested Piwigo base URL.
+	 * @return string Access context.
+	 */
+	private static function get_access_context( string $piwigo_url ): string {
+		return self::should_use_service_account( $piwigo_url )
+			? WPD_Service_Account::get_context_hash()
+			: 'anonymous';
+	}
+
+	/**
+	 * Prevents configured service credentials from reaching custom Piwigo URLs.
+	 *
+	 * @param string $piwigo_url Requested Piwigo base URL.
+	 * @return bool Whether the service account may be used.
+	 */
+	private static function should_use_service_account( string $piwigo_url ): bool {
+		if ( ! WPD_Service_Account::is_configured() ) {
+			return false;
+		}
+		$requested_url  = untrailingslashit( trim( $piwigo_url ) );
+		$configured_url = untrailingslashit( trim( WPD_Settings::get_piwigo_url() ) );
+		return '' !== $configured_url && $requested_url === $configured_url;
 	}
 
 	/**
