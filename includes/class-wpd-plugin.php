@@ -183,7 +183,7 @@ final class WPD_Plugin {
 
 		$categories = ( new WPD_Api( $url ) )->get_all_categories();
 		if ( is_wp_error( $categories ) ) {
-			wp_send_json_error( array( 'message' => $categories->get_error_message() ), 502 );
+			wp_send_json_error( array( 'message' => __( 'Impossible de charger les albums depuis Piwigo.', 'wp-piwigo-display' ) ), 502 );
 		}
 
 		$names = array();

@@ -31,6 +31,8 @@
     "test:php-regressions": "find tests -maxdepth 1 -type f -name '*.php' ! -name 'security-*.php' ! -name 'accessibility-ui.php' ! -name 'package-assets.php' -print0 | sort -z | xargs -0 -n1 php",
     "test:frontend": [
       "@test:php-regressions",
+      "node --check assets/js/wp-piwigo-display-album-picker.js",
+      "node --check blocks/piwigo/gutenberg-parity.js",
       "node tests/tinymce-preview.js",
       "node tests/album-picker-errors.js"
     ],
