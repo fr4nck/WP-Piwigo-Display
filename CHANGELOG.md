@@ -1,5 +1,10 @@
 # Journal des versions
 
+## Correctifs en cours — non publiés
+
+- Le sélecteur d'albums affiche les erreurs AJAX et Piwigo lisibles, au lieu de `[object Object]`.
+- Un test JavaScript couvre les principaux échecs HTTP, JSON et réseau.
+
 ## 3.0.0-rc.3 — 19 août 2026
 
 - Restauration du bloc **Santé API & cache** dans le diagnostic administrateur.

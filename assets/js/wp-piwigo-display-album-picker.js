@@ -9,6 +9,17 @@
         return (window.WPDAlbumPickerConfig && WPDAlbumPickerConfig.labels) || {};
     }
 
+    function formatError(error, status) {
+        if (typeof error === 'string' && error.trim()) return error;
+        var response = error && error.responseJSON;
+        var data = response && response.data;
+        if (data && typeof data.message === 'string' && data.message.trim()) return data.message;
+        var fallback = labels().error || 'Impossible de charger les albums.';
+        if (status === 'parsererror') return fallback + ' (Réponse JSON invalide.)';
+        if (error && typeof error.status === 'number' && error.status > 0) return fallback + ' (HTTP ' + error.status + '.)';
+        return fallback;
+    }
+
     function loadAlbums() {
         if (cache) return $.Deferred().resolve(cache).promise();
         if (pending) return pending;
@@ -234,9 +245,9 @@
             $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
                 .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Loading albums…'));
             loadAlbums().done(function (albums) { render($picker, albums, $input); })
-                .fail(function (message) {
+                .fail(function (error, status) {
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
-                        .html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Unable to load albums.'));
+                        .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)));
                 });
         });
 

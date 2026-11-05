@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - '3.x-dev'
+      - 'release/3.0.0-rc.3'
     tags:
       - 'v*'
   workflow_dispatch:
