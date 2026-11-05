@@ -34,7 +34,8 @@
       "php tests/shapes.php",
       "node tests/tinymce-preview.js",
       "php tests/service-account-url-isolation.php",
-      "php tests/shortcode-execution-contracts.php"
+      "php tests/shortcode-execution-contracts.php",
+      "php tests/private-stale-isolation.php"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
