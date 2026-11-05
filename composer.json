@@ -33,6 +33,7 @@
       "php tests/custom-svg-masks.php",
       "php tests/shapes.php",
       "node tests/tinymce-preview.js",
+      "node tests/shortcode-to-block.js",
       "php tests/service-account-url-isolation.php",
       "php tests/shortcode-execution-contracts.php",
       "php tests/private-stale-isolation.php"

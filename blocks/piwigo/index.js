@@ -152,7 +152,34 @@
         return el('div',useBlockProps(),el(InspectorControls,null,content),preview);
     }
 
-    blocks.registerBlockType('wp-piwigo-display/gallery',{edit:Edit,save:function(){return null;},transforms:{from:[{type:'shortcode',tag:'piwigo',attributes:{
-        albumId:{type:'string',shortcode:'album'},displayType:{type:'string',shortcode:'type'},recursive:{type:'boolean',shortcode:'recursive'},depth:{type:'number',shortcode:'depth'},limit:{type:'number',shortcode:'limit'},max:{type:'number',shortcode:'max'},latest:{type:'number',shortcode:'latest'},random:{type:'number',shortcode:'random'},sort:{type:'string',shortcode:'sort'},order:{type:'string',shortcode:'order'},orientations:{type:'array',shortcode:'orientation'},caption:{type:'string',shortcode:'caption'},lightbox:{type:'boolean',shortcode:'lightbox'},rounded:{type:'boolean',shortcode:'rounded'},transparentBackground:{type:'boolean',shortcode:'transparent_background'},style:{type:'string',shortcode:'style'},autoplay:{type:'boolean',shortcode:'autoplay'},interval:{type:'number',shortcode:'interval'},speed:{type:'number',shortcode:'speed'},transition:{type:'string',shortcode:'transition'},direction:{type:'string',shortcode:'direction'},ratio:{type:'string',shortcode:'ratio'},width:{type:'string',shortcode:'width'},height:{type:'string',shortcode:'height'},align:{type:'string',shortcode:'align'},fit:{type:'string',shortcode:'fit'},navigation:{type:'string',shortcode:'navigation'},tag:{type:'string',shortcode:'tag'},tags:{type:'string',shortcode:'tags'},tagMode:{type:'string',shortcode:'tag_mode'}
-    }}]}});
+    function transformShortcode(attributes) {
+        var named = attributes && attributes.named ? attributes.named : {};
+        var inverse = {
+            album: 'albumId', type: 'displayType', tag_mode: 'tagMode',
+            orientation: 'orientations', transparent_background: 'transparentBackground',
+            url: 'piwigoUrl', masonry_columns: 'masonryColumns', masonry_gap: 'masonryGap'
+        };
+        var numeric = ['depth', 'limit', 'max', 'latest', 'random', 'interval', 'speed', 'radius', 'masonryColumns', 'masonryGap'];
+        var allowed = Object.keys(uiDefaults).concat(['piwigoUrl', 'preset', 'shape', 'radius', 'masonryColumns', 'masonryGap']);
+        var values = {};
+        Object.keys(named).forEach(function (key) {
+            var dest = inverse[key] || key;
+            if (allowed.indexOf(dest) === -1) return;
+            var value = named[key];
+            if (typeof value !== 'string' && typeof value !== 'number') return;
+            value = String(value);
+            if (booleanKeys.indexOf(dest) !== -1) {
+                value = value === 'true' || value === '1';
+            } else if (dest === 'orientations') {
+                value = value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+            } else if (numeric.indexOf(dest) !== -1) {
+                value = Number(value);
+                if (!Number.isFinite(value)) return;
+            }
+            values[dest] = value;
+        });
+        return blocks.createBlock('wp-piwigo-display/gallery', values);
+    }
+
+    blocks.registerBlockType('wp-piwigo-display/gallery',{edit:Edit,save:function(){return null;},transforms:{from:[{type:'shortcode',tag:'piwigo',transform:transformShortcode}]}});
 })(window.wp.blocks,window.wp.blockEditor,window.wp.components,window.wp.element,window.wp.serverSideRender,window.wp.compose,window.wp.i18n);
