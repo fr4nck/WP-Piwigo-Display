@@ -26,11 +26,11 @@ final class WPD_Shortcode {
 	/**
 	 * Renders a Piwigo gallery or slider.
 	 *
-	 * @param array<string, mixed> $atts Shortcode attributes.
+	 * @param mixed $atts Shortcode attributes, or an empty string from WordPress.
 	 * @return string Rendered HTML.
 	 */
 	public static function render( $atts = array() ): string {
-		$atts = is_array( $atts ) ? $atts : array();
+		$atts     = is_array( $atts ) ? $atts : array();
 		$defaults = array_merge(
 			array(
 				'album'       => '',
@@ -499,15 +499,20 @@ final class WPD_Shortcode {
 	}
 
 	/**
-	 * Renders an escaped public error.
+	 * Hides transport and upstream error details from public visitors.
 	 *
-	 * @param string $message Error message.
-	 * @return string Error HTML.
+	 * @return string Safe error HTML.
 	 */
 	private static function render_api_error(): string {
 		return self::render_error( __( 'Impossible de charger les données Piwigo.', 'wp-piwigo-display' ) );
 	}
 
+	/**
+	 * Renders an escaped error message.
+	 *
+	 * @param string $message Error message.
+	 * @return string Escaped HTML.
+	 */
 	private static function render_error( string $message ): string {
 		return '<div class="wp-piwigo-display-error">' . esc_html( $message ) . '</div>';
 	}
