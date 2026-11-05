@@ -34,6 +34,7 @@ function shortcode_atts(array $defaults, array $input, string $hook = ''): array
     return array_merge($defaults, array_intersect_key($input, $defaults));
 }
 function sanitize_text_field($text): string { return trim(strip_tags((string) $text)); }
+function wp_strip_all_tags($text): string { return strip_tags((string) $text); }
 function sanitize_key($text): string { return strtolower(preg_replace('/[^a-z0-9_\\-]/', '', (string) $text)); }
 function absint($value): int { return abs((int) $value); }
 function esc_attr($value): string { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); }
