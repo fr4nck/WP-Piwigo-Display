@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 3.0.0-rc.3
+Stable tag: 3.0.0-rc.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,9 +16,9 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-The last public stable release before the V3 release-candidate train was 1.8.0. The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
+The latest GitHub non-prerelease before V3 was 1.10.0 (tag v1.10). The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
 
-Version 3.0.0-rc.3 includes:
+Version 3.0.0-rc.4 (release candidate under testing, not yet published) includes:
 
 * dynamic Gutenberg block with visual controls;
 * administration gallery composer with preview;
@@ -125,6 +125,12 @@ It shows aggregated API calls, cache HIT/MISS counts and rate, cumulative/averag
 Yes. When the operating system requests reduced motion, autoplay is disabled and transitions are removed or reduced.
 
 == Changelog ==
+
+= 3.0.0-rc.4 (not published) =
+
+* Fixed album picker error reporting and request lifecycle.
+* Improved shortcode compatibility, safe public errors, release immutability and uninstall cleanup.
+* Added security and functional regression tests.
 
 = 3.0.0-rc.3 =
 

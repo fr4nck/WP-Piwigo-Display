@@ -4,9 +4,10 @@ Cette feuille de route décrit l’état public réel de **Piwigo Display pour W
 
 ## Historique public
 
-- **1.8.0** : dernière version stable effectivement publiée avant la V3.
+- **1.10.0** (`v1.10`) : dernière release GitHub non marquée comme préversion avant la V3 (après 1.9.0).
 - **2.0.0** : jalon de développement interne, **jamais publié comme release publique**.
-- **3.0.0-rc.3** : Release Candidate V3 actuelle.
+- **3.0.0-rc.3** : RC3 publiée, ne plus la modifier.
+- **3.0.0-rc.4** : correctifs en préparation, pas de tag ni de distribution avant validation.
 
 Les développements initialement préparés sous le numéro 2.0.0 ont été repris, consolidés et largement étendus dans la V3.
 

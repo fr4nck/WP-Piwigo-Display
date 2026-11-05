@@ -26,8 +26,8 @@ preg_match( "/define\(\s*'WPD_VERSION'\s*,\s*'([^']+)'\s*\)/", (string) $plugin,
 $assert( isset( $header_match[1] ), 'La version de l’en-tête du plugin doit être détectable.' );
 $assert( isset( $constant_match[1] ), 'La constante WPD_VERSION doit être détectable.' );
 $assert( $header_match[1] === $constant_match[1], 'L’en-tête du plugin et WPD_VERSION doivent être identiques.' );
-$assert( '3.0.0-rc.3' === $header_match[1], 'La branche de recette V3 doit rester identifiée comme 3.0.0-rc.3 jusqu’au GO stable.' );
-$assert( false !== strpos( (string) $readme, '1.8.0' ), 'Le README doit identifier 1.8.0 comme dernière stable publique avant V3.' );
+$assert( '3.0.0-rc.4' === $header_match[1], 'La candidate corrective doit rester 3.0.0-rc.4 jusqu’à la décision de publication.' );
+$assert( false !== strpos( (string) $readme, '1.10.0' ), 'Le README doit identifier la dernière release GitHub non préversion 1.10.0.' );
 $assert( false !== strpos( (string) $readme, '2.0.0' ) && false !== strpos( (string) $readme, 'jamais' ), 'Le README doit préciser que la ligne 2.0.0 n’a jamais été publiée comme release publique.' );
 $assert( false !== strpos( (string) $roadmap, '## Avant 3.0.0 stable' ), 'La feuille de route doit garder une étape explicite avant 3.0.0 stable.' );
 $assert( false !== strpos( (string) $roadmap, 'recette réelle' ), 'La feuille de route doit maintenir la recette WordPress réelle comme verrou de sortie.' );

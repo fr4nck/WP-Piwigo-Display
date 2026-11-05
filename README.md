@@ -6,11 +6,11 @@ Plugin WordPress pour construire et afficher des galeries Piwigo directement dan
 
 ## État du projet
 
-**Version candidate actuelle : 3.0.0-rc.3.**
+**Version candidate actuelle : 3.0.0-rc.4.**
 
-La dernière version stable effectivement publiée avant la V3 est **1.8.0**. La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
+Les dernières releases GitHub non marquées comme préversions avant la V3 vont jusqu'à **1.10.0** (`v1.10`). La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
 
-La V3 est actuellement en phase de Release Candidate et doit encore être considérée comme une version de test avant la publication de 3.0.0 stable.
+La branche de correctifs prépare **3.0.0-rc.4**, non publiée et non validée pour la production. La publication reste suspendue à la recette et aux contrôles de sécurité.
 
 ## Une interface visuelle avant tout
 
@@ -47,7 +47,7 @@ L’objectif est de permettre à un utilisateur de construire une galerie sans �
 
 ## Santé API & cache
 
-La V3 RC3 restaure et protège le compteur de diagnostic dans **Piwigo Display → Diagnostic**.
+La V3 restaure et protège le compteur de diagnostic dans **Piwigo Display → Diagnostic**.
 
 Le bloc **Santé API & cache** permet de suivre notamment :
 

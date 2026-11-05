@@ -1,9 +1,15 @@
 # Journal des versions
 
-## Correctifs en cours — non publiés
+## 3.0.0-rc.4 — candidate en préparation, NON PUBLIÉE
 
-- Le sélecteur d'albums affiche les erreurs AJAX et Piwigo lisibles, au lieu de `[object Object]`.
-- Un test JavaScript couvre les principaux échecs HTTP, JSON et réseau.
+- Sélecteurs Classic Editor et Gutenberg : messages d'erreur AJAX lisibles et validation des réponses.
+- Corrige les requêtes qui réaffichaient le sélecteur après sa fermeture ; fiabilise le rafraîchissement des scripts en cache.
+- Sécurise les shortcodes sans attribut et rend les presets effectifs sans écraser les réglages explicites.
+- Masque les erreurs techniques de Piwigo sur les pages publiques.
+- Ajoute le nettoyage des options et des caches à la désinstallation.
+- Supprime la republication automatique des ZIP et tags depuis les branches.
+- Ajoute des tests de régression PHP et JavaScript.
+- **Précision historique** : GitHub contient les releases non marquées comme préversions 1.9.0 et 1.10.0 ; les anciennes mentions de 1.8.0 comme dernière stable sont conservées ci-dessous au titre de l'historique.
 
 ## 3.0.0-rc.3 — 19 août 2026
 

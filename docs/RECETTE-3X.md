@@ -2,11 +2,12 @@
 
 Cette checklist doit être remplie avant de présenter **3.0.0** comme version stable. Une case critique non vérifiée interdit de transformer la Release Candidate en release stable.
 
-La Release Candidate courante est **3.0.0-rc.3**. La dernière stable publique avant la V3 est **1.8.0** ; la ligne 2.0.0 n’a jamais été publiée comme release publique.
+La candidate en préparation est **3.0.0-rc.4** (non publiée). La dernière release GitHub non préversion avant V3 est **1.10.0** ; la ligne 2.0.0 n’a jamais été publiée comme release publique.
 
 ## 1. Préparation et paquet
 
-- [ ] récupérer le ZIP `piwigo-display-3.0.0-rc.3.zip` produit par GitHub Actions pour le commit à tester ;
+- [ ] après validation de la RC4, générer un ZIP `piwigo-display-3.0.0-rc.4.zip` depuis son commit figé ;
+- [ ] ne jamais substituer un ZIP ou déplacer un tag de RC déjà publiée ;
 - [ ] vérifier que le ZIP contient un seul dossier racine `wp-piwigo-display` ;
 - [ ] vérifier que ce dossier contient `wp-piwigo-display.php` et non un fichier principal renommé ;
 - [ ] installer le ZIP sur un WordPress de recette sans reprendre les fichiers du dépôt ;
@@ -147,6 +148,10 @@ Sur ordinateur, tablette et mobile :
 - [ ] aucun secret ni identifiant Piwigo dans le HTML ou JavaScript public ;
 - [ ] aucune erreur JavaScript dans les trois composeurs ;
 - [ ] aucun avertissement PHP dans les scénarios nominaux.
+
+- [ ] aucune publication automatique déclenchée par un push sur une branche ;
+- [ ] le compte de service Piwigo ne transmet jamais d'identifiants à une URL spécifique différente ;
+- [ ] les shortcodes sans attribut, presets et messages d'erreur sont testés ;
 
 ## 12. Décision de release
 
