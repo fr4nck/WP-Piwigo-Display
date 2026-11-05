@@ -79,7 +79,8 @@ final class WPD_Cache {
 				return $recursive
 					? $api->get_images_from_album_recursive( $album_id, $max, $depth )
 					: $api->get_images_from_album( $album_id, $max );
-			}
+			},
+            'anonymous' === $context
 		);
 	}
 
@@ -131,7 +132,8 @@ final class WPD_Cache {
 						}
 					)
 				);
-			}
+			},
+            'anonymous' === $context
 		);
 	}
 
@@ -202,7 +204,7 @@ final class WPD_Cache {
 	 * @param callable $loader    Value loader.
 	 * @return array<int, array<string, mixed>>|WP_Error|mixed
 	 */
-	private static function remember( string $cache_key, callable $loader ) {
+	private static function remember( string $cache_key, callable $loader, bool $allow_stale = true ) {
 		if ( isset( self::$request_cache[ $cache_key ] ) ) {
 			WPD_Api_Metrics::cache_hit( 'request' );
 			return self::$request_cache[ $cache_key ];
@@ -217,7 +219,7 @@ final class WPD_Cache {
 		}
 
 		$stale_key     = self::get_stale_key( $cache_key );
-		$stale         = get_transient( $stale_key );
+		$stale         = $allow_stale ? get_transient( $stale_key ) : false;
 		$lock_key      = self::get_lock_key( $cache_key );
 		$lock_acquired = self::acquire_lock( $lock_key );
 
@@ -250,7 +252,9 @@ final class WPD_Cache {
 			$duration                          = max( 60, WPD_Settings::get_cache_duration() );
 			self::$request_cache[ $cache_key ] = $value;
 			set_transient( $cache_key, $value, $duration );
-			set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
+			if ( $allow_stale ) {
+                set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
+            }
 
 			return $value;
 		} finally {
