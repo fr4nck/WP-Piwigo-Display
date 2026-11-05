@@ -1,10 +1,5 @@
 # Journal des versions
 
-## 2.0.1 — 5 novembre 2026
-
-- Le sélecteur d'albums affiche le message d'erreur WordPress/Piwigo lorsqu'une requête AJAX échoue, au lieu de `[object Object]`.
-- Un code HTTP ou une réponse JSON invalide sont désormais signalés clairement si le serveur ne fournit pas de message exploitable.
-
 ## 2.0.0 — 28 juillet 2026
 
 - Ajout d’un compte de service Piwigo dédié à WordPress pour récupérer les albums privés explicitement autorisés.
