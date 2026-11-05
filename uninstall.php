@@ -15,7 +15,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 /**
  * Runs plugin-owned data cleanup without loading the plugin itself.
  */
-final class WPD_Uninstall {
+final class WP_Piwigo_Display_Uninstall {
 
 	/**
 	 * Removes settings, credentials and cached data for one WordPress site.
@@ -85,4 +85,4 @@ final class WPD_Uninstall {
 	}
 }
 
-WPD_Uninstall::run();
+WP_Piwigo_Display_Uninstall::run();

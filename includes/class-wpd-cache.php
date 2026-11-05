@@ -283,12 +283,24 @@ final class WPD_Cache {
 			: new WPD_Api( $piwigo_url );
 	}
 
+	/**
+	 * Returns the cache security context for the requested Piwigo URL.
+	 *
+	 * @param string $piwigo_url Requested URL.
+	 * @return string Context identifier.
+	 */
 	private static function get_access_context( string $piwigo_url ): string {
 		return self::should_use_service_account( $piwigo_url )
 			? WPD_Service_Account::get_context_hash()
 			: 'anonymous';
 	}
 
+	/**
+	 * Allows service credentials only for the configured Piwigo endpoint.
+	 *
+	 * @param string $piwigo_url Requested URL.
+	 * @return bool Whether service authentication is authorized.
+	 */
 	private static function should_use_service_account( string $piwigo_url ): bool {
 		if ( ! WPD_Service_Account::is_configured() ) {
 			return false;
