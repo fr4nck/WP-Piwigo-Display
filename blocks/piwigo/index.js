@@ -17,7 +17,7 @@
     var booleanKeys = ['recursive','lightbox','rounded','transparentBackground','autoplay'];
 
     var escapeShortcodeValue = function(value) {
-        return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\[/g, '&#91;').replace(/\]/g, '&#93;');
     };
 
     var buildShortcode = function(attributes) {
@@ -152,7 +152,38 @@
         return el('div',useBlockProps(),el(InspectorControls,null,content),preview);
     }
 
-    blocks.registerBlockType('wp-piwigo-display/gallery',{edit:Edit,save:function(){return null;},transforms:{from:[{type:'shortcode',tag:'piwigo',attributes:{
-        albumId:{type:'string',shortcode:'album'},displayType:{type:'string',shortcode:'type'},recursive:{type:'boolean',shortcode:'recursive'},depth:{type:'number',shortcode:'depth'},limit:{type:'number',shortcode:'limit'},max:{type:'number',shortcode:'max'},latest:{type:'number',shortcode:'latest'},random:{type:'number',shortcode:'random'},sort:{type:'string',shortcode:'sort'},order:{type:'string',shortcode:'order'},orientations:{type:'array',shortcode:'orientation'},caption:{type:'string',shortcode:'caption'},lightbox:{type:'boolean',shortcode:'lightbox'},rounded:{type:'boolean',shortcode:'rounded'},transparentBackground:{type:'boolean',shortcode:'transparent_background'},style:{type:'string',shortcode:'style'},autoplay:{type:'boolean',shortcode:'autoplay'},interval:{type:'number',shortcode:'interval'},speed:{type:'number',shortcode:'speed'},transition:{type:'string',shortcode:'transition'},direction:{type:'string',shortcode:'direction'},ratio:{type:'string',shortcode:'ratio'},width:{type:'string',shortcode:'width'},height:{type:'string',shortcode:'height'},align:{type:'string',shortcode:'align'},fit:{type:'string',shortcode:'fit'},navigation:{type:'string',shortcode:'navigation'},tag:{type:'string',shortcode:'tag'},tags:{type:'string',shortcode:'tags'},tagMode:{type:'string',shortcode:'tag_mode'}
-    }}]}});
+    blocks.registerBlockType('wp-piwigo-display/gallery', {
+        edit: Edit,
+        save: function () { return null; },
+        transforms: { from: [{
+            type: 'shortcode',
+            tag: 'piwigo',
+            transform: function (attrs) {
+                var named = attrs && attrs.named ? attrs.named : {};
+                var result = {};
+                Object.keys(uiDefaults).forEach(function (key) {
+                    var shortcodeKey = shortcodeMap[key] || key;
+                    if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
+                    var value = named[shortcodeKey];
+                    if (booleanKeys.indexOf(key) !== -1) {
+                        value = /^(true|1|yes)$/i.test(String(value));
+                    } else if (key === 'orientations') {
+                        value = String(value).split(',').map(function (item) { return item.trim(); }).filter(Boolean);
+                    } else if (['depth', 'limit', 'max', 'latest', 'random', 'interval', 'speed'].indexOf(key) !== -1) {
+                        value = parseInt(value, 10);
+                        if (!Number.isFinite(value)) return;
+                    }
+                    result[key] = value;
+                });
+                ['preset', 'piwigoUrl', 'align', 'shape', 'radius', 'masonryColumns', 'masonryGap'].forEach(function (key) {
+                    var shortcodeKey = { piwigoUrl: 'url', masonryColumns: 'masonry_columns', masonryGap: 'masonry_gap' }[key] || key;
+                    if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
+                    var value = named[shortcodeKey];
+                    result[key] = ['radius', 'masonryColumns', 'masonryGap'].indexOf(key) === -1
+                        ? String(value) : Math.max(0, parseInt(value, 10) || 0);
+                });
+                return blocks.createBlock('wp-piwigo-display/gallery', result);
+            }
+        }] }
+    });
 })(window.wp.blocks,window.wp.blockEditor,window.wp.components,window.wp.element,window.wp.serverSideRender,window.wp.compose,window.wp.i18n);
