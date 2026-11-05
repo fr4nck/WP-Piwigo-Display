@@ -33,7 +33,7 @@ if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
 	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-$piwigo_display_loaded_classes = array(
+$wp_piwigo_display_loaded_classes = array(
 	'WPD_Plugin',
 	'WPD_Settings',
 	'WPD_Service_Account',
@@ -61,13 +61,13 @@ $piwigo_display_loaded_classes = array(
 	'WPD_Piwigo_Response_Compat',
 );
 
-foreach ( $piwigo_display_loaded_classes as $piwigo_display_loaded_class ) {
-	if ( class_exists( $piwigo_display_loaded_class, false ) ) {
+foreach ( $wp_piwigo_display_loaded_classes as $wp_piwigo_display_loaded_class ) {
+	if ( class_exists( $wp_piwigo_display_loaded_class, false ) ) {
 		return;
 	}
 }
 
-unset( $piwigo_display_loaded_class, $piwigo_display_loaded_classes );
+unset( $wp_piwigo_display_loaded_class, $wp_piwigo_display_loaded_classes );
 
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-plugin.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-settings.php';
@@ -100,7 +100,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
  *
  * @return void
  */
-function piwigo_display_bootstrap_plugin(): void {
+function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Api_Metrics::register();
 	WPD_Plugin::init();
 	WPD_Service_Account::register();
@@ -122,4 +122,4 @@ function piwigo_display_bootstrap_plugin(): void {
 	WPD_Piwigo_Response_Compat::register();
 }
 
-add_action( 'plugins_loaded', 'piwigo_display_bootstrap_plugin' );
+add_action( 'plugins_loaded', 'wp_piwigo_display_bootstrap_plugin' );
