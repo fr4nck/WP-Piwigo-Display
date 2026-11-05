@@ -14,7 +14,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
  *
  * @return void
  */
-function wpd_uninstall_site_data(): void {
+function piwigo_display_uninstall_site_data(): void {
 	global $wpdb;
 
 	delete_option( 'wp_piwigo_display_options' );
@@ -35,9 +35,16 @@ function wpd_uninstall_site_data(): void {
 		},
 		$prefixes
 	);
-	$where = implode( ' OR ', array_fill( 0, count( $patterns ), 'option_name LIKE %s' ) );
-	$query = $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE {$where}", ...$patterns );
-	$names = $wpdb->get_col( $query );
+	$query = $wpdb->prepare(
+		"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s",
+		$patterns[0],
+		$patterns[1],
+		$patterns[2],
+		$patterns[3],
+		$patterns[4],
+		$patterns[5]
+	);
+	$names = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Prepared above.
 
 	foreach ( $names as $name ) {
 		if ( str_starts_with( $name, '_transient_timeout_' ) ) {
@@ -53,12 +60,12 @@ function wpd_uninstall_site_data(): void {
 }
 
 if ( is_multisite() ) {
-	$site_ids = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
-	foreach ( $site_ids as $site_id ) {
-		switch_to_blog( (int) $site_id );
-		wpd_uninstall_site_data();
+	$piwigo_display_site_ids = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
+	foreach ( $piwigo_display_site_ids as $piwigo_display_site_id ) {
+		switch_to_blog( (int) $piwigo_display_site_id );
+		piwigo_display_uninstall_site_data();
 		restore_current_blog();
 	}
 } else {
-	wpd_uninstall_site_data();
+	piwigo_display_uninstall_site_data();
 }
