@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'release/**'
+      - 'audit/**'
     tags:
       - 'v*'
   pull_request:
