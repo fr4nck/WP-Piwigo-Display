@@ -29,7 +29,7 @@ final class WPD_Gutenberg_Parity {
 	 * @return void
 	 */
 	public static function enqueue_editor_assets(): void {
-		$asset_path = WPD_PLUGIN_DIR . 'blocks/piwigo/gutenberg-parity.js';
+		$asset_path    = WPD_PLUGIN_DIR . 'blocks/piwigo/gutenberg-parity.js';
 		$asset_version = is_file( $asset_path ) ? (string) filemtime( $asset_path ) : WPD_VERSION;
 		wp_enqueue_script(
 			'wpd-gutenberg-parity',
