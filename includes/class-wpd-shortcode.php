@@ -11,8 +11,9 @@ final class WPD_Shortcode
         add_shortcode('piwigo', [self::class, 'render']);
     }
 
-    public static function render(array $atts = []): string
+    public static function render($atts = []): string
     {
+        $atts = is_array($atts) ? $atts : [];
         $defaults = array_merge(
             [
                 'album' => '',
@@ -39,8 +40,8 @@ final class WPD_Shortcode
         );
 
         $defaults = apply_filters('wp_piwigo_display_shortcode_defaults', $defaults);
-        $atts = shortcode_atts($defaults, $atts, 'piwigo');
         $atts = self::apply_preset($atts);
+        $atts = shortcode_atts($defaults, $atts, 'piwigo');
         $atts = self::sanitize_atts($atts);
 
         $album_value = trim((string) $atts['album']);
@@ -61,7 +62,7 @@ final class WPD_Shortcode
         $album_id = $api->resolve_album_id($album_value);
 
         if (is_wp_error($album_id)) {
-            return self::render_error($album_id->get_error_message());
+            return self::render_api_error();
         }
 
         $recursive = filter_var($atts['recursive'], FILTER_VALIDATE_BOOLEAN);
