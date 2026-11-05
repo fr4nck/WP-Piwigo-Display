@@ -30,7 +30,7 @@ final class WPD_Shortcode {
 	 * @return string Rendered HTML.
 	 */
 	public static function render( $atts = array() ): string {
-		$atts = is_array( $atts ) ? $atts : array();
+		$atts     = is_array( $atts ) ? $atts : array();
 		$defaults = array_merge(
 			array(
 				'album'       => '',

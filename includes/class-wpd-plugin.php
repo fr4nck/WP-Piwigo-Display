@@ -133,7 +133,7 @@ final class WPD_Plugin {
 			array(),
 			WPD_VERSION
 		);
-		$picker_file = WPD_PLUGIN_DIR . 'assets/js/wp-piwigo-display-album-picker.js';
+		$picker_file    = WPD_PLUGIN_DIR . 'assets/js/wp-piwigo-display-album-picker.js';
 		$picker_version = is_file( $picker_file ) ? (string) filemtime( $picker_file ) : WPD_VERSION;
 		wp_enqueue_script(
 			'wpd-album-picker',
