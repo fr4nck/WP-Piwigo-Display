@@ -237,6 +237,7 @@ final class WPD_Cache {
 			$value = $loader();
 			if ( is_wp_error( $value ) ) {
 				if ( is_array( $stale ) ) {
+					WPD_Api_Metrics::cache_hit( 'stale' );
 					self::$request_cache[ $cache_key ] = $stale;
 
 					return $stale;

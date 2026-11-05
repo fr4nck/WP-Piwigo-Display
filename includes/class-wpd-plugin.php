@@ -78,7 +78,20 @@ final class WPD_Plugin {
 		wp_add_inline_style( 'wp-piwigo-display', '.wpd-slider-layout{width:var(--wpd-slider-width,100%);max-width:100%;box-sizing:border-box}.wpd-slider-layout.wpd-slider-align-left{float:left;margin:0 1.5rem 1rem 0}.wpd-slider-layout.wpd-slider-align-right{float:right;margin:0 0 1rem 1.5rem}.wpd-slider-layout.wpd-slider-align-center{margin-left:auto;margin-right:auto}@media(max-width:782px){.wpd-slider-layout{float:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}}' );
 		wp_register_style( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.css', array(), '4.1.4' );
 		wp_register_script( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.js', array(), '4.1.4', true );
-		wp_register_script( 'wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', array( 'wpd-splide' ), WPD_VERSION, true );
+		$slider_path    = WPD_PLUGIN_DIR . 'assets/js/wp-piwigo-display-slider.js';
+		$slider_version = is_file( $slider_path ) ? (string) filemtime( $slider_path ) : WPD_VERSION;
+		wp_register_script( 'wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', array( 'wpd-splide' ), $slider_version, true );
+		wp_localize_script(
+			'wp-piwigo-display-slider',
+			'WPDSliderI18n',
+			array(
+				'previous'   => __( 'Image précédente', 'wp-piwigo-display' ),
+				'next'       => __( 'Image suivante', 'wp-piwigo-display' ),
+				'navigation' => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
+				/* translators: %d: image number in the slider. */
+				'showImage'  => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
+			)
+		);
 		wp_register_script( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', array(), WPD_VERSION, true );
 	}
 

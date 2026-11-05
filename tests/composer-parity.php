@@ -24,7 +24,7 @@ $assert = static function ( bool $condition, string $message ): void {
 $assert( false !== strpos( (string) $bootstrap, 'class-wpd-composer-parity.php' ), 'Le module de parité doit être chargé.' );
 $assert( false !== strpos( (string) $bootstrap, 'WPD_Composer_Parity::register()' ), 'Le module de parité doit être enregistré.' );
 $assert( false !== strpos( (string) $module, 'wp-piwigo-display-composer-parity.js' ), 'Le module PHP doit charger le script de parité du composeur.' );
-$assert( false !== strpos( (string) $composer, "option.value = 'masonry'" ), 'Le composeur d’administration doit proposer Masonry.' );
+$assert( false !== strpos( (string) $composer, "[ 'masonry', 'Masonry' ]" ), 'Le composeur d’administration doit proposer Masonry.' );
 $assert( false !== strpos( (string) $composer, 'wpd-c-transition' ), 'Le composeur d’administration doit proposer les transitions.' );
 $assert( false !== strpos( (string) $composer, 'wpd-c-direction' ), 'Le composeur d’administration doit proposer la direction.' );
 $assert( false !== strpos( (string) $composer, 'masonry_columns' ), 'Le composeur d’administration doit générer masonry_columns.' );
