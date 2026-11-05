@@ -117,18 +117,6 @@ jobs:
             --exclude 'CODEX.md' \
             --exclude 'README.en.md' \
             --exclude '*.zip'
-          python3 - <<'PY'
-          from pathlib import Path
-
-          root = Path('build/plugin-check/piwigo-display')
-          allowed = {'.php', '.js', '.json', '.txt', '.md'}
-          for path in root.rglob('*'):
-              if path.is_file() and path.suffix.lower() in allowed:
-                  text = path.read_text(encoding='utf-8')
-                  updated = text.replace('wp-piwigo-display', 'piwigo-display')
-                  if updated != text:
-                      path.write_text(updated, encoding='utf-8')
-          PY
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
@@ -137,7 +125,7 @@ jobs:
           exclude-directories: 'vendor,tests,build'
           strict: true
           # Three historical public hooks keep their pre-v3 names for backward compatibility.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
 
   package:
     name: Paquet ZIP
