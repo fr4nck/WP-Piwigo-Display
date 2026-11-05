@@ -80,7 +80,7 @@ final class WPD_Cache {
 					? $api->get_images_from_album_recursive( $album_id, $max, $depth )
 					: $api->get_images_from_album( $album_id, $max );
 			},
-            'anonymous' === $context
+			'anonymous' === $context
 		);
 	}
 
@@ -133,7 +133,7 @@ final class WPD_Cache {
 					)
 				);
 			},
-            'anonymous' === $context
+			'anonymous' === $context
 		);
 	}
 
@@ -201,7 +201,8 @@ final class WPD_Cache {
 	 * Returns a cached value or loads and stores a fresh value.
 	 *
 	 * @param string   $cache_key Cache key.
-	 * @param callable $loader    Value loader.
+	 * @param callable $loader      Value loader.
+	 * @param bool     $allow_stale Whether serving a stale response is permitted.
 	 * @return array<int, array<string, mixed>>|WP_Error|mixed
 	 */
 	private static function remember( string $cache_key, callable $loader, bool $allow_stale = true ) {
@@ -253,8 +254,8 @@ final class WPD_Cache {
 			self::$request_cache[ $cache_key ] = $value;
 			set_transient( $cache_key, $value, $duration );
 			if ( $allow_stale ) {
-                set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
-            }
+				set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
+			}
 
 			return $value;
 		} finally {
