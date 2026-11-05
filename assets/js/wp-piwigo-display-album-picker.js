@@ -8,6 +8,18 @@
         return (window.WPDAlbumPickerConfig && WPDAlbumPickerConfig.labels) || {};
     }
 
+
+    function formatError(error, status) {
+        if (typeof error === 'string' && error.trim()) return error;
+        var response = error && error.responseJSON;
+        var data = response && response.data;
+        if (data && typeof data.message === 'string' && data.message.trim()) return data.message;
+        var fallback = labels().error || 'Impossible de charger les albums.';
+        if (status === 'parsererror') return fallback + ' (Réponse JSON invalide.)';
+        if (error && typeof error.status === 'number' && error.status > 0) return fallback + ' (HTTP ' + error.status + '.)';
+        return fallback;
+    }
+
     function loadAlbums() {
         if (cache) return $.Deferred().resolve(cache).promise();
         if (pending) return pending;
@@ -77,8 +89,10 @@
             }
             $picker.removeAttr('hidden').html('<p class="wpd-album-loading">' + (labels().loading || 'Chargement des albums…') + '</p>');
             loadAlbums().done(function (albums) { render($picker, albums, $input); })
-                .fail(function (message) {
-                    $picker.removeAttr('hidden').html($('<p class="notice notice-error inline"></p>').text(message || labels().error || 'Impossible de charger les albums.'));
+                .fail(function (error, status) {
+                    $picker.removeAttr('hidden').html(
+                        $('<p class="notice notice-error inline"></p>').text(formatError(error, status))
+                    );
                 });
         });
     }

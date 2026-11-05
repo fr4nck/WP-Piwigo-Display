@@ -26,6 +26,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Vérifier la syntaxe JavaScript du sélecteur d'albums
+        run: node --check assets/js/wp-piwigo-display-album-picker.js
+
       - name: Configure PHP 8.1
         uses: shivammathur/setup-php@v2
         with:
