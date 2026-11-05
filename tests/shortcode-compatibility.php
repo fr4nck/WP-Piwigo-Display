@@ -8,6 +8,7 @@ function __( string $text, string $domain = '' ): string { return $text; }
 function esc_html( $value ): string { return htmlspecialchars( (string ) $value, ENT_QUOTES, 'UTF-8' ); }
 function absint( $value ): int { return abs( (int) $value ); }
 function sanitize_text_field( $value ): string { return trim( strip_tags( (string) $value ) ); }
+function wp_strip_all_tags( $value ): string { return strip_tags( (string) $value ); }
 function sanitize_key( $value ): string { return strtolower( preg_replace( '/[^a-z0-9_-]/', '', (string) $value ) ); }
 function apply_filters( $name, $value ) { return $value; }
 function shortcode_atts( array $defaults, array $atts, string $tag ): array { return array_merge( $defaults, array_intersect_key( $atts, $defaults ) ); }
