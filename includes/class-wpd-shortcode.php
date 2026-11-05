@@ -29,7 +29,8 @@ final class WPD_Shortcode {
 	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string Rendered HTML.
 	 */
-	public static function render( array $atts = array() ): string {
+	public static function render( $atts = array() ): string {
+		$atts = is_array( $atts ) ? $atts : array();
 		$defaults = array_merge(
 			array(
 				'album'       => '',
@@ -64,8 +65,8 @@ final class WPD_Shortcode {
 		 * @param array<string, mixed> $defaults Default attributes.
 		 */
 		$defaults = apply_filters( 'wp_piwigo_display_shortcode_defaults', $defaults );
-		$atts     = shortcode_atts( $defaults, $atts, 'piwigo' );
 		$atts     = self::apply_preset( $atts );
+		$atts     = shortcode_atts( $defaults, $atts, 'piwigo' );
 		$atts     = self::sanitize_atts( $atts );
 
 		$album_value = trim( (string) $atts['album'] );
@@ -86,7 +87,7 @@ final class WPD_Shortcode {
 		$album_id = $api->resolve_album_id( $album_value );
 
 		if ( is_wp_error( $album_id ) ) {
-			return self::render_error( $album_id->get_error_message() );
+			return self::render_api_error();
 		}
 
 		$recursive                 = filter_var( $atts['recursive'], FILTER_VALIDATE_BOOLEAN );
@@ -98,7 +99,7 @@ final class WPD_Shortcode {
 		$images                    = WPD_Cache::get_album_images( absint( $album_id ), $fetch_max, $piwigo_url, $recursive, $depth );
 
 		if ( is_wp_error( $images ) ) {
-			return self::render_error( $images->get_error_message() );
+			return self::render_api_error();
 		}
 
 		if ( empty( $images ) ) {
@@ -116,7 +117,7 @@ final class WPD_Shortcode {
 			);
 
 			if ( is_wp_error( $images ) ) {
-				return self::render_error( $images->get_error_message() );
+				return self::render_api_error();
 			}
 
 			$images_prefiltered_by_tag = true;
@@ -503,6 +504,10 @@ final class WPD_Shortcode {
 	 * @param string $message Error message.
 	 * @return string Error HTML.
 	 */
+	private static function render_api_error(): string {
+		return self::render_error( __( 'Impossible de charger les données Piwigo.', 'wp-piwigo-display' ) );
+	}
+
 	private static function render_error( string $message ): string {
 		return '<div class="wp-piwigo-display-error">' . esc_html( $message ) . '</div>';
 	}

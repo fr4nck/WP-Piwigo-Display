@@ -95,7 +95,8 @@ final class WPD_Shapes {
 	 * @param array<int,mixed>    $shortcode_match Shortcode match data.
 	 * @return string
 	 */
-	public static function apply_shape( string $output, string $tag, array $attr, array $shortcode_match ): string {
+	public static function apply_shape( string $output, string $tag, $attr, array $shortcode_match ): string {
+		$attr = is_array( $attr ) ? $attr : array();
 		unset( $shortcode_match );
 
 		if ( 'piwigo' !== $tag || '' === $output ) {
