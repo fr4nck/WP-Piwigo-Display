@@ -83,9 +83,9 @@ final class WPD_Plugin {
 			'wp-piwigo-display-slider',
 			'WPDSliderI18n',
 			array(
-				'previous'   => __( 'Image précédente', 'wp-piwigo-display' ),
-				'next'       => __( 'Image suivante', 'wp-piwigo-display' ),
-				'navigation' => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
+				'previous'       => __( 'Image précédente', 'wp-piwigo-display' ),
+				'next'           => __( 'Image suivante', 'wp-piwigo-display' ),
+				'navigation'     => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
 				/* translators: %d: image number in the slider. */
 				'showImage'      => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
 				'pauseAutoplay'  => __( 'Mettre le diaporama en pause', 'wp-piwigo-display' ),
