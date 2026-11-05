@@ -11,7 +11,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 /**
  * Removes plugin options and WordPress transients for the current site.
  */
-function wpd_uninstall_site_data(): void {
+function wp_piwigo_display_uninstall_site_data(): void {
     global $wpdb;
 
     delete_option( 'wp_piwigo_display_options' );
@@ -40,7 +40,12 @@ function wpd_uninstall_site_data(): void {
            OR option_name LIKE %s
            OR option_name LIKE %s
            OR option_name LIKE %s",
-        ...$patterns
+        $patterns[0],
+        $patterns[1],
+        $patterns[2],
+        $patterns[3],
+        $patterns[4],
+        $patterns[5]
     );
     $names = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Only plugin-owned transient keys are selected.
 
@@ -57,14 +62,14 @@ function wpd_uninstall_site_data(): void {
 }
 
 if ( is_multisite() ) {
-    foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $site_id ) {
-        switch_to_blog( (int) $site_id );
+    foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $wp_piwigo_display_site_id ) {
+        switch_to_blog( (int) $wp_piwigo_display_site_id );
         try {
-            wpd_uninstall_site_data();
+            wp_piwigo_display_uninstall_site_data();
         } finally {
             restore_current_blog();
         }
     }
 } else {
-    wpd_uninstall_site_data();
+    wp_piwigo_display_uninstall_site_data();
 }
