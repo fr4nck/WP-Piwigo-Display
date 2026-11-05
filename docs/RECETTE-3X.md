@@ -311,6 +311,8 @@ Sur ordinateur, tablette et mobile :
 - [ ] les conversions shortcode → bloc Gutenberg produisent les attributs corrects ;
 - [ ] la désinstallation retire les options du compte de service et les transients ;
 - [ ] un push sur une branche ne peut pas supprimer, écraser ou recréer une release existante ;
+- [ ] un diaporama automatique avec au moins deux images dispose d'une commande pause/reprise accessible ;
+- [ ] la lightbox prend le focus à l'ouverture, bloque sa sortie par Tab et le rend au déclencheur à la fermeture ;
 - [ ] tous les contrôles CI et Plugin Check sont verts pour le commit et le ZIP effectivement testés ;
 - [ ] l'empreinte SHA-256 du ZIP candidat est enregistrée avant publication ;
 - [ ] le tag `v3.0.0-rc.4` n'est créé qu'après décision explicite GO.

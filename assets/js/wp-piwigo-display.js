@@ -11,6 +11,9 @@ function initLightbox() {
 
     var overlay = document.createElement('div');
     overlay.className = 'wp-piwigo-display-lightbox';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Visionneuse de photos Piwigo');
 
     var close = document.createElement('button');
     close.type = 'button';
@@ -45,12 +48,15 @@ function initLightbox() {
 
     document.body.appendChild(overlay);
     var current = 0;
+    var previousFocus = null;
 
     function open(index) {
+        previousFocus = document.activeElement;
         current = index;
         update();
         overlay.classList.add('is-open');
         document.body.classList.add('wp-piwigo-display-lightbox-open');
+        close.focus();
     }
 
     function update() {
@@ -64,9 +70,12 @@ function initLightbox() {
     }
 
     function closeLightbox() {
+        var wasOpen = overlay.classList.contains('is-open');
         overlay.classList.remove('is-open');
         document.body.classList.remove('wp-piwigo-display-lightbox-open');
         image.src = '';
+        if (wasOpen && previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+        previousFocus = null;
     }
 
     function goTo(index) {
@@ -96,8 +105,23 @@ function initLightbox() {
             return;
         }
 
+        if (event.key === 'Tab') {
+            var focusable = [close, previous, next];
+            var active = document.activeElement;
+            if (event.shiftKey && (active === close || focusable.indexOf(active) === -1)) {
+                event.preventDefault();
+                next.focus();
+            } else if (!event.shiftKey && (active === next || focusable.indexOf(active) === -1)) {
+                event.preventDefault();
+                close.focus();
+            }
+            return;
+        }
+
         if (event.key === 'Escape') {
+            event.preventDefault();
             closeLightbox();
+            return;
         }
 
         if (event.key === 'ArrowLeft') {

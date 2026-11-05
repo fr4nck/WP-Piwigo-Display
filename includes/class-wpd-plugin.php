@@ -87,7 +87,9 @@ final class WPD_Plugin {
 				'next'       => __( 'Image suivante', 'wp-piwigo-display' ),
 				'navigation' => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
 				/* translators: %d: image number in the slider. */
-				'showImage'  => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
+				'showImage'      => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
+				'pauseAutoplay'  => __( 'Mettre le diaporama en pause', 'wp-piwigo-display' ),
+				'resumeAutoplay' => __( 'Reprendre le diaporama', 'wp-piwigo-display' ),
 			)
 		);
 		wp_register_script( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', array(), WPD_VERSION, true );
