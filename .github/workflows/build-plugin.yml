@@ -3,8 +3,6 @@ name: Build Piwigo Display package
 on:
   workflow_dispatch:
   push:
-    branches:
-      - 'release/**'
     tags:
       - 'v*'
   pull_request:
@@ -141,36 +139,13 @@ jobs:
           ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
 
       - name: Upload verified PR package
-        if: github.event_name == 'pull_request'
+        if: github.ref_type != 'tag'
         uses: actions/upload-artifact@v4
         with:
           name: piwigo-display-${{ steps.version.outputs.version }}-verification
           path: ${{ steps.version.outputs.zip }}
           if-no-files-found: error
           retention-days: 7
-
-      - name: Replace mutable release-candidate package
-        if: github.event_name != 'pull_request' && github.ref_type == 'branch'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
-          ZIP: ${{ steps.version.outputs.zip }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release delete "$TAG" --cleanup-tag --yes
-          fi
-          prerelease_args=()
-          if [[ "$VERSION" == *-* ]]; then
-            prerelease_args+=(--prerelease)
-          fi
-          gh release create "$TAG" "$ZIP" \
-            --target "$GITHUB_SHA" \
-            --title "Piwigo Display ${VERSION}" \
-            --notes "Paquet directement installable dans WordPress : ${ZIP}" \
-            "${prerelease_args[@]}"
 
       - name: Publish immutable tagged package
         if: github.event_name != 'pull_request' && github.ref_type == 'tag'
@@ -197,7 +172,7 @@ jobs:
             "${prerelease_args[@]}"
 
       - name: Verify published release asset
-        if: github.event_name != 'pull_request'
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}

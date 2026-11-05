@@ -29,7 +29,8 @@ final class WPD_Shortcode {
 	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string Rendered HTML.
 	 */
-	public static function render( array $atts = array() ): string {
+	public static function render( $atts = array() ): string {
+		$atts = is_array( $atts ) ? $atts : array();
 		$defaults = array_merge(
 			array(
 				'album'       => '',
@@ -64,8 +65,8 @@ final class WPD_Shortcode {
 		 * @param array<string, mixed> $defaults Default attributes.
 		 */
 		$defaults = apply_filters( 'wp_piwigo_display_shortcode_defaults', $defaults );
-		$atts     = shortcode_atts( $defaults, $atts, 'piwigo' );
 		$atts     = self::apply_preset( $atts );
+		$atts     = shortcode_atts( $defaults, $atts, 'piwigo' );
 		$atts     = self::sanitize_atts( $atts );
 
 		$album_value = trim( (string) $atts['album'] );
@@ -82,11 +83,10 @@ final class WPD_Shortcode {
 			return self::render_error( __( 'URL de la galerie Piwigo non configurée. Vérifiez les réglages du plugin.', 'wp-piwigo-display' ) );
 		}
 
-		$api      = new WPD_Api( $piwigo_url );
-		$album_id = $api->resolve_album_id( $album_value );
+		$album_id = WPD_Cache::resolve_album_id( $album_value, $piwigo_url );
 
 		if ( is_wp_error( $album_id ) ) {
-			return self::render_error( $album_id->get_error_message() );
+			return self::render_api_error();
 		}
 
 		$recursive                 = filter_var( $atts['recursive'], FILTER_VALIDATE_BOOLEAN );
@@ -98,7 +98,7 @@ final class WPD_Shortcode {
 		$images                    = WPD_Cache::get_album_images( absint( $album_id ), $fetch_max, $piwigo_url, $recursive, $depth );
 
 		if ( is_wp_error( $images ) ) {
-			return self::render_error( $images->get_error_message() );
+			return self::render_api_error();
 		}
 
 		if ( empty( $images ) ) {
@@ -116,7 +116,7 @@ final class WPD_Shortcode {
 			);
 
 			if ( is_wp_error( $images ) ) {
-				return self::render_error( $images->get_error_message() );
+				return self::render_api_error();
 			}
 
 			$images_prefiltered_by_tag = true;
@@ -495,6 +495,15 @@ final class WPD_Shortcode {
 		}
 
 		return $atts;
+	}
+
+	/**
+	 * Prevents internal transport errors and account details from leaking publicly.
+	 *
+	 * @return string Public error HTML.
+	 */
+	private static function render_api_error(): string {
+		return self::render_error( __( 'Impossible de charger les données Piwigo.', 'wp-piwigo-display' ) );
 	}
 
 	/**
