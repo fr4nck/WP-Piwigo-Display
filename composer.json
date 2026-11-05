@@ -3,7 +3,9 @@
   "description": "WordPress plugin for displaying Piwigo albums.",
   "type": "wordpress-plugin",
   "license": "GPL-3.0-or-later",
-  "require": { "php": ">=8.1" },
+  "require": {
+    "php": ">=8.1"
+  },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
@@ -11,7 +13,9 @@
     "wp-coding-standards/wpcs": "^3.2"
   },
   "config": {
-    "allow-plugins": { "dealerdirect/phpcodesniffer-composer-installer": true },
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
     "sort-packages": true
   },
   "scripts": {
@@ -19,24 +23,15 @@
     "compatibility": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.1- --extensions=php --ignore=vendor .",
     "security:entrypoints": "php tests/security-entrypoints.php",
     "security:dataflows": "php tests/security-dataflows.php",
-    "security": ["@security:entrypoints", "@security:dataflows"],
+    "security": [
+      "@security:entrypoints",
+      "@security:dataflows"
+    ],
     "accessibility": "php tests/accessibility-ui.php",
     "test:frontend": [
-      "php tests/frontend-render-resilience.php",
-      "php tests/transparent-background.php",
-      "php tests/api-health-diagnostics.php",
-      "php tests/justified-layout.php",
-      "php tests/collage-layout.php",
-      "php tests/photo-text-layout.php",
-      "php tests/user-fonts.php",
-      "php tests/svg-mask-sanitizer.php",
-      "php tests/custom-svg-masks.php",
-      "php tests/shapes.php",
+      "@test:php-regressions",
       "node tests/tinymce-preview.js",
-      "node tests/shortcode-to-block.js",
-      "php tests/service-account-url-isolation.php",
-      "php tests/shortcode-execution-contracts.php",
-      "php tests/private-stale-isolation.php"
+      "node tests/shortcode-to-block.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
@@ -47,6 +42,7 @@
     "standards:services": "phpcs --standard=phpcs.xml.dist includes/class-wpd-service-api.php includes/class-wpd-service-account.php",
     "standards:checked": "phpcs --standard=phpcs.xml.dist wp-piwigo-display.php includes/class-wpd-gutenberg-parity.php includes/class-wpd-shapes.php includes/class-wpd-svg-mask-sanitizer.php includes/class-wpd-custom-svg-masks.php includes/class-wpd-user-fonts.php includes/class-wpd-bundled-fonts.php includes/class-wpd-slider-transitions.php includes/class-wpd-classic-editor.php includes/class-wpd-block.php includes/class-wpd-masonry.php includes/class-wpd-justified.php includes/class-wpd-collage.php includes/class-wpd-photo-text.php includes/class-wpd-composer-parity.php includes/class-wpd-cache.php includes/class-wpd-api-metrics.php includes/class-wpd-renderer.php includes/class-wpd-api.php includes/class-wpd-shortcode.php includes/class-wpd-settings.php includes/class-wpd-diagnostic.php includes/class-wpd-service-api.php includes/class-wpd-service-account.php includes/class-wpd-plugin.php",
     "standards:report": "phpcs --standard=phpcs.xml.dist --report=summary",
-    "standards:fix": "phpcbf --standard=phpcs.xml.dist"
+    "standards:fix": "phpcbf --standard=phpcs.xml.dist",
+    "test:php-regressions": "find tests -maxdepth 1 -type f -name '*.php' ! -name 'security-*.php' ! -name 'accessibility-ui.php' ! -name 'package-assets.php' -print0 | sort -z | xargs -0 -n1 php"
   }
 }

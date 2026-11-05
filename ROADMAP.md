@@ -4,7 +4,7 @@ Cette feuille de route décrit l’état réel du développement de Piwigo Displ
 
 ## Historique public
 
-La dernière version stable effectivement publiée avant la V3 est **1.8.0**.
+Les releases GitHub non marquées comme préversions vont jusqu'à **1.10.0** (`v1.10`), après 1.9.0.
 
 La ligne **2.0.0** a été un jalon de développement mais **n’a jamais été publiée comme release publique**. Son travail a été repris dans la V3.
 

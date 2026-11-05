@@ -16,7 +16,7 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Piwigo Display provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-The last public stable release before the V3 release-candidate train was 1.8.0. The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
+The latest non-prerelease GitHub release before V3 was 1.10.0 (v1.10). The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
 
 3.1.0-rc.1 is the first release candidate of the 3.1 line. It builds on the V3 RC3 foundation and adds Justified Gallery, Collage / Pêle-mêle, extended shapes, sanitized custom SVG masks, and Photo-filled text.
 
