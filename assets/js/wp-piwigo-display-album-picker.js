@@ -32,7 +32,10 @@
             if (!response || !response.success) {
                 return $.Deferred().reject(response && response.data && response.data.message).promise();
             }
-            cache = response.data.albums || [];
+            if (!response.data || !Array.isArray(response.data.albums)) {
+                return $.Deferred().reject(labels().error || 'Réponse Piwigo invalide.').promise();
+            }
+            cache = response.data.albums;
             return cache;
         });
         pending.always(function () { pending = null; });
@@ -216,6 +219,7 @@
         var $button = $root.find('.wpd-browse-albums');
         var $picker = $root.find('.wpd-album-picker');
         var pickerId = $picker.attr('id');
+        var requestSequence = 0;
 
         if (!pickerId) {
             pickerSequence += 1;
@@ -224,6 +228,7 @@
         }
 
         function closePicker(restoreFocus) {
+            requestSequence += 1;
             if ($picker.attr('hidden')) return;
             $picker.attr('hidden', 'hidden').empty();
             $button.attr('aria-expanded', 'false');
@@ -242,10 +247,15 @@
                 return;
             }
             $button.attr('aria-expanded', 'true');
+            requestSequence += 1;
+            var currentRequest = requestSequence;
             $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
                 .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Loading albums…'));
-            loadAlbums().done(function (albums) { render($picker, albums, $input); })
-                .fail(function (error, status) {
+            loadAlbums().done(function (albums) {
+                if (currentRequest !== requestSequence || $picker.attr('hidden')) return;
+                render($picker, albums, $input);
+            }).fail(function (error, status) {
+                    if (currentRequest !== requestSequence || $picker.attr('hidden')) return;
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
                         .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)));
                 });

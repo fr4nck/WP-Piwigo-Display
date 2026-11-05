@@ -38,17 +38,19 @@
             credentials: 'same-origin',
             body: data
         }).then(function (response) {
-            if (!response.ok) {
-                throw new Error(__('Impossible de charger les albums.', 'wp-piwigo-display'));
-            }
-            return response.json();
-        }).then(function (response) {
-            if (!response || !response.success) {
-                var message = response && response.data && response.data.message;
-                throw new Error(message || __('Impossible de charger les albums.', 'wp-piwigo-display'));
-            }
-            albumCache = response.data.albums || [];
-            return albumCache;
+            return response.json().catch(function () { return null; }).then(function (payload) {
+                var fallback = __('Impossible de charger les albums.', 'wp-piwigo-display');
+                var message = payload && payload.data && typeof payload.data.message === 'string'
+                    ? payload.data.message : fallback;
+                if (!response.ok || !payload || !payload.success) {
+                    throw new Error(message);
+                }
+                if (!payload.data || !Array.isArray(payload.data.albums)) {
+                    throw new Error(__('Réponse de Piwigo invalide.', 'wp-piwigo-display'));
+                }
+                albumCache = payload.data.albums;
+                return albumCache;
+            });
         }).finally(function () {
             albumRequest = null;
         });
