@@ -32,6 +32,7 @@
     "test:frontend": [
       "@test:php-regressions",
       "node tests/tinymce-preview.js",
+      "node tests/shortcode-to-block.js",
       "node tests/album-picker-errors.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
