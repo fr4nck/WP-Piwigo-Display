@@ -7,6 +7,7 @@ on:
       - main
       - '3.x-dev'
       - '3.1.x-dev'
+      - 'release/3.1.0-rc.1'
     tags:
       - 'v*'
   workflow_dispatch:

@@ -1,5 +1,10 @@
 # Journal des versions
 
+## Correctifs en cours — non publiés
+
+- Le sélecteur d'albums affiche les erreurs AJAX et Piwigo lisibles, au lieu de `[object Object]`.
+- Un test JavaScript couvre les principaux échecs HTTP, JSON et réseau.
+
 ## 3.0.0-rc.2 — 17 août 2026
 
 - Correction de l’erreur fatale PHP 8.1 lorsque le filtre Masonry recevait la valeur initiale `null` du moteur de rendu, notamment sur les diaporamas.

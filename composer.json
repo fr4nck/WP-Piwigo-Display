@@ -32,7 +32,8 @@
       "php tests/svg-mask-sanitizer.php",
       "php tests/custom-svg-masks.php",
       "php tests/shapes.php",
-      "node tests/tinymce-preview.js"
+      "node tests/tinymce-preview.js",
+      "node tests/album-picker-errors.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
