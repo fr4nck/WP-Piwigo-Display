@@ -194,7 +194,7 @@ final class WPD_Settings {
 	 */
 	public static function default_options(): array {
 		return array(
-			'piwigo_url'         => 'https://phototheque.pelemele.org/',
+			'piwigo_url'         => '',
 			'cache_duration'     => 3600,
 			'default_type'       => 'gallery',
 			'default_fit'        => 'contain',
