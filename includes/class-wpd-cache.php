@@ -375,6 +375,14 @@ final class WPD_Cache {
 			return false;
 		}
 
+		// Published galleries retain their public rendering. Editorial previews
+		// must not let contributors explore private albums through this account.
+		$is_preview = function_exists( 'is_preview' ) && is_preview();
+		$is_rest    = defined( 'REST_REQUEST' ) && REST_REQUEST;
+		if ( ( $is_preview || $is_rest ) && ! current_user_can( 'publish_posts' ) && ! current_user_can( 'publish_pages' ) && ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
 		$requested_url  = untrailingslashit( trim( $piwigo_url ) );
 		$configured_url = untrailingslashit( trim( WPD_Settings::get_piwigo_url() ) );
 

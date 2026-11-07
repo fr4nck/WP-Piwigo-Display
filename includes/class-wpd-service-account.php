@@ -244,7 +244,7 @@ final class WPD_Service_Account {
 	public static function ajax_get_albums(): void {
 		check_ajax_referer( 'wpd_get_albums', 'nonce' );
 
-		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) && ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'publish_posts' ) && ! current_user_can( 'publish_pages' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Accès refusé.', 'wp-piwigo-display' ) ), 403 );
 		}
 
