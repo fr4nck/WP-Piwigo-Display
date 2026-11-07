@@ -14,6 +14,8 @@
 - Harmonisation des versions dans l'en-tête, les métadonnées Gutenberg, les assets et la documentation.
 - Rectification de l'historique public : GitHub a également publié 1.9.0 et 1.10.0 comme releases non-préversions ; la dernière est 1.10.0.
 - Amélioration de l'accessibilité : pause/reprise des diaporamas automatiques et confinement/restauration du focus dans la lightbox.
+- Avec compte de service configuré, les contributeurs conservent le sélecteur d'albums public au lieu d'un refus d'accès.
+- La lightbox des diaporamas en boucle ne parcourt plus les diapositives dupliquées par Splide.
 
 ## 3.0.0-rc.3 — 19 août 2026
 

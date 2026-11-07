@@ -133,6 +133,8 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Keeps upstream errors private and cleans service credentials at uninstall.
 * Protects private galleries from stale-cache fallback and improves album selectors.
 * Repairs Gutenberg shortcode transformation and TinyMCE literal text handling.
+* Keeps the public album picker for contributors when a service account is configured.
+* Excludes looping slider clones from lightbox navigation.
 
 = 3.0.0-rc.3 =
 
