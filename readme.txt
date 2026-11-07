@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 3.0.0-rc.3
+Stable tag: 3.0.0-rc.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,9 +16,9 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-The last public stable release before the V3 release-candidate train was 1.8.0. The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
+The latest non-prerelease GitHub release before V3 was 1.10.0 (July 15, 2026). The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
 
-Version 3.0.0-rc.3 includes:
+Version 3.0.0-rc.4 candidate includes:
 
 * dynamic Gutenberg block with visual controls;
 * administration gallery composer with preview;
@@ -126,13 +126,23 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 
 == Changelog ==
 
+= 3.0.0-rc.4 (candidate under review; not published) =
+
+* Prevents release replacement by branch workflows.
+* Fixes shortcode attribute handling and preset precedence.
+* Keeps upstream errors private and cleans service credentials at uninstall.
+* Protects private galleries from stale-cache fallback and improves album selectors.
+* Repairs Gutenberg shortcode transformation and TinyMCE literal text handling.
+* Keeps the public album picker for contributors when a service account is configured.
+* Excludes looping slider clones from lightbox navigation.
+
 = 3.0.0-rc.3 =
 
 * Restored persistent API and cache health diagnostics.
 * Added API call count, cache HIT/MISS statistics, hit rate, cumulative/average/slowest timings, latest API method, HTTP status, latest error, and health verdict.
 * Added a regression test protecting the diagnostic counter from accidental removal.
 * Kept metrics credential-free and request-body-free.
-* Consolidated the public version history: 1.8.0 was the last stable public release before V3; 2.0.0 was never published as a public release.
+* Historical note from rc.3: previously claimed that 1.8.0 was the last stable release; GitHub also contains published 1.9.0 and 1.10.0 stable releases. Version 2.0.0 was never publicly released.
 * Aligned the public product name to Piwigo Display.
 * Reframed V3 documentation around its visual editing tools, with shortcodes documented as an advanced interface rather than the primary workflow.
 

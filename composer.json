@@ -31,8 +31,16 @@
     "test:php-regressions": "find tests -maxdepth 1 -type f -name '*.php' ! -name 'security-*.php' ! -name 'accessibility-ui.php' ! -name 'package-assets.php' -print0 | sort -z | xargs -0 -n1 php",
     "test:frontend": [
       "@test:php-regressions",
+      "node --check assets/js/wp-piwigo-display-album-picker.js",
+      "node --check blocks/piwigo/gutenberg-parity.js",
       "node tests/tinymce-preview.js",
-      "node tests/album-picker-errors.js"
+      "node tests/tinymce-dollar-replacement.js",
+      "node tests/album-picker-errors.js",
+      "node tests/album-picker-lifecycle.js",
+      "node tests/gutenberg-shortcode-transform.js",
+      "node tests/public-accessibility.js",
+      "node tests/release-draft-guards.js",
+      "node tests/gutenberg-album-picker.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",

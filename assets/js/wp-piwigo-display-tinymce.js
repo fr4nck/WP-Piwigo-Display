@@ -55,7 +55,7 @@
             });
             event.content = container.innerHTML;
             shortcodes.forEach(function (shortcode, index) {
-                event.content = event.content.replace('WPD_SHORTCODE_' + index + '_PLACEHOLDER', shortcode);
+                event.content = event.content.replace('WPD_SHORTCODE_' + index + '_PLACEHOLDER', function () { return shortcode; });
             });
         });
 

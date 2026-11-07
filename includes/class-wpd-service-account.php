@@ -244,8 +244,10 @@ final class WPD_Service_Account {
 	public static function ajax_get_albums(): void {
 		check_ajax_referer( 'wpd_get_albums', 'nonce' );
 
-		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) && ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Accès refusé.', 'wp-piwigo-display' ) ), 403 );
+		// Other users fall through to the public handler, which applies its own
+		// capability check and lists only albums visible without authentication.
+		if ( ! current_user_can( 'publish_posts' ) && ! current_user_can( 'publish_pages' ) && ! current_user_can( 'manage_options' ) ) {
+			return;
 		}
 
 		if ( ! self::is_configured() ) {

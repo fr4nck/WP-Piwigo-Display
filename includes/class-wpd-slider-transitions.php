@@ -45,7 +45,8 @@ final class WPD_Slider_Transitions {
 	 * @param array<int, mixed>    $shortcode_match Shortcode parser match data.
 	 * @return string
 	 */
-	public static function inject_slider_attributes( string $output, string $tag, array $attr, array $shortcode_match ): string {
+	public static function inject_slider_attributes( string $output, string $tag, $attr, array $shortcode_match ): string {
+		$attr = is_array( $attr ) ? $attr : array();
 		unset( $shortcode_match );
 
 		if ( 'piwigo' !== $tag || 'slider' !== ( $attr['type'] ?? 'gallery' ) ) {

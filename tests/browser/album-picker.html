@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>Recette du sélecteur avec jQuery 3.7.1</title>
+<style>body{font:16px system-ui;max-width:900px;margin:40px auto}li{margin:8px 0}.pass{color:#17672d}.fail{color:#a00}#fixture{border:1px solid #ccc;padding:20px}</style>
+<h1>Sélecteur Piwigo : jQuery réel</h1>
+<p id="summary" role="status">Tests en cours…</p>
+<ol id="results"></ol>
+<div id="fixture"></div>
+<!-- Placer la distribution officielle vérifiée dans ../qa depuis la racine du dépôt. -->
+<script src="../../../qa/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="></script>
+<script>
+'use strict';
+window.WPDAlbumPickerConfig = {ajaxUrl:'/aucun-appel-reseau', nonce:'fixture', labels:{error:'Impossible de charger les albums.'}};
+const results = document.querySelector('#results');
+const fixture = document.querySelector('#fixture');
+let total = 0, failed = 0, requests = [];
+const settle = () => new Promise(resolve => setTimeout(resolve, 30));
+function assert(value, message) { if (!value) throw new Error(message); }
+async function fresh() {
+    fixture.innerHTML = '<div class="wpd-album-field"><button class="wpd-browse-albums">Choisir</button><input type="text"><div class="wpd-album-picker" hidden></div></div>';
+    requests = [];
+    jQuery.ajax = function () { const request = jQuery.Deferred(); requests.push(request); return request.promise(); };
+    await new Promise((resolve, reject) => {const script = document.createElement('script'); script.src='../../assets/js/wp-piwigo-display-album-picker.js?fixture='+total; script.onload=resolve; script.onerror=reject; document.head.append(script);});
+    const root = fixture.firstElementChild;
+    const input = root.querySelector('input');
+    window.WPDAlbumPicker.attach(root, input);
+    return {root, input, button:root.querySelector('button'), picker:root.querySelector('.wpd-album-picker')};
+}
+async function test(label, callback) {
+    total++;
+    const item = document.createElement('li');
+    try { await callback(); item.textContent='PASS — '+label; item.className='pass'; }
+    catch(error) { failed++; item.textContent='FAIL — '+label+' : '+error.message; item.className='fail'; }
+    results.append(item);
+}
+(async function () {
+    assert(jQuery.fn.jquery === '3.7.1', 'Mauvaise distribution jQuery');
+    for (const status of [400,403,500,502]) await test('HTTP '+status+' conserve le message serveur', async () => {
+        const ui=await fresh(); ui.button.click();
+        requests[0].reject({status, responseJSON:{success:false,data:{message:'Erreur sûre '+status}}},'error');
+        await settle(); assert(ui.picker.textContent==='Erreur sûre '+status, ui.picker.textContent);
+        assert(ui.picker.getAttribute('role')==='alert','Rôle d’alerte absent');
+    });
+    await test('JSON invalide débloque le sélecteur et permet une nouvelle tentative', async () => {
+        const ui=await fresh(); ui.button.click(); requests[0].reject({status:200},'parsererror'); await settle();
+        assert(ui.picker.textContent.includes('JSON invalide'),'Message JSON absent');
+        ui.button.click(); ui.button.click(); assert(requests.length===2,'La requête rejetée reste bloquée');
+        requests[1].resolve({success:true,data:{albums:[]}}); await settle();
+        assert(ui.picker.textContent.includes('Aucun album'),'La nouvelle tentative échoue');
+    });
+    for (const albums of [{},[null],[{}]]) await test('Rejet réel d’une liste invalide '+JSON.stringify(albums), async () => {
+        const ui=await fresh(); ui.button.click(); requests[0].resolve({success:true,data:{albums}}); await settle();
+        assert(ui.picker.getAttribute('role')==='alert','Rejet jQuery non propagé');
+        assert(ui.picker.textContent==='Impossible de charger les albums.','Message incorrect');
+    });
+    await test('Fermer pendant le chargement conserve l’état fermé', async () => {
+        const ui=await fresh(); ui.button.click(); ui.button.click(); requests[0].resolve({success:true,data:{albums:[]}}); await settle();
+        assert(ui.picker.hidden && ui.button.getAttribute('aria-expanded')==='false','Le sélecteur s’est rouvert');
+        assert(ui.picker.children.length===0,'Un sélecteur fermé a été redessiné');
+    });
+    await test('Arborescence, recherche, validation et cache utilisent le DOM réel', async () => {
+        const ui=await fresh(); let changes=0; jQuery(ui.input).on('change',()=>changes++); ui.button.click();
+        requests[0].resolve({success:true,data:{albums:[{id:1,name:'Parent',depth:0},{id:2,name:'Enfant',path:'Parent/Enfant',depth:1},{id:3,name:'Petit',path:'Parent/Enfant/Petit',depth:2}]}}); await settle();
+        assert(ui.picker.querySelectorAll('.wpd-album-row').length===1,'Les sous-albums ne sont pas repliés');
+        ui.picker.querySelector('.wpd-album-toggle').click();
+        assert(ui.picker.querySelectorAll('.wpd-album-row').length===2,'Le sous-album manque');
+        jQuery(ui.picker.querySelector('input[type=search]')).val('Petit').trigger('input');
+        assert(ui.picker.querySelectorAll('.wpd-album-row').length===3,'La recherche perd les ascendants');
+        ui.picker.querySelectorAll('.wpd-album-confirm')[2].click();
+        assert(ui.input.value==='3' && changes===1,'L’album choisi n’est pas transmis');
+        ui.button.click(); ui.button.click(); await settle(); assert(requests.length===1,'Le cache relance une requête');
+    });
+    document.querySelector('#summary').textContent=total+' scénarios, '+failed+' échec(s). jQuery '+jQuery.fn.jquery+'. Aucun appel à Piwigo.';
+    document.body.dataset.result=failed ? 'fail':'pass';
+})().catch(error=>{document.querySelector('#summary').textContent=error.message; document.body.dataset.result='fail';});
+</script>
+</html>

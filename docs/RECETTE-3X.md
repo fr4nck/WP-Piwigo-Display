@@ -2,11 +2,11 @@
 
 Cette checklist doit être remplie avant de présenter **3.0.0** comme version stable. Une case critique non vérifiée interdit de transformer la Release Candidate en release stable.
 
-La Release Candidate courante est **3.0.0-rc.3**. La dernière stable publique avant la V3 est **1.8.0** ; la ligne 2.0.0 n’a jamais été publiée comme release publique.
+La candidate **3.0.0-rc.4** est en préparation et **non publiée**. La dernière release GitHub non marquée préversion avant la V3 est **1.10.0** ; la ligne 2.0.0 n'a jamais été publiée. La RC3 publiée a fait l'objet d'un remplacement de tag et de ZIP : ne pas attribuer ses tests à la RC4.
 
 ## 1. Préparation et paquet
 
-- [ ] récupérer le ZIP `piwigo-display-3.0.0-rc.3.zip` produit par GitHub Actions pour le commit à tester ;
+- [ ] récupérer le ZIP de vérification `piwigo-display-3.0.0-rc.4` correspondant **exactement au commit candidat** ; aucun ZIP de release officielle n'existe avant décision de publication ;
 - [ ] vérifier que le ZIP contient un seul dossier racine `wp-piwigo-display` ;
 - [ ] vérifier que ce dossier contient `wp-piwigo-display.php` et non un fichier principal renommé ;
 - [ ] installer le ZIP sur un WordPress de recette sans reprendre les fichiers du dépôt ;
@@ -148,7 +148,28 @@ Sur ordinateur, tablette et mobile :
 - [ ] aucune erreur JavaScript dans les trois composeurs ;
 - [ ] aucun avertissement PHP dans les scénarios nominaux.
 
-## 12. Décision de release
+## 12. Vérifications supplémentaires après audit
+
+- [ ] un shortcode Piwigo sans attribut et un shortcode tiers sans attribut n'occasionnent aucune erreur fatale ;
+- [ ] les presets `slider` et `actualites` s'appliquent, sauf lorsqu'un attribut explicite les remplace ;
+- [ ] aucune erreur HTTP, JSON ou donnée réseau n'apparaît sur une page publique ;
+- [ ] le compte de service ne transmet aucun identifiant à une URL propre au shortcode ;
+- [ ] un album privé ne réutilise pas de copie de secours après échec d'authentification ;
+- [ ] le sélecteur classique reste fermé quand un chargement AJAX se termine après sa fermeture ;
+- [ ] les sélecteurs Classic Editor et Gutenberg traitent les erreurs 400, 403, 500 et 502 ;
+- [ ] avec compte de service configuré, un contributeur obtient le sélecteur public (albums visibles sans authentification), sans message « Accès refusé » ;
+- [ ] un shortcode contenant `$` conserve son contenu après un aller-retour TinyMCE ;
+- [ ] les conversions shortcode → bloc Gutenberg produisent les attributs corrects ;
+- [ ] la désinstallation retire les options du compte de service et les transients ;
+- [ ] un push sur une branche ne peut pas supprimer, écraser ou recréer une release existante ;
+- [ ] un diaporama automatique avec au moins deux images dispose d'une commande pause/reprise accessible ;
+- [ ] la lightbox prend le focus à l'ouverture, bloque sa sortie par Tab et le rend au déclencheur à la fermeture ;
+- [ ] dans un diaporama en boucle d'au moins trois images avec lightbox, la navigation de la lightbox ne répète aucune image ;
+- [ ] tous les contrôles CI et Plugin Check sont verts pour le commit et le ZIP effectivement testés ;
+- [ ] l'empreinte SHA-256 du ZIP candidat est enregistrée avant publication ;
+- [ ] le tag `v3.0.0-rc.4` n'est créé qu'après décision explicite GO.
+
+## 13. Décision de release
 
 Renseigner avant création d’un tag ou d’un ZIP présenté comme release stable :
 
@@ -162,3 +183,14 @@ Renseigner avant création d’un tag ou d’un ZIP présenté comme release sta
 - date :
 
 Un **GO** exige que toute anomalie restante soit documentée et explicitement acceptée.
+
+## Compléments de recette du 7 novembre 2026
+
+- `node tests/release-draft-guards.js` : exécute le script réel de préparation d’un brouillon avec un dépôt temporaire et un faux client GitHub. Aucun appel réseau.
+- `node tests/gutenberg-album-picker.js` : promesses JavaScript réelles, erreurs HTTP, JSON invalide, éléments d’albums invalides, réessai.
+- `php tests/entrypoint-authorization.php` : six gestionnaires réels, capacités et jetons de requête refusés séparément ; contrôle du rôle contributeur.
+- `php tests/cache-runtime.php` et `php tests/metrics-write-budget.php` : cache des catégories, isolation d’URL et de rôle, panne courte, reprise et budget d’écritures.
+
+Pour le test avec jQuery réel, placer la distribution officielle `jquery-3.7.1.min.js` dans le dossier `qa` à côté du dépôt, vérifier son SHA-256 (`fc9a93dd241f6b045cbff0481cf4e1901becd0e12fb45166a8f17f95823f0b1a`), puis servir le dossier parent avec un serveur HTTP local. Ouvrir `tests/browser/album-picker.html` dans le dépôt servi. Le 7 novembre 2026, les dix scénarios passent sous Chrome avec jQuery 3.7.1 ; aucun appel à WordPress ou Piwigo. Ce test utilise de vrais éléments DOM et de vrais objets Deferred de jQuery.
+
+Ces vérifications ne remplacent pas une recette du ZIP exact sous WordPress/Piwigo. Aucune publication RC4 n’est autorisée par leur seul résultat.

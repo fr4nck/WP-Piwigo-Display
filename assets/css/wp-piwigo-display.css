@@ -115,6 +115,26 @@
     background: rgba(255, 255, 255, 0.95);
 }
 
+.wpd-slider-autoplay-toggle {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 4;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #444;
+    border-radius: 0.35rem;
+    color: #111;
+    background: #fff;
+    cursor: pointer;
+}
+
+.wpd-slider-autoplay-toggle:focus-visible {
+    outline: 3px solid #1167a2;
+    outline-offset: 2px;
+}
+
 .wp-piwigo-display-slider-prev {
     left: 0.75rem;
 }

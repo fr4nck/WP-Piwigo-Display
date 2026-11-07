@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'release/**'
+      - 'audit/**'
     tags:
       - 'v*'
   pull_request:
@@ -19,7 +20,7 @@ on:
       - 'tests/**'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: piwigo-display-package-${{ github.event.pull_request.number || github.ref }}
@@ -27,7 +28,9 @@ concurrency:
 
 jobs:
   build-package:
-    if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'release/')
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      zip: ${{ steps.version.outputs.zip }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -140,80 +143,54 @@ jobs:
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
           ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
 
-      - name: Upload verified PR package
-        if: github.event_name == 'pull_request'
+      - name: Enregistrer la provenance du candidat
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          ZIP: ${{ steps.version.outputs.zip }}
+        run: |
+          set -euo pipefail
+          sha256sum "$ZIP" > SHA256SUMS
+          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+
+      - name: Conserver le ZIP candidat sans publication
         uses: actions/upload-artifact@v4
         with:
-          name: piwigo-display-${{ steps.version.outputs.version }}-verification
-          path: ${{ steps.version.outputs.zip }}
+          name: piwigo-display-${{ github.sha }}-verification
+          path: |
+            ${{ steps.version.outputs.zip }}
+            SHA256SUMS
+            PROVENANCE.txt
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
 
-      - name: Replace mutable release-candidate package
-        if: github.event_name != 'pull_request' && github.ref_type == 'branch'
+      - name: Résumer la vérification
+        run: echo 'ZIP de recette uniquement ; aucune release publiée par ce travail.' >> "$GITHUB_STEP_SUMMARY"
+
+  prepare-release-draft:
+    name: Préparer un brouillon pour un nouveau tag
+    needs: build-package
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Récupérer le paquet vérifié
+        uses: actions/download-artifact@v4
+        with:
+          name: piwigo-display-${{ github.sha }}-verification
+
+      - name: Préparer le brouillon sans publier
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
-          ZIP: ${{ steps.version.outputs.zip }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release delete "$TAG" --cleanup-tag --yes
-          fi
-          prerelease_args=()
-          if [[ "$VERSION" == *-* ]]; then
-            prerelease_args+=(--prerelease)
-          fi
-          gh release create "$TAG" "$ZIP" \
-            --target "$GITHUB_SHA" \
-            --title "Piwigo Display ${VERSION}" \
-            --notes "Paquet directement installable dans WordPress : ${ZIP}" \
-            "${prerelease_args[@]}"
-
-      - name: Publish immutable tagged package
-        if: github.event_name != 'pull_request' && github.ref_type == 'tag'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
-          ZIP: ${{ steps.version.outputs.zip }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists; refusing to overwrite an immutable tagged release." >&2
-            exit 1
-          fi
-          prerelease_args=()
-          if [[ "$VERSION" == *-* ]]; then
-            prerelease_args+=(--prerelease)
-          fi
-          gh release create "$TAG" "$ZIP" \
-            --target "$GITHUB_SHA" \
-            --title "Piwigo Display ${VERSION}" \
-            --notes "Paquet directement installable dans WordPress : ${ZIP}" \
-            "${prerelease_args[@]}"
-
-      - name: Verify published release asset
-        if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          ZIP: ${{ steps.version.outputs.zip }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          gh release view "$TAG" --json tagName,targetCommitish,assets --jq '.assets[].name' | grep -Fxq "$ZIP"
-
-      - name: Summary
-        shell: bash
-        run: |
-          echo "### Piwigo Display ${{ steps.version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Paquet vérifié : \`${{ steps.version.outputs.zip }}\`." >> "$GITHUB_STEP_SUMMARY"
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "PR : paquet conservé comme artefact de vérification, sans modifier GitHub Releases." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "Release : ZIP directement installable publié avec l'identité technique historique \`wp-piwigo-display\`." >> "$GITHUB_STEP_SUMMARY"
-          fi
+          VERSION: ${{ needs.build-package.outputs.version }}
+          ZIP: ${{ needs.build-package.outputs.zip }}
+        run: bash .github/scripts/prepare-release-draft.sh
