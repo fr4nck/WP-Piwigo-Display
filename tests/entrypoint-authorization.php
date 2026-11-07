@@ -35,7 +35,7 @@ $handlers = array(
     array( array( WPD_Service_Account::class, 'test_connection' ), 'wpd_test_service_account', 'capability' ),
     array( array( WPD_Diagnostic::class, 'export' ), 'wpd_export_diagnostic', 'capability' ),
 );
-foreach ( $handlers as array( $handler, $action, $denied ) ) {
+foreach ( $handlers as list( $handler, $action, $denied ) ) {
     foreach ( array( false, true ) as $authorized ) {
         $GLOBALS['authorized'] = $authorized;
         $GLOBALS['valid_nonce'] = ! $authorized;
