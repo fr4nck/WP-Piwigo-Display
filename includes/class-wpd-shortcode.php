@@ -83,8 +83,7 @@ final class WPD_Shortcode {
 			return self::render_error( __( 'URL de la galerie Piwigo non configurée. Vérifiez les réglages du plugin.', 'wp-piwigo-display' ) );
 		}
 
-		$api      = new WPD_Api( $piwigo_url );
-		$album_id = $api->resolve_album_id( $album_value );
+		$album_id = WPD_Cache::resolve_album_id( $album_value, $piwigo_url );
 
 		if ( is_wp_error( $album_id ) ) {
 			return self::render_api_error();

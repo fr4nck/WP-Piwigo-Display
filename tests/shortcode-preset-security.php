@@ -19,6 +19,9 @@ final class WPD_Api {
     }
 }
 final class WPD_Cache {
+    public static function resolve_album_id(string $value, string $url) {
+        return 'secret-error' === $value ? new WP_Error('private-token=leak') : (int) $value;
+    }
     public static function get_album_images(int $id, int $max, string $url, bool $recursive, int $depth) {
         return 999 === $id ? new WP_Error('secret.password=private-data') : array( array( 'id' => 1 ) );
     }

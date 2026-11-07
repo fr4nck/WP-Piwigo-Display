@@ -201,6 +201,11 @@ final class WPD_Api_Metrics {
 			$stored = self::empty_summary();
 		}
 
+		// Cache-only traffic is sampled to avoid a database write on every view.
+		if ( 0 === self::$api_calls && time() - absint( $stored['updated_at'] ?? 0 ) < 60 ) {
+			return;
+		}
+
 		$stored['api_calls']    = absint( $stored['api_calls'] ?? 0 ) + self::$api_calls;
 		$stored['cache_hits']   = absint( $stored['cache_hits'] ?? 0 ) + self::$cache_hits;
 		$stored['cache_misses'] = absint( $stored['cache_misses'] ?? 0 ) + self::$cache_misses;
@@ -293,6 +298,7 @@ final class WPD_Api_Metrics {
 			<?php endif; ?>
 		</div>
 		<?php
+		echo '<p>' . esc_html__( 'Les vues servies uniquement depuis le cache sont échantillonnées au plus une fois par minute ; les totaux de cache sont indicatifs.', 'wp-piwigo-display' ) . '</p>';
 	}
 
 	/**
