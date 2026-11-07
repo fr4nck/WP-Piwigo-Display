@@ -169,7 +169,7 @@ jobs:
           test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
           unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
-          if unzip -Z1 "$ZIP" | grep -E '(^|/)(\.git|\.github|tests|vendor|node_modules)/|\.zip$'; then
+          if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
             echo 'Fichiers indésirables dans le ZIP.' >&2
             exit 1
           fi
