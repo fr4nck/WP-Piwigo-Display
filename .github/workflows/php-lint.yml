@@ -79,7 +79,7 @@ jobs:
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
-            --exclude 'vendor' \
+            --exclude '/vendor/' \
             --exclude 'tests' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
@@ -136,7 +136,7 @@ jobs:
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
-            --exclude 'vendor' \
+            --exclude '/vendor/' \
             --exclude 'tests' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
