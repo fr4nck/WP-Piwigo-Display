@@ -3,7 +3,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initLightbox() {
-    var links = Array.prototype.slice.call(document.querySelectorAll('.wp-piwigo-display-lightbox-enabled [data-wpd-lightbox="true"]'));
+    var found = Array.prototype.slice.call(document.querySelectorAll('.wp-piwigo-display-lightbox-enabled [data-wpd-lightbox="true"]'));
+    // Looping sliders duplicate their slides: clones open the original image.
+    var links = found.filter(function (link) {
+        return !(typeof link.closest === 'function' && link.closest('.splide__slide--clone'));
+    });
 
     if (!links.length) {
         return;
@@ -83,7 +87,21 @@ function initLightbox() {
         update();
     }
 
-    links.forEach(function (link, index) {
+    function indexOfLink(link) {
+        var index = links.indexOf(link);
+        for (var i = 0; index === -1 && i < links.length; i++) {
+            if (links[i].href === link.href) {
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    found.forEach(function (link) {
+        var index = indexOfLink(link);
+        if (index === -1) {
+            return;
+        }
         link.addEventListener('click', function (event) {
             event.preventDefault();
             open(index);

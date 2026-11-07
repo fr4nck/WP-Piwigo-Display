@@ -66,6 +66,52 @@ function testLightbox() {
     assert.ok(!overlay.classList.contains('is-open'));
 }
 
+function testLightboxIgnoresSliderClones() {
+    const handlers = {};
+    const document = {
+        activeElement: null,
+        addEventListener: function (name, fn) { handlers[name] = fn; },
+        createElement: function () {
+            return {
+                children: [],
+                classList: { add: function () {}, remove: function () {}, contains: function () { return true; } },
+                appendChild: function (child) { this.children.push(child); },
+                setAttribute: function () {},
+                addEventListener: function () {},
+                focus: function () {}
+            };
+        }
+    };
+    document.body = document.createElement('body');
+    function link(name, clone) {
+        return {
+            href: 'https://example.test/' + name + '.jpg',
+            dataset: { wpdTitle: name },
+            events: {},
+            addEventListener: function (type, fn) { this.events[type] = fn; },
+            closest: function () { return clone ? {} : null; }
+        };
+    }
+    // Ordre du DOM après montage d'un diaporama Splide en boucle de trois images.
+    const links = [link('3', true), link('1'), link('2'), link('3'), link('1', true)];
+    document.querySelectorAll = function () { return links; };
+
+    vm.runInNewContext(fs.readFileSync(__dirname + '/../assets/js/wp-piwigo-display.js', 'utf8'), { document: document });
+    handlers.DOMContentLoaded();
+    const image = document.body.children[0].children[2];
+    const seen = [];
+
+    links[1].events.click({ preventDefault: function () {} });
+    for (let i = 0; i < 5; i++) {
+        seen.push(image.alt);
+        handlers.keydown({ key: 'ArrowRight' });
+    }
+    assert.deepStrictEqual(seen, ['1', '2', '3', '1', '2'], 'La lightbox ne doit pas parcourir les clones Splide.');
+
+    links[0].events.click({ preventDefault: function () {} });
+    assert.strictEqual(image.alt, '3', 'Un clone doit ouvrir l’image d’origine.');
+}
+
 function testAutoplay(autoplayEnabled, reducedMotion) {
     const created = [];
     const slider = {
@@ -152,7 +198,8 @@ function testAutoplay(autoplayEnabled, reducedMotion) {
 }
 
 testLightbox();
+testLightboxIgnoresSliderClones();
 testAutoplay(true, false);
 testAutoplay(false, false);
 testAutoplay(true, true);
-console.log('Accessibilité publique : lightbox et pause/reprise : PASS.');
+console.log('Accessibilité publique : lightbox, clones de diaporama et pause/reprise : PASS.');
