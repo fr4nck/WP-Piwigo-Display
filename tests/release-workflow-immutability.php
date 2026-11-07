@@ -12,15 +12,20 @@ if ( false === $workflow ) {
     exit( 1 );
 }
 
+$publisher = file_get_contents( dirname( __DIR__ ) . '/.github/scripts/prepare-release-draft.sh' );
+$workflow .= $publisher;
 $required = array(
-    "if: github.ref_type != 'tag'",
-    "if: github.ref_type == 'tag'",
+    "if: github.event_name == 'push' && github.ref_type == 'tag'",
+    'contents: read',
+    'environment: release',
+    'needs: build-package',
     'actions/upload-artifact@v4',
     'gh release create',
-    'refusing to overwrite an immutable tagged release',
-    'test "$GITHUB_REF_NAME"',
+    '--verify-tag --draft',
+    'sha256sum --check SHA256SUMS',
+    'git cat-file -t',
 );
-$forbidden = array( 'gh release delete', 'gh release edit', '--cleanup-tag', 'Replace mutable' );
+$forbidden = array( 'gh release delete', 'gh release edit', '--cleanup-tag', '--clobber', 'Replace mutable' );
 foreach ( $required as $value ) {
     if ( false === strpos( $workflow, $value ) ) {
         fwrite( STDERR, "Required release protection missing: {$value}\n" );
