@@ -20,7 +20,11 @@ final class WPD_Cache {
 	 */
 	private static array $request_cache = array();
 
-	/** @var array<string, WPD_Api|WPD_Service_Api> API clients for this PHP request only. */
+	/**
+	 * API clients reused only within the current PHP request.
+	 *
+	 * @var array<string, WPD_Api|WPD_Service_Api>
+	 */
 	private static array $api_clients = array();
 
 	/**
