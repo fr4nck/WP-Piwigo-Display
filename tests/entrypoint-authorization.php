@@ -27,9 +27,14 @@ final class WPD_Settings {
     public static function get_piwigo_url(): string { return ''; }
 }
 $plugin = ( new ReflectionClass( WPD_Plugin::class ) )->newInstanceWithoutConstructor();
+// Reproduit l'ordre de WordPress lorsque le compte de service est configuré : priorité 1 puis 10.
+$picker_chain = static function () use ( $plugin ): void {
+    WPD_Service_Account::ajax_get_albums();
+    $plugin->ajax_get_albums();
+};
 $handlers = array(
     array( array( $plugin, 'ajax_get_albums' ), 'wpd_get_albums', 'json:403' ),
-    array( array( WPD_Service_Account::class, 'ajax_get_albums' ), 'wpd_get_albums', 'json:403' ),
+    array( $picker_chain, 'wpd_get_albums', 'json:403' ),
     array( array( $plugin, 'clear_cache' ), 'wpd_clear_cache', 'capability' ),
     array( array( $plugin, 'test_connection' ), 'wpd_test_connection', 'capability' ),
     array( array( WPD_Service_Account::class, 'test_connection' ), 'wpd_test_service_account', 'capability' ),
@@ -53,14 +58,17 @@ foreach ( $handlers as list( $handler, $action, $denied ) ) {
 }
 $GLOBALS['capabilities'] = array( 'edit_posts' );
 $GLOBALS['valid_nonce'] = true;
-foreach ( array( array( $plugin, 'ajax_get_albums' ), array( WPD_Service_Account::class, 'ajax_get_albums' ) ) as $index => $handler ) {
+// Sans droit de publication, le compte de service ne répond pas : le sélecteur public répond
+// (ici 400, car aucune URL n'est configurée dans ce test).
+WPD_Service_Account::ajax_get_albums();
+foreach ( array( array( $plugin, 'ajax_get_albums' ), $picker_chain ) as $handler ) {
     try {
         call_user_func( $handler );
         throw new RuntimeException( 'Le gestionnaire ne termine pas sa réponse.' );
     } catch ( RequestStopped $error ) {
-        if ( ( 0 === $index ? 'json:400' : 'json:403' ) !== $error->getMessage() ) {
+        if ( 'json:400' !== $error->getMessage() ) {
             throw new RuntimeException( 'Le contributeur doit conserver le sélecteur public, sans accès privé.' );
         }
     }
 }
-echo "Autorisations : 6 gestionnaires, 12 refus et 2 contrôles contributeur exécutés : PASS.\n";
+echo "Autorisations : 6 gestionnaires, 12 refus et 3 contrôles contributeur exécutés : PASS.\n";
