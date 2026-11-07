@@ -331,3 +331,14 @@ Renseigner avant création d’un tag ou d’un ZIP présenté comme release sta
 - date :
 
 Un **GO** exige que toute anomalie restante soit documentée et explicitement acceptée.
+
+## Compléments de recette du 7 novembre 2026
+
+- `node tests/release-draft-guards.js` : exécute le script réel de préparation d’un brouillon avec un dépôt temporaire et un faux client GitHub. Aucun appel réseau.
+- `node tests/gutenberg-album-picker.js` : promesses JavaScript réelles, erreurs HTTP, JSON invalide, éléments d’albums invalides, réessai.
+- `php tests/entrypoint-authorization.php` : six gestionnaires réels, capacités et jetons de requête refusés séparément ; contrôle du rôle contributeur.
+- `php tests/cache-runtime.php` et `php tests/metrics-write-budget.php` : cache des catégories, isolation d’URL et de rôle, panne courte, reprise et budget d’écritures.
+
+Pour le test avec jQuery réel, placer la distribution officielle `jquery-3.7.1.min.js` dans le dossier `qa` à côté du dépôt, vérifier son SHA-256 (`fc9a93dd241f6b045cbff0481cf4e1901becd0e12fb45166a8f17f95823f0b1a`), puis servir le dossier parent avec un serveur HTTP local. Ouvrir `tests/browser/album-picker.html` dans le dépôt servi. Le 7 novembre 2026, les dix scénarios passent sous Chrome avec jQuery 3.7.1 ; aucun appel à WordPress ou Piwigo. Ce test utilise de vrais éléments DOM et de vrais objets Deferred de jQuery.
+
+Ces vérifications ne remplacent pas une recette du ZIP exact sous WordPress/Piwigo. Aucune publication RC4 n’est autorisée par leur seul résultat.
