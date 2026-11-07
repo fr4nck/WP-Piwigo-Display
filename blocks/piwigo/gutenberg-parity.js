@@ -47,7 +47,9 @@
             });
         }).then(function (response) {
             var albums = response.data && response.data.albums;
-            if (!Array.isArray(albums)) {
+            if (!Array.isArray(albums) || albums.some(function (album) {
+                return !album || typeof album !== 'object' || !album.id;
+            })) {
                 throw new Error(__('Liste des albums Piwigo invalide.', 'wp-piwigo-display'));
             }
             albumCache = albums;

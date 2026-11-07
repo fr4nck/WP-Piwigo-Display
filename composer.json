@@ -39,7 +39,8 @@
       "node tests/album-picker-lifecycle.js",
       "node tests/gutenberg-shortcode-transform.js",
       "node tests/public-accessibility.js",
-      "node tests/release-draft-guards.js"
+      "node tests/release-draft-guards.js",
+      "node tests/gutenberg-album-picker.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",
