@@ -157,10 +157,33 @@ jobs:
           cd build
           zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
 
+      - name: Verify ZIP and record provenance
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cd build
+          ZIP="piwigo-display-${VERSION}.zip"
+          unzip -tq "$ZIP"
+          test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
+          if unzip -Z1 "$ZIP" | grep -E '(^|/)(\.git|\.github|tests|vendor|node_modules)/|\.zip$'; then
+            echo 'Fichiers indésirables dans le ZIP.' >&2
+            exit 1
+          fi
+          sha256sum "$ZIP" > SHA256SUMS
+          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: piwigo-display-${{ steps.version.outputs.version }}
-          path: build/piwigo-display-${{ steps.version.outputs.version }}.zip
+          name: piwigo-display-${{ steps.version.outputs.version }}-${{ github.sha }}
+          path: |
+            build/piwigo-display-${{ steps.version.outputs.version }}.zip
+            build/SHA256SUMS
+            build/PROVENANCE.txt
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
