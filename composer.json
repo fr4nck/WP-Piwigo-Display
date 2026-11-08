@@ -41,7 +41,8 @@
       "node tests/public-accessibility.js",
       "node tests/release-draft-guards.js",
       "node tests/gutenberg-album-picker.js",
-      "node tests/slider-fallback.js"
+      "node tests/slider-fallback.js",
+      "node tests/slider-layout.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",

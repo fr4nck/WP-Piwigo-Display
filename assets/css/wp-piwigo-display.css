@@ -47,6 +47,47 @@
     margin: 1.5rem 0;
 }
 
+/* Largeur calculée dans la colonne du thème, sans déborder du conteneur. */
+.wpd-slider-layout {
+    width: var(--wpd-slider-width, 100%);
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 1.5rem auto;
+}
+
+.wpd-slider-layout.wpd-slider-align-left {
+    float: left;
+    margin-right: 1rem;
+    margin-left: 0;
+}
+
+.wpd-slider-layout.wpd-slider-align-right {
+    float: right;
+    margin-right: 0;
+    margin-left: 1rem;
+}
+
+.wpd-slider-layout .wp-piwigo-display-slider {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .wpd-slider-layout {
+        width: 100%;
+        margin: 1.5rem 0;
+    }
+
+    .wpd-slider-layout.wpd-slider-align-left,
+    .wpd-slider-layout.wpd-slider-align-right {
+        float: none;
+        margin: 1.5rem 0;
+    }
+}
+
 /* Splide masque normalement les sliders non initialisés. La première image
    reste visible même lorsque son JavaScript est absent. */
 .wp-piwigo-display-slider.splide:not(.is-initialized) {
