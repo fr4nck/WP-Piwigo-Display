@@ -133,6 +133,10 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 * Keeps upstream errors private and cleans service credentials at uninstall.
 * Protects private galleries from stale-cache fallback and improves album selectors.
 * Repairs Gutenberg shortcode transformation and TinyMCE literal text handling.
+* Keeps images visible and provides native navigation when Splide is unavailable.
+* Constrains slider width to the theme container and improves Gutenberg resizing.
+* Restores the Classic Editor insert button for contributors without upload permission.
+* Corrects API health status, method detection and stale errors.
 * Keeps the public album picker for contributors when a service account is configured.
 * Excludes looping slider clones from lightbox navigation.
 

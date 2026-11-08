@@ -194,3 +194,15 @@ Un **GO** exige que toute anomalie restante soit documentée et explicitement ac
 Pour le test avec jQuery réel, placer la distribution officielle `jquery-3.7.1.min.js` dans le dossier `qa` à côté du dépôt, vérifier son SHA-256 (`fc9a93dd241f6b045cbff0481cf4e1901becd0e12fb45166a8f17f95823f0b1a`), puis servir le dossier parent avec un serveur HTTP local. Ouvrir `tests/browser/album-picker.html` dans le dépôt servi. Le 7 novembre 2026, les dix scénarios passent sous Chrome avec jQuery 3.7.1 ; aucun appel à WordPress ou Piwigo. Ce test utilise de vrais éléments DOM et de vrais objets Deferred de jQuery.
 
 Ces vérifications ne remplacent pas une recette du ZIP exact sous WordPress/Piwigo. Aucune publication RC4 n’est autorisée par leur seul résultat.
+
+## Contre-recette A1 à A5 — après corrections du 8 novembre 2026
+
+Les correctifs de ces anomalies changent le code après la qualification du ZIP du commit `da4ec5c`. Ce ZIP ne démontre donc pas le comportement des nouveaux correctifs : **reconstruire le candidat, enregistrer sa nouvelle empreinte SHA-256 et effectuer une nouvelle recette du ZIP exact avant publication**.
+
+- [ ] **A1** : dans Classic Editor, le contributeur sans `upload_files` voit et utilise « Insérer une galerie Piwigo » ; dans Gutenberg, aucun bouton parasite n’apparaît ; les comptes sans édition restent exclus.
+- [ ] **A2** : bloquer le chargement de Splide sur une galerie à trois images : la première reste visible et les commandes natives permettent la navigation ; tester aussi un chargement tardif et une erreur d’initialisation.
+- [ ] **A3** : utiliser les poignées Gutenberg à la souris et au clavier, avec déplacement de plusieurs pas, conservation du focus, sauvegarde et réouverture de la page.
+- [ ] **A4** : vérifier les largeurs 50 % et 100 %, alignées à gauche, au centre et à droite, sur un thème à blocs ainsi qu’en mobile ; aucune sortie du conteneur de texte.
+- [ ] **A5** : sans URL Piwigo, le verdict n’est pas vert ; sur une réponse `stat:fail` en HTTP 200, le diagnostic signale l’échec API ; après un appel réussi, l’ancienne erreur n’est plus présentée ; la méthode `pwg.*` est renseignée si le corps HTTP est sérialisé.
+
+Aucun tag ni release ne doit être créé par les opérations de recette.

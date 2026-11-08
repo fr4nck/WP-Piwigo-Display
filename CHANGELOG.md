@@ -16,6 +16,11 @@
 - Amélioration de l'accessibilité : pause/reprise des diaporamas automatiques et confinement/restauration du focus dans la lightbox.
 - Avec compte de service configuré, les contributeurs conservent le sélecteur d'albums public au lieu d'un refus d'accès.
 - La lightbox des diaporamas en boucle ne parcourt plus les diapositives dupliquées par Splide.
+- Le diaporama conserve une première photo visible et des commandes natives si Splide est absent ou échoue.
+- Les largeurs et alignements du diaporama respectent le conteneur des thèmes à blocs.
+- Les poignées Gutenberg capturent le pointeur et préservent le focus lors des changements au clavier.
+- Le bouton du composeur Classic Editor reste disponible aux contributeurs sans autorisation de téléversement.
+- Le diagnostic distingue les échecs API des statuts HTTP, actualise l'erreur et évite un verdict vert sans configuration.
 
 ## 3.0.0-rc.3 — 19 août 2026
 
