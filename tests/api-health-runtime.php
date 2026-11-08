@@ -2,6 +2,7 @@
 /** Tests exécutables du diagnostic HTTP et de son état réel. */
 declare(strict_types=1);
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+define( 'DAY_IN_SECONDS', 86400 );
 $GLOBALS['configured_url'] = '';
 $GLOBALS['metrics_transients'] = array();
 function __( $text, $domain = '' ): string { return $text; }
