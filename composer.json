@@ -42,7 +42,8 @@
       "node tests/release-draft-guards.js",
       "node tests/gutenberg-album-picker.js",
       "node tests/slider-fallback.js",
-      "node tests/slider-layout.js"
+      "node tests/slider-layout.js",
+      "node tests/gutenberg-resize-interactions.js"
     ],
     "test:package-assets": "php tests/package-assets.php",
     "standards": "phpcs --standard=phpcs.xml.dist",

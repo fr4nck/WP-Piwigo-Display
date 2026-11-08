@@ -51,6 +51,9 @@
         var set = props.setAttributes;
         var frame = element.useRef(null);
         var drag = element.useRef(null);
+        var widthHandle = element.useRef(null);
+        var heightHandle = element.useRef(null);
+        var keyboardFocus = element.useRef('');
         var resizingState = element.useState('');
         var resizing = resizingState[0], setResizing = resizingState[1];
         var delayed = element.useState(explicit), delayedAttributes = delayed[0], setDelayed = delayed[1];
@@ -60,6 +63,14 @@
         var hasPixelHeight = /^\d+px$/.test(String(a.height || ''));
         var legacyHeight = a.height !== '' && !hasPixelHeight ? String(a.height) : '';
         var height = hasPixelHeight ? clamp(dimensionNumber(a.height, 160), 160, 1200) : '';
+
+        // Rétablir le focus après une mise à jour de prévisualisation Gutenberg.
+        element.useLayoutEffect(function() {
+            if (!keyboardFocus.current) return;
+            var handle = keyboardFocus.current === 'width' ? widthHandle.current : heightHandle.current;
+            if (handle && document.activeElement !== handle) handle.focus({preventScroll: true});
+            keyboardFocus.current = '';
+        }, [width, height]);
 
         element.useEffect(function() {
             if (!resizing) return;
@@ -86,6 +97,12 @@
         }, [resizing]);
 
         var startResize = function(axis, event) {
+            if (typeof event.button === 'number' && event.button !== 0) return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') {
+                event.currentTarget.setPointerCapture(event.pointerId);
+            }
             var node = frame.current;
             if (!node) return;
             var rect = node.getBoundingClientRect();
@@ -94,7 +111,6 @@
             var parentRect = node.parentElement ? node.parentElement.getBoundingClientRect() : rect;
             drag.current = {axis:axis,x:event.clientX,y:event.clientY,width:width,height:height || clamp(Math.round(trackRect.height),160,1200),availableWidth:Math.max(1,parentRect.width)};
             setResizing(axis);
-            event.preventDefault();
         };
 
         var resizeWithKeyboard = function(axis, event) {
@@ -103,6 +119,8 @@
             if (event.key === 'ArrowRight' || event.key === 'ArrowDown') direction = 1;
             if (!direction && event.key !== 'Home' && event.key !== 'End') return;
             event.preventDefault();
+            event.stopPropagation();
+            keyboardFocus.current = axis;
             if (axis === 'width') {
                 var widthStep = event.shiftKey ? 5 : 1;
                 var nextWidth = event.key === 'Home' ? 20 : (event.key === 'End' ? 100 : clamp(width + direction * widthStep, 20, 100));
@@ -144,8 +162,8 @@
                 el(Button,{className:'wpd-block-slider-edit',variant:'secondary',size:'small',onClick:openSettings},__('Modifier','wp-piwigo-display')),
                 preview,
                 el('span',{className:'wpd-block-slider-dimensions','aria-live':'polite'},width+' %'+(height ? ' × '+height+' px' : (legacyHeight ? ' × '+legacyHeight : ''))),
-                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-width',role:'slider',tabIndex:0,'aria-label':__('Redimensionner la largeur du diaporama','wp-piwigo-display'),'aria-valuemin':20,'aria-valuemax':100,'aria-valuenow':width,'aria-valuetext':width+' %',onPointerDown:function(event){startResize('width',event);},onKeyDown:function(event){resizeWithKeyboard('width',event);}}),
-                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-height',role:'slider',tabIndex:0,'aria-label':__('Redimensionner la hauteur du diaporama','wp-piwigo-display'),'aria-valuemin':160,'aria-valuemax':1200,'aria-valuenow':height || 160,'aria-valuetext':(height || 160)+' px',onPointerDown:function(event){startResize('height',event);},onKeyDown:function(event){resizeWithKeyboard('height',event);}})
+                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-width',role:'slider',tabIndex:0,ref:widthHandle,'aria-label':__('Redimensionner la largeur du diaporama','wp-piwigo-display'),'aria-valuemin':20,'aria-valuemax':100,'aria-valuenow':width,'aria-valuetext':width+' %',onPointerDown:function(event){startResize('width',event);},onMouseDown:function(event){event.stopPropagation();},onKeyDown:function(event){resizeWithKeyboard('width',event);}}),
+                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-height',role:'slider',tabIndex:0,ref:heightHandle,'aria-label':__('Redimensionner la hauteur du diaporama','wp-piwigo-display'),'aria-valuemin':160,'aria-valuemax':1200,'aria-valuenow':height || 160,'aria-valuetext':(height || 160)+' px',onPointerDown:function(event){startResize('height',event);},onMouseDown:function(event){event.stopPropagation();},onKeyDown:function(event){resizeWithKeyboard('height',event);}})
             );
         }
 
