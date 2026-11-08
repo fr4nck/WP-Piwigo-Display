@@ -24,6 +24,8 @@ final class WPD_Classic_Editor {
 		}
 
 		add_action( 'media_buttons', array( self::class, 'render_button' ), 20 );
+		// WordPress masque media_buttons aux contributeurs sans upload_files.
+		add_action( 'edit_form_after_title', array( self::class, 'render_contributor_button' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_assets' ) );
 		add_action( 'admin_footer-post.php', array( self::class, 'render_modal' ) );
 		add_action( 'admin_footer-post-new.php', array( self::class, 'render_modal' ) );
@@ -86,6 +88,29 @@ final class WPD_Classic_Editor {
 			esc_attr( $editor_id ),
 			esc_html__( 'Insérer une galerie Piwigo', 'wp-piwigo-display' )
 		);
+	}
+
+	/**
+	 * Shows the shortcode builder in Classic Editor for users without upload rights.
+	 * WordPress does not call the media_buttons hook for those users.
+	 *
+	 * @param WP_Post $post Edited post.
+	 * @return void
+	 */
+	public static function render_contributor_button( $post ): void {
+		unset( $post );
+		if ( current_user_can( 'upload_files' ) || ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( $screen && method_exists( $screen, 'is_block_editor' ) && $screen->is_block_editor() ) {
+			return;
+		}
+
+		echo '<div class="wpd-classic-editor-contributor-toolbar">';
+		self::render_button( 'content' );
+		echo '</div>';
 	}
 
 	/**
