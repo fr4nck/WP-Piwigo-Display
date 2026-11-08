@@ -133,16 +133,28 @@ final class WPD_Api_Metrics {
 		$elapsed_ms = ( microtime( true ) - $started ) * 1000;
 		unset( self::$request_started[ $key ] );
 
-		$method = '';
-		if ( isset( $args['body'] ) && is_array( $args['body'] ) ) {
-			$method = sanitize_text_field( (string) ( $args['body']['method'] ?? '' ) );
+		// Requests peut transmettre le corps comme tableau ou chaîne encodée.
+		$body = $args['body'] ?? array();
+		if ( is_string( $body ) ) {
+			$parsed_body = array();
+			wp_parse_str( $body, $parsed_body );
+			$body = $parsed_body;
 		}
+		$method = is_array( $body ) ? sanitize_text_field( (string) ( $body['method'] ?? '' ) ) : '';
 		if ( '' === $method ) {
 			$method = sanitize_text_field( (string) wp_parse_url( $url, PHP_URL_PATH ) );
 		}
 
 		$status = is_wp_error( $response ) ? 0 : wp_remote_retrieve_response_code( $response );
 		$error  = is_wp_error( $response ) ? $response->get_error_message() : '';
+
+		// Une réponse HTTP 200 peut néanmoins être un échec de l'API Piwigo.
+		if ( ! is_wp_error( $response ) && 200 <= $status && 300 > $status ) {
+			$data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+			if ( is_array( $data ) && 'fail' === ( $data['stat'] ?? '' ) ) {
+				$error = __( 'Piwigo a signalé une erreur API.', 'wp-piwigo-display' );
+			}
+		}
 		self::api_call( $method, $elapsed_ms, $status, $error );
 	}
 
@@ -223,11 +235,10 @@ final class WPD_Api_Metrics {
 		if ( '' !== self::$last_cache_source ) {
 			$stored['last_cache_source'] = self::$last_cache_source;
 		}
-		if ( 0 < self::$last_http_status ) {
+		if ( 0 < self::$api_calls ) {
+			// Le dernier appel, même réussi, remplace l'erreur précédente.
 			$stored['last_http_status'] = self::$last_http_status;
-		}
-		if ( '' !== self::$last_error ) {
-			$stored['last_error'] = self::$last_error;
+			$stored['last_error']       = self::$last_error;
 		}
 
 		set_transient( self::TRANSIENT_KEY, $stored, self::TRANSIENT_TTL );
@@ -260,8 +271,8 @@ final class WPD_Api_Metrics {
 			'slowest_ms'        => round( max( (float) ( $stored['slowest_ms'] ?? 0.0 ), self::$slowest_ms ), 1 ),
 			'last_method'       => '' !== self::$last_method ? self::$last_method : sanitize_text_field( (string) ( $stored['last_method'] ?? '' ) ),
 			'last_cache_source' => '' !== self::$last_cache_source ? self::$last_cache_source : sanitize_key( (string) ( $stored['last_cache_source'] ?? '' ) ),
-			'last_http_status'  => 0 < self::$last_http_status ? self::$last_http_status : absint( $stored['last_http_status'] ?? 0 ),
-			'last_error'        => '' !== self::$last_error ? self::$last_error : sanitize_text_field( (string) ( $stored['last_error'] ?? '' ) ),
+			'last_http_status'  => 0 < self::$api_calls ? self::$last_http_status : absint( $stored['last_http_status'] ?? 0 ),
+			'last_error'        => 0 < self::$api_calls ? self::$last_error : sanitize_text_field( (string) ( $stored['last_error'] ?? '' ) ),
 			'started_at'        => absint( $stored['started_at'] ?? 0 ),
 			'updated_at'        => absint( $stored['updated_at'] ?? 0 ),
 		);
@@ -291,7 +302,8 @@ final class WPD_Api_Metrics {
 			<p><strong><?php echo esc_html( $status ); ?></strong></p>
 			<p><?php echo esc_html( sprintf( /* translators: 1: API calls, 2: cache hits, 3: cache misses, 4: cache hit rate, 5: cumulative API milliseconds, 6: average milliseconds, 7: slowest milliseconds. */ __( '%1$d appel(s) API — cache %2$d HIT / %3$d MISS (%4$s%%) — API %5$s ms cumulées, %6$s ms en moyenne, %7$s ms au plus lent.', 'wp-piwigo-display' ), $metrics['api_calls'], $metrics['cache_hits'], $metrics['cache_misses'], $metrics['cache_hit_rate'], $metrics['elapsed_ms'], $metrics['average_ms'], $metrics['slowest_ms'] ) ); ?></p>
 			<?php if ( '' !== $metrics['last_method'] || 0 < $metrics['last_http_status'] ) : ?>
-				<p><?php echo esc_html( sprintf( /* translators: 1: last Piwigo API method, 2: HTTP status code. */ __( 'Dernier appel : %1$s — HTTP %2$d.', 'wp-piwigo-display' ), $last_method, $metrics['last_http_status'] ) ); ?></p>
+				<?php $api_failure = '' !== $metrics['last_error'] && 200 <= $metrics['last_http_status'] && 300 > $metrics['last_http_status'] ? __( ' (échec API Piwigo)', 'wp-piwigo-display' ) : ''; ?>
+				<p><?php echo esc_html( sprintf( /* translators: 1: last Piwigo API method, 2: HTTP status code, 3: API result. */ __( 'Dernier appel : %1$s — HTTP %2$d%3$s.', 'wp-piwigo-display' ), $last_method, $metrics['last_http_status'], $api_failure ) ); ?></p>
 			<?php endif; ?>
 			<?php if ( '' !== $metrics['last_error'] ) : ?>
 				<p><?php echo esc_html( sprintf( /* translators: %s: last sanitized Piwigo HTTP error. */ __( 'Dernière erreur : %s', 'wp-piwigo-display' ), $metrics['last_error'] ) ); ?></p>
@@ -355,6 +367,12 @@ final class WPD_Api_Metrics {
 	 * @return string
 	 */
 	private static function health_status( array $metrics ): string {
+		if ( '' === trim( WPD_Settings::get_piwigo_url() ) ) {
+			return __( '⚪ URL Piwigo non configurée', 'wp-piwigo-display' );
+		}
+		if ( 0 === (int) $metrics['api_calls'] ) {
+			return __( '⚪ Aucun appel API observé', 'wp-piwigo-display' );
+		}
 		if ( '' !== $metrics['last_error'] || ( 0 < $metrics['last_http_status'] && 400 <= $metrics['last_http_status'] ) ) {
 			return __( '🔴 Erreur API détectée', 'wp-piwigo-display' );
 		}
