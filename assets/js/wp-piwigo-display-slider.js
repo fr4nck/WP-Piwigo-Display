@@ -25,6 +25,15 @@
         });
     }
 
+    function restoreNativeFallback(slider, slides) {
+        slider.dataset.wpdSliderInitialized = 'false';
+        if (slider.classList) slider.classList.remove('is-initialized');
+        slides.forEach(function (slide, index) {
+            slide.hidden = index !== 0;
+            slide.setAttribute('aria-hidden', index === 0 ? 'false' : 'true');
+        });
+    }
+
     function bindNativeFallback(slider) {
         if (slider.dataset.wpdFallbackBound === 'true') {
             return;
@@ -177,13 +186,15 @@
         var isFade = !reducedMotion && transition === 'fade';
         var speed = reducedMotion || transition === 'none' ? 0 : configuredSpeed;
 
-        removeNativeFallbackControls(slider);
+        // Garder les commandes de secours tant que Splide n'est pas monté.
         slides.forEach(function (slide) {
             slide.hidden = false;
             slide.removeAttribute('aria-hidden');
         });
 
-        var splide = new Splide(slider, {
+        var splide;
+        try {
+            splide = new Splide(slider, {
             type: isFade ? 'fade' : 'loop',
             direction: direction,
             perPage: 1,
@@ -197,7 +208,11 @@
             pagination: navigation === 'dots',
             keyboard: true,
             drag: !isFade
-        });
+            });
+        } catch (error) {
+            restoreNativeFallback(slider, slides);
+            return false;
+        }
 
         splide.on('mounted moved', function (newIndex) {
             setActiveThumbnail(thumbnails, typeof newIndex === 'number' ? newIndex : splide.index);
@@ -213,8 +228,14 @@
             });
         });
 
+        try {
+            splide.mount();
+        } catch (error) {
+            restoreNativeFallback(slider, slides);
+            return false;
+        }
         slider.dataset.wpdSliderInitialized = 'true';
-        splide.mount();
+        removeNativeFallbackControls(slider);
         addAutoplayToggle(slider, splide, autoplay, slides.length);
         return true;
     }

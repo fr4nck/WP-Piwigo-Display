@@ -47,6 +47,27 @@
     margin: 1.5rem 0;
 }
 
+/* Splide masque normalement les sliders non initialisés. La première image
+   reste visible même lorsque son JavaScript est absent. */
+.wp-piwigo-display-slider.splide:not(.is-initialized) {
+    visibility: visible;
+}
+
+.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__list {
+    display: block;
+    width: 100%;
+}
+
+.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__slide {
+    display: none;
+    width: 100%;
+}
+
+.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__slide:first-child:not([hidden]),
+.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__slide[aria-hidden="false"]:not([hidden]) {
+    display: block;
+}
+
 .wp-piwigo-display-slider-track {
     position: relative;
     aspect-ratio: var(--wpd-slider-ratio);
