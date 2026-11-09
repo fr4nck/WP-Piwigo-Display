@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 3.0.0-rc.4
+Stable tag: 3.0.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -18,7 +18,7 @@ Version 3 is no longer only a shortcode-based integration. It provides a dynamic
 
 The latest non-prerelease GitHub release before V3 was 1.10.0 (July 15, 2026). The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
 
-Version 3.0.0-rc.4 candidate includes:
+Version 3.0.0 includes:
 
 * dynamic Gutenberg block with visual controls;
 * administration gallery composer with preview;
@@ -126,7 +126,17 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 
 == Changelog ==
 
-= 3.0.0-rc.4 (candidate under review; not published) =
+= 3.0.0 =
+
+* First stable V3 release. Includes all changes of the unpublished 3.0.0-rc.4 candidate.
+* Splide now measures slides without the fallback layout: the first photo is shown on load and looping no longer skips it.
+* Fallback photos fit the slider height; thumbnails no longer drive a slider whose mounting failed.
+* Slider width percentages apply within the theme content column, including block themes, without overflow.
+* Gutenberg resize handles work with the mouse and the keyboard inside the editor canvas and keep focus.
+* The editor canvas loads the public styles so slider previews match the front end.
+* The API health block shows the Piwigo method of GET requests, such as the diagnostic probe.
+
+= 3.0.0-rc.4 (candidate, never published; included in 3.0.0) =
 
 * Prevents release replacement by branch workflows.
 * Fixes shortcode attribute handling and preset precedence.
