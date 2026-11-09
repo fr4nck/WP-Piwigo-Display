@@ -47,44 +47,38 @@
     margin: 1.5rem 0;
 }
 
-/* Largeur calculée dans la colonne du thème, sans déborder du conteneur. */
+/* Le conteneur garde la largeur de la colonne du thème (y compris la mise en
+   page contrainte des thèmes à blocs) ; le pourcentage s'applique au diaporama. */
 .wpd-slider-layout {
-    width: var(--wpd-slider-width, 100%);
-    max-width: 100%;
     min-width: 0;
-    box-sizing: border-box;
-    margin: 1.5rem auto;
-}
-
-.wpd-slider-layout.wpd-slider-align-left {
-    float: left;
-    margin-right: 1rem;
-    margin-left: 0;
-}
-
-.wpd-slider-layout.wpd-slider-align-right {
-    float: right;
-    margin-right: 0;
-    margin-left: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .wpd-slider-layout .wp-piwigo-display-slider {
-    width: 100%;
+    width: var(--wpd-slider-width, 100%);
     max-width: 100%;
     box-sizing: border-box;
-    margin: 0;
+    margin: 0 auto;
 }
 
-@media (max-width: 600px) {
-    .wpd-slider-layout {
-        width: 100%;
-        margin: 1.5rem 0;
-    }
+.wpd-slider-layout.wpd-slider-align-left .wp-piwigo-display-slider {
+    float: left;
+    margin: 0 1.5rem 1rem 0;
+}
 
-    .wpd-slider-layout.wpd-slider-align-left,
-    .wpd-slider-layout.wpd-slider-align-right {
+.wpd-slider-layout.wpd-slider-align-right .wp-piwigo-display-slider {
+    float: right;
+    margin: 0 0 1rem 1.5rem;
+}
+
+@media (max-width: 782px) {
+    .wpd-slider-layout .wp-piwigo-display-slider,
+    .wpd-slider-layout.wpd-slider-align-left .wp-piwigo-display-slider,
+    .wpd-slider-layout.wpd-slider-align-right .wp-piwigo-display-slider {
         float: none;
-        margin: 1.5rem 0;
+        width: 100%;
+        margin: 0;
     }
 }
 
