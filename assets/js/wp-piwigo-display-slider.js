@@ -27,7 +27,7 @@
 
     function restoreNativeFallback(slider, slides) {
         slider.dataset.wpdSliderInitialized = 'false';
-        if (slider.classList) slider.classList.remove('is-initialized');
+        if (slider.classList) slider.classList.remove('is-initialized', 'wpd-splide-mounting');
         slides.forEach(function (slide, index) {
             slide.hidden = index !== 0;
             slide.setAttribute('aria-hidden', index === 0 ? 'false' : 'true');
@@ -187,6 +187,7 @@
         var speed = reducedMotion || transition === 'none' ? 0 : configuredSpeed;
 
         // Garder les commandes de secours tant que Splide n'est pas monté.
+        slider.classList.add('wpd-splide-mounting');
         slides.forEach(function (slide) {
             slide.hidden = false;
             slide.removeAttribute('aria-hidden');
@@ -235,6 +236,7 @@
             return false;
         }
         slider.dataset.wpdSliderInitialized = 'true';
+        slider.classList.remove('wpd-splide-mounting');
         removeNativeFallbackControls(slider);
         addAutoplayToggle(slider, splide, autoplay, slides.length);
         return true;

@@ -89,23 +89,26 @@
 }
 
 /* Splide masque normalement les sliders non initialisés. La première image
-   reste visible même lorsque son JavaScript est absent. */
+   reste visible même lorsque son JavaScript est absent. La mise en page de
+   secours est suspendue pendant le montage, car Splide mesure les diapositives
+   avant d'ajouter is-initialized. */
 .wp-piwigo-display-slider.splide:not(.is-initialized) {
     visibility: visible;
 }
 
-.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__list {
+.wp-piwigo-display-slider.splide:not(.is-initialized):not(.wpd-splide-mounting) .splide__list {
     display: block;
     width: 100%;
 }
 
-.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__slide {
+.wp-piwigo-display-slider.splide:not(.is-initialized):not(.wpd-splide-mounting) .splide__slide {
     display: none;
     width: 100%;
+    height: 100%;
 }
 
-.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__slide:first-child:not([hidden]),
-.wp-piwigo-display-slider.splide:not(.is-initialized) .splide__slide[aria-hidden="false"]:not([hidden]) {
+.wp-piwigo-display-slider.splide:not(.is-initialized):not(.wpd-splide-mounting) .splide__slide:first-child:not([hidden]),
+.wp-piwigo-display-slider.splide:not(.is-initialized):not(.wpd-splide-mounting) .splide__slide[aria-hidden="false"]:not([hidden]) {
     display: block;
 }
 

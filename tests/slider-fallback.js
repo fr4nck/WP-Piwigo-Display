@@ -6,11 +6,29 @@ const vm = require('vm');
 const css = fs.readFileSync(__dirname + '/../assets/css/wp-piwigo-display.css', 'utf8');
 assert.match(css, /\.wp-piwigo-display-slider\.splide:not\(\.is-initialized\)[\s\S]*?visibility:\s*visible/);
 assert.match(css, /\.splide__slide\[aria-hidden="false"\]:not\(\[hidden\]\)/);
+// Splide mesure les diapositives avant d'ajouter is-initialized : la mise en page
+// de secours ne doit plus s'appliquer pendant le montage.
+const fallbackRules = (css.replace(/\/\*[\s\S]*?\*\//g, '').match(/[^{}]*:not\(\.is-initialized\)[^{}]*\{/g) || [])
+    .filter(rule => /splide__(list|slide)/.test(rule));
+assert.ok(fallbackRules.length >= 3);
+fallbackRules.forEach(rule => {
+    rule.split(',').forEach(selector => {
+        if (/:not\(\.is-initialized\)/.test(selector)) {
+            assert.match(selector, /:not\(\.is-initialized\):not\(\.wpd-splide-mounting\)/, 'Règle de secours active pendant le montage : ' + selector.trim());
+        }
+    });
+});
+assert.match(css, /:not\(\.wpd-splide-mounting\) \.splide__slide\s*\{[^}]*height:\s*100%/, 'La photo de secours doit tenir dans la piste.');
 
 function slider() {
     const s = {
         dataset: { navigation: 'thumbnails', autoplay: 'false' },
-        children: [], classList: { remove() {} },
+        children: [], classes: new Set(),
+        classList: {
+            add(name) { s.classes.add(name); },
+            remove(...names) { names.forEach(name => s.classes.delete(name)); },
+            contains(name) { return s.classes.has(name); }
+        },
         querySelectorAll(selector) {
             if (selector === '.splide__slide') return this.slides;
             if (selector === '.wp-piwigo-display-slider-thumbnail') return [];
@@ -61,21 +79,36 @@ native.children[1].events.click();
 assert.strictEqual(absent.s.slides[1].hidden, false);
 
 const late = run(slider());
+let mountingDuringMount = null;
 late.context.Splide = function () {
     this.on = function () {};
-    this.mount = function () { return this; };
+    this.mount = function () { mountingDuringMount = late.s.classList.contains('wpd-splide-mounting'); return this; };
     this.go = function () {};
 };
 late.clock.callback();
 assert.strictEqual(late.s.dataset.wpdSliderInitialized, 'true');
 assert.ok(!late.s.children.some(x => x.className === 'wpd-native-slider-controls'));
+assert.strictEqual(mountingDuringMount, true, 'Le CSS de secours doit être neutralisé pendant le montage.');
+assert.ok(!late.s.classList.contains('wpd-splide-mounting'));
 
-const broken = run(slider(), function () {
+let goCalls = 0;
+const brokenSlider = slider();
+const thumbnail = {
+    dataset: { slideIndex: '1' }, listeners: [], classList: { toggle() {} }, setAttribute() {},
+    addEventListener(name, fn) { this.listeners.push(fn); }
+};
+brokenSlider.querySelectorAll = (function (original) {
+    return function (selector) {
+        return selector === '.wp-piwigo-display-slider-thumbnail' ? [thumbnail] : original.call(this, selector);
+    };
+}(brokenSlider.querySelectorAll));
+const broken = run(brokenSlider, function () {
     this.on = function () {};
     this.mount = function () { throw Error('montage impossible'); };
-    this.go = function () {};
+    this.go = function () { goCalls += 1; throw TypeError('Splide non monté'); };
 });
 assert.notStrictEqual(broken.s.dataset.wpdSliderInitialized, 'true');
 assert.strictEqual(broken.s.slides[0].hidden, false);
 assert.ok(broken.s.children.some(x => x.className === 'wpd-native-slider-controls'));
+assert.ok(!broken.s.classList.contains('wpd-splide-mounting'));
 console.log('Diaporama : fallback sans Splide, chargement tardif et montage défaillant PASS.');
