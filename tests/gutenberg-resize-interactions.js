@@ -5,7 +5,12 @@ const vm = require('vm');
 
 let block;
 let attrs = { albumId: '154', displayType: 'slider', width: '50%', height: '300px' };
-const refs = [], states = [], listeners = {};
+const refs = [], states = [], listeners = {}, frameListeners = {};
+// Document de l'iframe de l'éditeur, distinct du document principal.
+const frameDocument = {
+    addEventListener(name, fn) { frameListeners[name] = fn; },
+    removeEventListener(name, fn) { if (frameListeners[name] === fn) delete frameListeners[name]; }
+};
 let refIndex = 0, stateIndex = 0, effects = [], layouts = [];
 const document = {
     activeElement: null,
@@ -52,6 +57,7 @@ function render() {
     const panel = find(tree, 'wpd-block-slider-resizer');
     assert.ok(panel);
     panel.props.ref.current = {
+        ownerDocument: frameDocument,
         parentElement: { getBoundingClientRect() { return { width: 1000 }; } },
         getBoundingClientRect() { return { width: 500, height: 300 }; },
         querySelector() { return { getBoundingClientRect() { return { height: 300 }; } }; }
@@ -59,7 +65,15 @@ function render() {
     for (const name of ['wpd-block-slider-handle-width', 'wpd-block-slider-handle-height']) {
         const node = find(tree, name);
         assert.ok(node && node.props.ref);
-        node.props.ref.current = { focus() { document.activeElement = this; } };
+        assert.strictEqual(node.props.onKeyDown, undefined, 'Le clavier est écouté directement sur la poignée.');
+        if (!node.props.ref.current) {
+            node.props.ref.current = {
+                listeners: {},
+                focus() { document.activeElement = this; },
+                addEventListener(name, fn) { this.listeners[name] = fn; },
+                removeEventListener(name, fn) { if (this.listeners[name] === fn) delete this.listeners[name]; }
+            };
+        }
     }
     layouts.forEach(fn => fn());
     effects.forEach(fn => fn());
@@ -69,7 +83,8 @@ function render() {
 let tree = render();
 let handle = find(tree, 'wpd-block-slider-handle-width');
 let prevented = false, stopped = false;
-handle.props.onKeyDown({key: 'ArrowRight', shiftKey: false, preventDefault() { prevented = true; }, stopPropagation() { stopped = true; }});
+// Écouteur natif : il s'exécute avant ceux de Gutenberg posés sur les ancêtres.
+handle.props.ref.current.listeners.keydown({key: 'ArrowRight', shiftKey: false, preventDefault() { prevented = true; }, stopPropagation() { stopped = true; }});
 assert.strictEqual(attrs.width, '51%');
 document.activeElement = null;
 tree = render();
@@ -84,9 +99,10 @@ handle.props.onPointerDown({
 });
 assert.ok(captured, 'La poignée doit capturer les événements du pointeur.');
 render();
-assert.strictEqual(typeof listeners.pointermove, 'function');
-listeners.pointermove({clientX: 150, clientY: 20, preventDefault() {}});
+assert.strictEqual(listeners.pointermove, undefined, 'Le document principal ne reçoit pas les événements de l’iframe.');
+assert.strictEqual(typeof frameListeners.pointermove, 'function', 'Le glissement doit être suivi dans le document de la poignée.');
+frameListeners.pointermove({clientX: 150, clientY: 20, preventDefault() {}});
 assert.strictEqual(attrs.width, '56%', 'Le glissement de 50 px sur 1000 px doit augmenter de 5 %.');
-listeners.pointerup();
+frameListeners.pointerup();
 assert.strictEqual(states[0], '');
 console.log('Redimensionnement Gutenberg : clavier, focus et pointeur PASS.');
