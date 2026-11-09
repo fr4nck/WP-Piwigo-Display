@@ -25,6 +25,15 @@
         });
     }
 
+    function restoreNativeFallback(slider, slides) {
+        slider.dataset.wpdSliderInitialized = 'false';
+        if (slider.classList) slider.classList.remove('is-initialized', 'wpd-splide-mounting');
+        slides.forEach(function (slide, index) {
+            slide.hidden = index !== 0;
+            slide.setAttribute('aria-hidden', index === 0 ? 'false' : 'true');
+        });
+    }
+
     function bindNativeFallback(slider) {
         if (slider.dataset.wpdFallbackBound === 'true') {
             return;
@@ -130,6 +139,36 @@
         showSlide(0);
     }
 
+    function addAutoplayToggle(slider, splide, autoplay, slideCount) {
+        if (!autoplay || slideCount < 2) return;
+
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'wpd-slider-autoplay-toggle';
+        toggle.setAttribute('aria-label', label('pauseAutoplay', 'Mettre le diaporama en pause'));
+        toggle.setAttribute('aria-pressed', 'false');
+        toggle.textContent = '❚❚';
+        var paused = false;
+
+        toggle.addEventListener('click', function () {
+            var autoplayComponent = splide.Components && splide.Components.Autoplay;
+            if (!autoplayComponent) return;
+            if (paused) {
+                autoplayComponent.play();
+            } else {
+                autoplayComponent.pause();
+            }
+            paused = !paused;
+            toggle.setAttribute('aria-pressed', paused ? 'true' : 'false');
+            toggle.setAttribute('aria-label', paused
+                ? label('resumeAutoplay', 'Reprendre le diaporama')
+                : label('pauseAutoplay', 'Mettre le diaporama en pause'));
+            toggle.textContent = paused ? '▶' : '❚❚';
+        });
+
+        slider.appendChild(toggle);
+    }
+
     function initSplideSlider(slider) {
         if (slider.dataset.wpdSliderInitialized === 'true' || typeof Splide === 'undefined') {
             return false;
@@ -147,13 +186,16 @@
         var isFade = !reducedMotion && transition === 'fade';
         var speed = reducedMotion || transition === 'none' ? 0 : configuredSpeed;
 
-        removeNativeFallbackControls(slider);
+        // Garder les commandes de secours tant que Splide n'est pas monté.
+        if (slider.classList) slider.classList.add('wpd-splide-mounting');
         slides.forEach(function (slide) {
             slide.hidden = false;
             slide.removeAttribute('aria-hidden');
         });
 
-        var splide = new Splide(slider, {
+        var splide;
+        try {
+            splide = new Splide(slider, {
             type: isFade ? 'fade' : 'loop',
             direction: direction,
             perPage: 1,
@@ -167,7 +209,11 @@
             pagination: navigation === 'dots',
             keyboard: true,
             drag: !isFade
-        });
+            });
+        } catch (error) {
+            restoreNativeFallback(slider, slides);
+            return false;
+        }
 
         splide.on('mounted moved', function (newIndex) {
             setActiveThumbnail(thumbnails, typeof newIndex === 'number' ? newIndex : splide.index);
@@ -175,6 +221,9 @@
 
         thumbnails.forEach(function (thumbnail) {
             thumbnail.addEventListener('click', function (event) {
+                if (slider.dataset.wpdSliderInitialized !== 'true') {
+                    return;
+                }
                 event.preventDefault();
                 var index = parseInt(thumbnail.dataset.slideIndex || '0', 10);
                 if (!Number.isNaN(index)) {
@@ -183,8 +232,16 @@
             });
         });
 
+        try {
+            splide.mount();
+        } catch (error) {
+            restoreNativeFallback(slider, slides);
+            return false;
+        }
         slider.dataset.wpdSliderInitialized = 'true';
-        splide.mount();
+        if (slider.classList) slider.classList.remove('wpd-splide-mounting');
+        removeNativeFallbackControls(slider);
+        addAutoplayToggle(slider, splide, autoplay, slides.length);
         return true;
     }
 

@@ -30,6 +30,14 @@ $checks = array(
         "matchMedia('(prefers-reduced-motion: reduce)')",
         'var autoplay = !reducedMotion',
         "var speed = reducedMotion || transition === 'none' ? 0",
+        "addAutoplayToggle(slider, splide, autoplay, slides.length)",
+        "aria-pressed",
+    ),
+    'assets/js/wp-piwigo-display.js' => array(
+        "'aria-modal'",
+        "'dialog'",
+        "previousFocus.focus()",
+        "event.key === 'Tab'",
     ),
     'assets/css/wp-piwigo-display-album-picker.css' => array(
         ':focus-visible',

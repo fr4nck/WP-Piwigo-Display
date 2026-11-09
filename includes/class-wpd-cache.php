@@ -21,6 +21,13 @@ final class WPD_Cache {
 	private static array $request_cache = array();
 
 	/**
+	 * API clients reused only within the current PHP request.
+	 *
+	 * @var array<string, WPD_Api|WPD_Service_Api>
+	 */
+	private static array $api_clients = array();
+
+	/**
 	 * Cache lock lifetime in seconds.
 	 */
 	private const LOCK_TTL = 20;
@@ -47,8 +54,15 @@ final class WPD_Cache {
 		}
 
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
-		$api        = self::create_api( $piwigo_url );
-		$categories = $api->get_all_categories();
+		$context    = self::get_access_context( $piwigo_url );
+		$cache_key  = 'wpd_album_' . md5( $context . '|' . $piwigo_url . '|categories' );
+		$categories = self::remember(
+			$cache_key,
+			static function () use ( $piwigo_url ) {
+				return self::create_api( $piwigo_url )->get_all_categories();
+			},
+			false
+		);
 		if ( is_wp_error( $categories ) ) {
 			return $categories;
 		}
@@ -79,7 +93,8 @@ final class WPD_Cache {
 				return $recursive
 					? $api->get_images_from_album_recursive( $album_id, $max, $depth )
 					: $api->get_images_from_album( $album_id, $max );
-			}
+			},
+			'anonymous' === $context
 		);
 	}
 
@@ -131,7 +146,8 @@ final class WPD_Cache {
 						}
 					)
 				);
-			}
+			},
+			'anonymous' === $context
 		);
 	}
 
@@ -144,6 +160,7 @@ final class WPD_Cache {
 		global $wpdb;
 
 		self::$request_cache = array();
+		self::$api_clients   = array();
 		$deleted             = 0;
 		$patterns            = array(
 			'_transient_wpd_album_',
@@ -199,10 +216,11 @@ final class WPD_Cache {
 	 * Returns a cached value or loads and stores a fresh value.
 	 *
 	 * @param string   $cache_key Cache key.
-	 * @param callable $loader    Value loader.
+	 * @param callable $loader      Value loader.
+	 * @param bool     $allow_stale Whether serving a stale response is permitted.
 	 * @return array<int, array<string, mixed>>|WP_Error|mixed
 	 */
-	private static function remember( string $cache_key, callable $loader ) {
+	private static function remember( string $cache_key, callable $loader, bool $allow_stale = true ) {
 		if ( isset( self::$request_cache[ $cache_key ] ) ) {
 			WPD_Api_Metrics::cache_hit( 'request' );
 			return self::$request_cache[ $cache_key ];
@@ -216,8 +234,15 @@ final class WPD_Cache {
 			return $cached;
 		}
 
+		$error_key = 'wpd_album_error_' . md5( $cache_key );
+		$error     = get_transient( $error_key );
+		if ( is_wp_error( $error ) ) {
+			self::$request_cache[ $cache_key ] = $error;
+			return $error;
+		}
+
 		$stale_key     = self::get_stale_key( $cache_key );
-		$stale         = get_transient( $stale_key );
+		$stale         = $allow_stale ? get_transient( $stale_key ) : false;
 		$lock_key      = self::get_lock_key( $cache_key );
 		$lock_acquired = self::acquire_lock( $lock_key );
 
@@ -240,7 +265,13 @@ final class WPD_Cache {
 					return $stale;
 				}
 
-				return $value;
+				$error = new WP_Error(
+					'wpd_temporarily_unavailable',
+					__( 'La galerie Piwigo est temporairement indisponible. Réessayez dans quelques instants.', 'wp-piwigo-display' )
+				);
+				set_transient( $error_key, $error, 15 );
+				self::$request_cache[ $cache_key ] = $error;
+				return $error;
 			}
 
 			if ( ! is_array( $value ) ) {
@@ -250,7 +281,9 @@ final class WPD_Cache {
 			$duration                          = max( 60, WPD_Settings::get_cache_duration() );
 			self::$request_cache[ $cache_key ] = $value;
 			set_transient( $cache_key, $value, $duration );
-			set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
+			if ( $allow_stale ) {
+				set_transient( $stale_key, $value, max( DAY_IN_SECONDS, $duration * 7 ) );
+			}
 
 			return $value;
 		} finally {
@@ -314,9 +347,13 @@ final class WPD_Cache {
 	 * @return WPD_Api|WPD_Service_Api
 	 */
 	private static function create_api( string $piwigo_url ) {
-		return self::should_use_service_account( $piwigo_url )
-			? new WPD_Service_Api( $piwigo_url )
-			: new WPD_Api( $piwigo_url );
+		$key = self::get_access_context( $piwigo_url ) . '|' . $piwigo_url;
+		if ( ! isset( self::$api_clients[ $key ] ) ) {
+			self::$api_clients[ $key ] = self::should_use_service_account( $piwigo_url )
+				? new WPD_Service_Api( $piwigo_url )
+				: new WPD_Api( $piwigo_url );
+		}
+		return self::$api_clients[ $key ];
 	}
 
 	/**
@@ -339,6 +376,14 @@ final class WPD_Cache {
 	 */
 	private static function should_use_service_account( string $piwigo_url ): bool {
 		if ( ! WPD_Service_Account::is_configured() ) {
+			return false;
+		}
+
+		// Published galleries retain their public rendering. Editorial previews
+		// must not let contributors explore private albums through this account.
+		$is_preview = function_exists( 'is_preview' ) && is_preview();
+		$is_rest    = defined( 'REST_REQUEST' ) && REST_REQUEST;
+		if ( ( $is_preview || $is_rest ) && ! current_user_can( 'publish_posts' ) && ! current_user_can( 'publish_pages' ) && ! current_user_can( 'manage_options' ) ) {
 			return false;
 		}
 

@@ -17,7 +17,7 @@
     var booleanKeys = ['recursive','lightbox','rounded','transparentBackground','autoplay'];
 
     var escapeShortcodeValue = function(value) {
-        return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\[/g, '&#91;').replace(/\]/g, '&#93;');
     };
 
     var buildShortcode = function(attributes) {
@@ -51,6 +51,10 @@
         var set = props.setAttributes;
         var frame = element.useRef(null);
         var drag = element.useRef(null);
+        var widthHandle = element.useRef(null);
+        var heightHandle = element.useRef(null);
+        var keyboardFocus = element.useRef('');
+        var keyboardResize = element.useRef(null);
         var resizingState = element.useState('');
         var resizing = resizingState[0], setResizing = resizingState[1];
         var delayed = element.useState(explicit), delayedAttributes = delayed[0], setDelayed = delayed[1];
@@ -61,8 +65,18 @@
         var legacyHeight = a.height !== '' && !hasPixelHeight ? String(a.height) : '';
         var height = hasPixelHeight ? clamp(dimensionNumber(a.height, 160), 160, 1200) : '';
 
+        // Rétablir le focus après une mise à jour de prévisualisation Gutenberg.
+        element.useLayoutEffect(function() {
+            if (!keyboardFocus.current) return;
+            var handle = keyboardFocus.current === 'width' ? widthHandle.current : heightHandle.current;
+            if (handle && document.activeElement !== handle) handle.focus({preventScroll: true});
+            keyboardFocus.current = '';
+        }, [width, height]);
+
         element.useEffect(function() {
             if (!resizing) return;
+            // La poignée est rendue dans l'iframe de l'éditeur : suivre son propre document.
+            var view = frame.current && frame.current.ownerDocument ? frame.current.ownerDocument : document;
             var onPointerMove = function(event) {
                 if (!drag.current) return;
                 event.preventDefault();
@@ -75,17 +89,23 @@
                 }
             };
             var onPointerUp = function() { drag.current = null; setResizing(''); };
-            document.addEventListener('pointermove', onPointerMove);
-            document.addEventListener('pointerup', onPointerUp);
-            document.addEventListener('pointercancel', onPointerUp);
+            view.addEventListener('pointermove', onPointerMove);
+            view.addEventListener('pointerup', onPointerUp);
+            view.addEventListener('pointercancel', onPointerUp);
             return function() {
-                document.removeEventListener('pointermove', onPointerMove);
-                document.removeEventListener('pointerup', onPointerUp);
-                document.removeEventListener('pointercancel', onPointerUp);
+                view.removeEventListener('pointermove', onPointerMove);
+                view.removeEventListener('pointerup', onPointerUp);
+                view.removeEventListener('pointercancel', onPointerUp);
             };
         }, [resizing]);
 
         var startResize = function(axis, event) {
+            if (typeof event.button === 'number' && event.button !== 0) return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') {
+                event.currentTarget.setPointerCapture(event.pointerId);
+            }
             var node = frame.current;
             if (!node) return;
             var rect = node.getBoundingClientRect();
@@ -94,7 +114,6 @@
             var parentRect = node.parentElement ? node.parentElement.getBoundingClientRect() : rect;
             drag.current = {axis:axis,x:event.clientX,y:event.clientY,width:width,height:height || clamp(Math.round(trackRect.height),160,1200),availableWidth:Math.max(1,parentRect.width)};
             setResizing(axis);
-            event.preventDefault();
         };
 
         var resizeWithKeyboard = function(axis, event) {
@@ -103,6 +122,8 @@
             if (event.key === 'ArrowRight' || event.key === 'ArrowDown') direction = 1;
             if (!direction && event.key !== 'Home' && event.key !== 'End') return;
             event.preventDefault();
+            event.stopPropagation();
+            keyboardFocus.current = axis;
             if (axis === 'width') {
                 var widthStep = event.shiftKey ? 5 : 1;
                 var nextWidth = event.key === 'Home' ? 20 : (event.key === 'End' ? 100 : clamp(width + direction * widthStep, 20, 100));
@@ -114,6 +135,21 @@
                 set({height: nextHeight + 'px'});
             }
         };
+
+        keyboardResize.current = resizeWithKeyboard;
+        var hasResizer = !!(a.albumId && a.displayType === 'slider');
+
+        // Gutenberg traite les flèches sur les ancêtres de la poignée avant React :
+        // un écouteur natif sur la poignée garde le focus et la valeur.
+        element.useEffect(function() {
+            if (!hasResizer) return;
+            var removers = [[widthHandle.current, 'width'], [heightHandle.current, 'height']].filter(function(item) { return item[0]; }).map(function(item) {
+                var listener = function(event) { keyboardResize.current(item[1], event); };
+                item[0].addEventListener('keydown', listener);
+                return function() { item[0].removeEventListener('keydown', listener); };
+            });
+            return function() { removers.forEach(function(remove) { remove(); }); };
+        }, [hasResizer]);
 
         var openSettings = function(event) {
             if (event) { event.preventDefault(); event.stopPropagation(); }
@@ -139,20 +175,51 @@
         ];
         var preview = !a.albumId ? el(components.Placeholder,{icon:'format-gallery',label:__('WP Piwigo Display','wp-piwigo-display'),instructions:__('Renseignez l’identifiant d’un album Piwigo dans la barre latérale.','wp-piwigo-display')}) : el(ServerSideRender,{block:'wp-piwigo-display/gallery',attributes:delayedAttributes});
 
-        if (a.albumId && a.displayType === 'slider') {
+        if (hasResizer) {
             preview = el('div',{className:'wpd-block-slider-resizer' + (resizing ? ' is-resizing' : '') + (height ? ' has-custom-height' : ''),ref:frame,onDoubleClick:openSettings,style:{width:width+'%','--wpd-editor-slider-height':height ? height+'px' : 'auto'}},
                 el(Button,{className:'wpd-block-slider-edit',variant:'secondary',size:'small',onClick:openSettings},__('Modifier','wp-piwigo-display')),
                 preview,
                 el('span',{className:'wpd-block-slider-dimensions','aria-live':'polite'},width+' %'+(height ? ' × '+height+' px' : (legacyHeight ? ' × '+legacyHeight : ''))),
-                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-width',role:'slider',tabIndex:0,'aria-label':__('Redimensionner la largeur du diaporama','wp-piwigo-display'),'aria-valuemin':20,'aria-valuemax':100,'aria-valuenow':width,'aria-valuetext':width+' %',onPointerDown:function(event){startResize('width',event);},onKeyDown:function(event){resizeWithKeyboard('width',event);}}),
-                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-height',role:'slider',tabIndex:0,'aria-label':__('Redimensionner la hauteur du diaporama','wp-piwigo-display'),'aria-valuemin':160,'aria-valuemax':1200,'aria-valuenow':height || 160,'aria-valuetext':(height || 160)+' px',onPointerDown:function(event){startResize('height',event);},onKeyDown:function(event){resizeWithKeyboard('height',event);}})
+                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-width',role:'slider',tabIndex:0,ref:widthHandle,'aria-label':__('Redimensionner la largeur du diaporama','wp-piwigo-display'),'aria-valuemin':20,'aria-valuemax':100,'aria-valuenow':width,'aria-valuetext':width+' %',onPointerDown:function(event){startResize('width',event);},onMouseDown:function(event){event.stopPropagation();}}),
+                el('span',{className:'wpd-block-slider-handle wpd-block-slider-handle-height',role:'slider',tabIndex:0,ref:heightHandle,'aria-label':__('Redimensionner la hauteur du diaporama','wp-piwigo-display'),'aria-valuemin':160,'aria-valuemax':1200,'aria-valuenow':height || 160,'aria-valuetext':(height || 160)+' px',onPointerDown:function(event){startResize('height',event);},onMouseDown:function(event){event.stopPropagation();}})
             );
         }
 
         return el('div',useBlockProps(),el(InspectorControls,null,content),preview);
     }
 
-    blocks.registerBlockType('wp-piwigo-display/gallery',{edit:Edit,save:function(){return null;},transforms:{from:[{type:'shortcode',tag:'piwigo',attributes:{
-        albumId:{type:'string',shortcode:'album'},displayType:{type:'string',shortcode:'type'},recursive:{type:'boolean',shortcode:'recursive'},depth:{type:'number',shortcode:'depth'},limit:{type:'number',shortcode:'limit'},max:{type:'number',shortcode:'max'},latest:{type:'number',shortcode:'latest'},random:{type:'number',shortcode:'random'},sort:{type:'string',shortcode:'sort'},order:{type:'string',shortcode:'order'},orientations:{type:'array',shortcode:'orientation'},caption:{type:'string',shortcode:'caption'},lightbox:{type:'boolean',shortcode:'lightbox'},rounded:{type:'boolean',shortcode:'rounded'},transparentBackground:{type:'boolean',shortcode:'transparent_background'},style:{type:'string',shortcode:'style'},autoplay:{type:'boolean',shortcode:'autoplay'},interval:{type:'number',shortcode:'interval'},speed:{type:'number',shortcode:'speed'},transition:{type:'string',shortcode:'transition'},direction:{type:'string',shortcode:'direction'},ratio:{type:'string',shortcode:'ratio'},width:{type:'string',shortcode:'width'},height:{type:'string',shortcode:'height'},align:{type:'string',shortcode:'align'},fit:{type:'string',shortcode:'fit'},navigation:{type:'string',shortcode:'navigation'},tag:{type:'string',shortcode:'tag'},tags:{type:'string',shortcode:'tags'},tagMode:{type:'string',shortcode:'tag_mode'}
-    }}]}});
+    blocks.registerBlockType('wp-piwigo-display/gallery', {
+        edit: Edit,
+        save: function () { return null; },
+        transforms: { from: [{
+            type: 'shortcode',
+            tag: 'piwigo',
+            transform: function (attrs) {
+                var named = attrs && attrs.named ? attrs.named : {};
+                var result = {};
+                Object.keys(uiDefaults).forEach(function (key) {
+                    var shortcodeKey = shortcodeMap[key] || key;
+                    if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
+                    var value = named[shortcodeKey];
+                    if (booleanKeys.indexOf(key) !== -1) {
+                        value = /^(true|1|yes)$/i.test(String(value));
+                    } else if (key === 'orientations') {
+                        value = String(value).split(',').map(function (item) { return item.trim(); }).filter(Boolean);
+                    } else if (['depth', 'limit', 'max', 'latest', 'random', 'interval', 'speed'].indexOf(key) !== -1) {
+                        value = parseInt(value, 10);
+                        if (!Number.isFinite(value)) return;
+                    }
+                    result[key] = value;
+                });
+                ['preset', 'piwigoUrl', 'align', 'shape', 'radius', 'masonryColumns', 'masonryGap'].forEach(function (key) {
+                    var shortcodeKey = { piwigoUrl: 'url', masonryColumns: 'masonry_columns', masonryGap: 'masonry_gap' }[key] || key;
+                    if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
+                    var value = named[shortcodeKey];
+                    result[key] = ['radius', 'masonryColumns', 'masonryGap'].indexOf(key) === -1
+                        ? String(value) : Math.max(0, parseInt(value, 10) || 0);
+                });
+                return blocks.createBlock('wp-piwigo-display/gallery', result);
+            }
+        }] }
+    });
 })(window.wp.blocks,window.wp.blockEditor,window.wp.components,window.wp.element,window.wp.serverSideRender,window.wp.compose,window.wp.i18n);

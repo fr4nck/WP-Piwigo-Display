@@ -75,7 +75,6 @@ final class WPD_Plugin {
 	 */
 	public function register_assets(): void {
 		wp_register_style( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display.css', array(), WPD_VERSION );
-		wp_add_inline_style( 'wp-piwigo-display', '.wpd-slider-layout{width:var(--wpd-slider-width,100%);max-width:100%;box-sizing:border-box}.wpd-slider-layout.wpd-slider-align-left{float:left;margin:0 1.5rem 1rem 0}.wpd-slider-layout.wpd-slider-align-right{float:right;margin:0 0 1rem 1.5rem}.wpd-slider-layout.wpd-slider-align-center{margin-left:auto;margin-right:auto}@media(max-width:782px){.wpd-slider-layout{float:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}}' );
 		wp_register_style( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.css', array(), '4.1.4' );
 		wp_register_script( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.js', array(), '4.1.4', true );
 		wp_register_script( 'wp-piwigo-display-slider', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display-slider.js', array( 'wpd-splide' ), WPD_VERSION, true );
@@ -83,11 +82,13 @@ final class WPD_Plugin {
 			'wp-piwigo-display-slider',
 			'WPDSliderI18n',
 			array(
-				'previous'   => __( 'Image précédente', 'wp-piwigo-display' ),
-				'next'       => __( 'Image suivante', 'wp-piwigo-display' ),
-				'navigation' => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
+				'previous'       => __( 'Image précédente', 'wp-piwigo-display' ),
+				'next'           => __( 'Image suivante', 'wp-piwigo-display' ),
+				'navigation'     => __( 'Navigation du diaporama', 'wp-piwigo-display' ),
 				/* translators: %d: image number in the slider. */
-				'showImage'  => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
+				'showImage'      => __( 'Afficher l’image %d', 'wp-piwigo-display' ),
+				'pauseAutoplay'  => __( 'Mettre le diaporama en pause', 'wp-piwigo-display' ),
+				'resumeAutoplay' => __( 'Reprendre le diaporama', 'wp-piwigo-display' ),
 			)
 		);
 		wp_register_script( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/js/wp-piwigo-display.js', array(), WPD_VERSION, true );
@@ -183,7 +184,7 @@ final class WPD_Plugin {
 
 		$categories = ( new WPD_Api( $url ) )->get_all_categories();
 		if ( is_wp_error( $categories ) ) {
-			wp_send_json_error( array( 'message' => $categories->get_error_message() ), 502 );
+			wp_send_json_error( array( 'message' => __( 'Impossible de charger les albums depuis Piwigo.', 'wp-piwigo-display' ) ), 502 );
 		}
 
 		$names = array();

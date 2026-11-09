@@ -27,6 +27,21 @@ final class WPD_Block {
 		);
 
 		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue_editor_assets' ) );
+		add_action( 'enqueue_block_assets', array( self::class, 'enqueue_preview_styles' ) );
+	}
+
+	/**
+	 * Loads the public styles in the editor canvas so previews match the front end.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_preview_styles(): void {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		wp_enqueue_style( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.css', array(), '4.1.4' );
+		wp_enqueue_style( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display.css', array( 'wpd-splide' ), WPD_VERSION );
 	}
 
 	/**

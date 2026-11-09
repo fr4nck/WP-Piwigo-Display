@@ -6,9 +6,9 @@ Plugin WordPress pour construire et afficher des galeries Piwigo directement dan
 
 ## État du projet
 
-**Version candidate actuelle : 3.0.0-rc.3.**
+**Version candidate en préparation : 3.0.0-rc.4 (non publiée).**
 
-La dernière version stable effectivement publiée avant la V3 est **1.8.0**. La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
+La dernière version stable disponible dans les releases GitHub avant la V3 est **1.10.0** (15 juillet 2026). La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
 
 La V3 est actuellement en phase de Release Candidate et doit encore être considérée comme une version de test avant la publication de 3.0.0 stable.
 

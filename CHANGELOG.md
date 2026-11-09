@@ -1,9 +1,26 @@
 # Journal des versions
 
-## Correctifs en cours — non publiés
+## 3.0.0-rc.4 — candidate en recette (non publiée)
 
-- Le sélecteur d'albums affiche les erreurs AJAX et Piwigo lisibles, au lieu de `[object Object]`.
-- Un test JavaScript couvre les principaux échecs HTTP, JSON et réseau.
+- Suppression du mécanisme automatique qui écrasait les releases et leurs tags.
+- Correction des erreurs fatales lorsque WordPress transmet des attributs vides aux shortcodes.
+- Application effective des presets, sans écraser les réglages explicitement fournis.
+- Masquage des messages techniques issus de Piwigo sur les pages publiques.
+- Nettoyage des options et transients du plugin lors de la désinstallation.
+- Suppression du repli sur cache périmé pour les albums privés du compte de service.
+- Correction des erreurs AJAX, des retours invalides et de la fermeture du sélecteur pendant le chargement.
+- Correction de la conversion shortcode vers bloc Gutenberg et du traitement littéral des dollars dans TinyMCE.
+- Tests de non-régression PHP et JavaScript correspondants.
+- Harmonisation des versions dans l'en-tête, les métadonnées Gutenberg, les assets et la documentation.
+- Rectification de l'historique public : GitHub a également publié 1.9.0 et 1.10.0 comme releases non-préversions ; la dernière est 1.10.0.
+- Amélioration de l'accessibilité : pause/reprise des diaporamas automatiques et confinement/restauration du focus dans la lightbox.
+- Avec compte de service configuré, les contributeurs conservent le sélecteur d'albums public au lieu d'un refus d'accès.
+- La lightbox des diaporamas en boucle ne parcourt plus les diapositives dupliquées par Splide.
+- Le diaporama conserve une première photo visible et des commandes natives si Splide est absent ou échoue.
+- Les largeurs et alignements du diaporama respectent le conteneur des thèmes à blocs.
+- Les poignées Gutenberg capturent le pointeur et préservent le focus lors des changements au clavier.
+- Le bouton du composeur Classic Editor reste disponible aux contributeurs sans autorisation de téléversement.
+- Le diagnostic distingue les échecs API des statuts HTTP, actualise l'erreur et évite un verdict vert sans configuration.
 
 ## 3.0.0-rc.3 — 19 août 2026
 
