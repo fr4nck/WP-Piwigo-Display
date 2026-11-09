@@ -111,4 +111,7 @@ assert.notStrictEqual(broken.s.dataset.wpdSliderInitialized, 'true');
 assert.strictEqual(broken.s.slides[0].hidden, false);
 assert.ok(broken.s.children.some(x => x.className === 'wpd-native-slider-controls'));
 assert.ok(!broken.s.classList.contains('wpd-splide-mounting'));
+thumbnail.listeners.forEach(fn => fn({ preventDefault() {} }));
+assert.strictEqual(goCalls, 0, 'Une vignette ne doit pas piloter un Splide non monté.');
+assert.strictEqual(broken.s.slides[1].hidden, false, 'La vignette doit piloter le secours natif.');
 console.log('Diaporama : fallback sans Splide, chargement tardif et montage défaillant PASS.');

@@ -221,6 +221,9 @@
 
         thumbnails.forEach(function (thumbnail) {
             thumbnail.addEventListener('click', function (event) {
+                if (slider.dataset.wpdSliderInitialized !== 'true') {
+                    return;
+                }
                 event.preventDefault();
                 var index = parseInt(thumbnail.dataset.slideIndex || '0', 10);
                 if (!Number.isNaN(index)) {
