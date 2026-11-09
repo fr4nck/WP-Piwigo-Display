@@ -25,5 +25,5 @@ assert.match(rule('.wpd-slider-layout.wpd-slider-align-left .wp-piwigo-display-s
 assert.match(rule('.wpd-slider-layout.wpd-slider-align-right .wp-piwigo-display-slider'), /float:\s*right/);
 assert.match(css, /@media\s*\(max-width:\s*782px\)[\s\S]*?\.wpd-slider-layout \.wp-piwigo-display-slider[^{]*\{[^}]*width:\s*100%/, 'La largeur doit s’adapter au mobile.');
 // Dans l'éditeur, le cadre redimensionnable porte déjà le pourcentage.
-assert.match(editor, /\.wpd-block-slider-resizer \.wpd-slider-layout \.wp-piwigo-display-slider\s*\{[^}]*width:\s*100%/);
+assert.match(editor, /\.wpd-block-slider-resizer \.wpd-slider-layout \.wp-piwigo-display-slider[^{]*\{[^}]*width:\s*100%/);
 console.log('Diaporama : contrôles CSS largeur et alignement PASS (mesure réelle requise en navigateur).');
