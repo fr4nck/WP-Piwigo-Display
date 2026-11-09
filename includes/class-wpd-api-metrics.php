@@ -142,6 +142,12 @@ final class WPD_Api_Metrics {
 		}
 		$method = is_array( $body ) ? sanitize_text_field( (string) ( $body['method'] ?? '' ) ) : '';
 		if ( '' === $method ) {
+			// Les appels GET, comme la sonde du diagnostic, portent la méthode dans l'URL.
+			$query = array();
+			wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
+			$method = sanitize_text_field( (string) ( $query['method'] ?? '' ) );
+		}
+		if ( '' === $method ) {
 			$method = sanitize_text_field( (string) wp_parse_url( $url, PHP_URL_PATH ) );
 		}
 

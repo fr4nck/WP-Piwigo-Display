@@ -48,4 +48,10 @@ WPD_Api_Metrics::observe_http( array( 'code' => 200, 'body' => '{"stat":"ok"}' )
 WPD_Api_Metrics::persist();
 check( '' === WPD_Api_Metrics::summary()['last_error'], 'Le succès doit effacer la dernière erreur.' );
 check( false !== strpos( $health->invoke( null, WPD_Api_Metrics::summary() ), 'opérationnels' ), 'La santé doit redevenir verte après succès.' );
+// La sonde du diagnostic interroge Piwigo en GET : la méthode est dans l'URL.
+$probe_url = 'https://piwigo.example.test/ws.php?format=json&method=pwg.session.getStatus';
+WPD_Api_Metrics::start_http( array(), $probe_url );
+WPD_Api_Metrics::observe_http( array( 'code' => 200, 'body' => '{"stat":"ok"}' ), 'response', '', array(), $probe_url );
+check( 'pwg.session.getStatus' === WPD_Api_Metrics::summary()['last_method'], 'La méthode doit venir de l’URL des appels GET.' );
+
 echo "Diagnostic : méthode API, erreur Piwigo, effacement et URL absente PASS.\n";
