@@ -1,6 +1,6 @@
-# Règles de développement pour Codex
+# Règles de développement pour les agents
 
-Ce dépôt contient le plugin WordPress **WP Piwigo Display**. Toute contribution automatisée ou assistée par Codex doit respecter les règles suivantes.
+Ce dépôt contient le plugin WordPress **WP Piwigo Display**. Toute contribution réalisée avec un agent de développement doit respecter les règles suivantes.
 
 ## Principes de développement
 
