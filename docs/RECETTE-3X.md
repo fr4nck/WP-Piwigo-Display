@@ -2,7 +2,7 @@
 
 Cette checklist doit être remplie avant de présenter **3.0.0** comme version stable. Une case critique non vérifiée interdit de transformer la Release Candidate en release stable.
 
-La candidate **3.0.0-rc.4** est en préparation et **non publiée**. La dernière release GitHub non marquée préversion avant la V3 est **1.10.0** ; la ligne 2.0.0 n'a jamais été publiée. La RC3 publiée a fait l'objet d'un remplacement de tag et de ZIP : ne pas attribuer ses tests à la RC4.
+La candidate **3.0.0-rc.4** n'a jamais été publiée ; la version stable **3.0.0** en reprend les changements après requalification. La dernière release GitHub non marquée préversion avant la V3 est **1.10.0** ; la ligne 2.0.0 n'a jamais été publiée. La RC3 publiée a fait l'objet d'un remplacement de tag et de ZIP : ne pas attribuer ses tests à la RC4.
 
 ## 1. Préparation et paquet
 
@@ -206,3 +206,15 @@ Les correctifs de ces anomalies changent le code après la qualification du ZIP 
 - [ ] **A5** : sans URL Piwigo, le verdict n’est pas vert ; sur une réponse `stat:fail` en HTTP 200, le diagnostic signale l’échec API ; après un appel réussi, l’ancienne erreur n’est plus présentée ; la méthode `pwg.*` est renseignée si le corps HTTP est sérialisé.
 
 Aucun tag ni release ne doit être créé par les opérations de recette.
+
+## Requalification du 9 novembre 2026 — préparation de 3.0.0
+
+Contre-recette réelle dans un navigateur (WordPress 7.1.4, PHP 8.3, Piwigo 16.4.0) du commit `c51a2e0`, puis des corrections :
+
+- **A1** : conforme dès `c51a2e0` (administrateur, auteur, contributeur sans `upload_files`, abonné, Gutenberg) ; téléversement toujours refusé au contributeur.
+- **A2** : le secours fonctionnait, mais le CSS de secours restait actif pendant le montage de Splide, qui affichait alors un clone au lieu de la première photo. Corrigé par une classe temporaire de montage ; la photo de secours tient dans la piste ; les vignettes ne pilotent plus un Splide non monté.
+- **A3** : la souris restait sans effet (écouteurs sur le document principal, poignée dans l'iframe) et Gutenberg déplaçait le focus sur Maj+flèches. Corrigé ; le canevas charge désormais les styles publics pour une prévisualisation réelle.
+- **A4** : le conteneur annulait toujours la largeur de contenu des thèmes à blocs (50 % donnait 633 px pour une colonne de 645 px). Le pourcentage s'applique désormais au diaporama, dans la colonne du thème.
+- **A5** : conforme sauf la sonde du diagnostic, affichée « /ws.php » (appel GET). Corrigé.
+
+Le ZIP 3.0.0 est construit par la CI depuis le commit final ; son empreinte, sa provenance et les preuves de recette du ZIP exact accompagnent le rapport remis au mainteneur. Le tag et la release restent une décision du mainteneur.

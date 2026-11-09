@@ -4,7 +4,7 @@
 
 Les publications GitHub 1.8.0, 1.9.0 et 1.10.0 sont historiques. Aucune d'elles ne bénéficie ici d'une garantie de maintenance active.
 
-Les versions 3.0.0-rc.1 et 3.0.0-rc.3 sont des **candidates de test**, pas des versions stables. Elles présentent des anomalies connues et ne constituent pas une base de déploiement recommandée. La candidate 3.0.0-rc.4 est en préparation et **n'a pas été publiée**.
+Les versions 3.0.0-rc.1 et 3.0.0-rc.3 sont des **candidates de test**, pas des versions stables. Elles présentent des anomalies connues et ne constituent pas une base de déploiement recommandée. La candidate 3.0.0-rc.4 **n'a jamais été publiée** ; ses changements sont intégrés à la version stable **3.0.0**, version maintenue de la V3.
 
 Un audit indépendant et une recette WordPress/Piwigo réelle restent obligatoires avant toute nouvelle publication.
 

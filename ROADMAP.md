@@ -7,11 +7,12 @@ Cette feuille de route décrit l’état public réel de **Piwigo Display pour W
 - **1.8.0, 1.9.0, 1.10.0** : versions effectivement publiées avant la V3 ; **1.10.0** est la dernière release GitHub non marquée préversion (15 juillet 2026).
 - **2.0.0** : jalon de développement interne, **jamais publié comme release publique**.
 - **3.0.0-rc.3** : version candidate publiée, touchée par un incident de remplacement de tag/ZIP (voir le journal d'audit).
-- **3.0.0-rc.4** : candidate de maintenance en préparation, non publiée et soumise à une nouvelle recette.
+- **3.0.0-rc.4** : candidate de maintenance jamais publiée, intégrée à la 3.0.0.
+- **3.0.0** : première version stable de la V3.
 
 Les développements initialement préparés sous le numéro 2.0.0 ont été repris, consolidés et largement étendus dans la V3.
 
-## V3 — Release Candidate actuelle
+## V3 — version stable 3.0.0
 
 Le socle 3.0 comprend notamment :
 

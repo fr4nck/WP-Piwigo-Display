@@ -6,11 +6,11 @@ WordPress plugin for building and displaying Piwigo galleries directly inside Wo
 
 ## Project status
 
-**Release candidate in preparation: 3.0.0-rc.4 (not yet published).**
+**Stable version: 3.0.0.**
 
 The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026). The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
 
-V3 is currently a Release Candidate and should still be considered a test version before the final 3.0.0 release.
+3.0.0 is the first stable V3 release. Candidates 3.0.0-rc.1 to 3.0.0-rc.4 were test versions; 3.0.0-rc.4 was never published.
 
 ## Visual tools first
 
@@ -62,9 +62,9 @@ The **API & cache health** section reports:
 
 Metrics are aggregated without storing credentials, passwords or request bodies. A regression test protects this diagnostic feature from accidental removal during future refactoring.
 
-## Installing the RC
+## Installation
 
-1. Download the Release Candidate ZIP from the GitHub artifacts/releases provided for V3.
+1. Download `piwigo-display-3.0.0.zip` from the GitHub 3.0.0 release and check its SHA-256 checksum.
 2. In WordPress, open **Plugins → Add New Plugin → Upload Plugin**.
 3. Activate **Piwigo Display**.
 4. Enter the Piwigo HTTPS URL in the plugin settings.

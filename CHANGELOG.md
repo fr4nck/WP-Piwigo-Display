@@ -1,6 +1,17 @@
 # Journal des versions
 
-## 3.0.0-rc.4 — candidate en recette (non publiée)
+## 3.0.0 — version stable
+
+Première version stable de la V3. Elle reprend l'ensemble des changements de la candidate 3.0.0-rc.4, jamais publiée, et les corrections issues de sa requalification sous WordPress/Piwigo :
+
+- Splide mesure les diapositives sans la mise en page de secours : la première photo s'affiche au chargement et la boucle ne la saute plus.
+- La photo de secours tient dans la hauteur de la piste ; les vignettes ne pilotent plus un Splide dont le montage a échoué.
+- Les pourcentages de largeur du diaporama s'appliquent dans la colonne de contenu du thème, y compris dans les thèmes à blocs, sans débordement.
+- Les poignées de redimensionnement Gutenberg fonctionnent à la souris et au clavier dans le canevas de l'éditeur et conservent le focus.
+- Le canevas de l'éditeur charge les styles publics : la prévisualisation du diaporama correspond au rendu public.
+- Le bloc Santé API & cache affiche la méthode Piwigo des appels GET, dont la sonde du diagnostic.
+
+## 3.0.0-rc.4 — candidate non publiée, intégrée à 3.0.0
 
 - Suppression du mécanisme automatique qui écrasait les releases et leurs tags.
 - Correction des erreurs fatales lorsque WordPress transmet des attributs vides aux shortcodes.

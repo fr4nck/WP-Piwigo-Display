@@ -13,7 +13,7 @@ La dernière release GitHub non marquée préversion avant la V3 est **1.10.0**.
 
 La branche **2.0.0 n’a jamais été publiée comme release publique**. Ses développements ont été repris dans la V3.
 
-La candidate **3.0.0-rc.4** est en recette et n’est pas publiée. La **3.0.0-rc.3** publiée a fait l’objet d’un remplacement de paquet sous le même numéro (voir `docs/INCIDENT-RELEASE-RC3.md`). Une Release Candidate doit être installée uniquement si l’on accepte de participer à la recette et de signaler les régressions éventuelles.
+La **3.0.0** est la première version stable de la V3 ; la candidate **3.0.0-rc.4** n’a jamais été publiée. La **3.0.0-rc.3** publiée a fait l’objet d’un remplacement de paquet sous le même numéro (voir `docs/INCIDENT-RELEASE-RC3.md`). Une Release Candidate doit être installée uniquement si l’on accepte de participer à la recette et de signaler les régressions éventuelles.
 
 ## Installation du plugin
 
