@@ -16,7 +16,7 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-The latest non-prerelease GitHub release before V3 was 1.10.0 (July 15, 2026). The 2.0.0 development line was never published as a public release; its work was consolidated into V3.
+Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. WordPress.org directory distribution is being prepared and is not yet available.
 
 Version 3.0.0 includes:
 
@@ -41,6 +41,10 @@ Version 3.0.0 includes:
 API health metrics do not store credentials, passwords, or HTTP request bodies.
 
 The service account does not sign visitors into Piwigo. A private album rendered on a public WordPress page becomes visible on that page, so the dedicated account must only have access to albums intended for publication.
+
+Piwigo Display connects to the Piwigo server configured by the site administrator through its web-service API. The plugin needs that external Piwigo server to load album and image metadata; visitors' browsers also load displayed images from Piwigo. No unrelated third-party gallery service is required.
+
+Compatibility with the Piwigo OpenStreetMap extension is **not yet confirmed**. V3 includes a workaround for additional HTML/JavaScript mixed into Piwigo JSON responses, but the reported issue still needs testing on an affected installation (GitHub issue #97). Piwigo Display does not provide its own map or GPS view.
 
 == Installation ==
 
@@ -102,7 +106,7 @@ Tags:
 
 = Do I need to write shortcodes? =
 
-No. V3 provides visual interfaces through Gutenberg, the administration composer, and Classic Editor integration. But if writing shortcodes is your own form of therapy, you can. 🙂
+No. V3 provides visual interfaces through Gutenberg, the administration composer, and Classic Editor. Shortcodes remain available for advanced use and backward compatibility.
 
 = Are images copied into WordPress? =
 
@@ -123,6 +127,10 @@ It shows aggregated API calls, cache HIT/MISS counts and rate, cumulative/averag
 = Does the slider respect reduced-motion preferences? =
 
 Yes. When the operating system requests reduced motion, autoplay is disabled and transitions are removed or reduced.
+
+= Does it support the Piwigo OpenStreetMap plugin? =
+
+Compatibility is not confirmed yet. A workaround is included for malformed API responses, but real-world validation is still pending. See https://github.com/fr4nck/WP-Piwigo-Display/issues/97 . This plugin does not display maps.
 
 == Changelog ==
 

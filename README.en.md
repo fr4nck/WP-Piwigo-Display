@@ -1,5 +1,7 @@
 # Piwigo Display
 
+<img src=".github/branding/piwigo-display-icon.png" width="144" alt="Piwigo Display icon: blue and orange photo gallery" />
+
 WordPress plugin for building and displaying Piwigo galleries directly inside WordPress through the official API, without copying images into the WordPress media library.
 
 > French documentation: see `README.md`.
@@ -10,7 +12,14 @@ WordPress plugin for building and displaying Piwigo galleries directly inside Wo
 
 The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026). The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
 
-3.0.0 is the first stable V3 release. Candidates 3.0.0-rc.1 to 3.0.0-rc.4 were test versions; 3.0.0-rc.4 was never published.
+3.0.0 is the first stable V3 release, published on November 10, 2026. Candidates 3.0.0-rc.1 to 3.0.0-rc.4 were test versions; 3.0.0-rc.4 was never published.
+
+## Distribution
+
+- [Download stable 3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) and install its ZIP using the WordPress plugin uploader.
+- WordPress.org listing is **being prepared**, not yet available. Publishing to GitHub does not enable WordPress.org directory updates.
+- See [WordPress.org distribution preparation](docs/WORDPRESS-ORG.md) for submission, compatibility and visual assets.
+- The published GitHub `v3.0.0` tag and release ZIP are not to be replaced for documentation changes.
 
 ## Visual tools first
 
@@ -108,6 +117,8 @@ Shortcodes remain available for manual integrations, templates, generated conten
 - WordPress 6.0 or later;
 - PHP 8.1 through 8.4 validated by CI;
 - HTTPS-accessible Piwigo instance for the service account;
+- real-world V3 testing: WordPress 7.1.4, PHP 8.3, Piwigo 16.4.0;
+- **Piwigo OpenStreetMap compatibility not yet confirmed**: an API-response recovery fix is included, but it still needs testing on the affected installation ([issue #97](https://github.com/fr4nck/WP-Piwigo-Display/issues/97)). The plugin does not render maps or GPS locations;
 - automated checks for syntax, security, accessibility, frontend rendering, PHP compatibility, WPCS, packaging and WordPress Plugin Check.
 
 ## Documentation
@@ -121,6 +132,7 @@ Shortcodes remain available for manual integrations, templates, generated conten
 - V3 acceptance tests: `docs/RECETTE-3X.md`
 - Architecture: `docs/architecture.md`
 - Roadmap: `ROADMAP.md`
+- WordPress.org distribution: `docs/WORDPRESS-ORG.md`
 
 ## License
 
