@@ -10,7 +10,14 @@ WordPress plugin for building and displaying Piwigo galleries directly inside Wo
 
 The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026). The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
 
-3.0.0 is the first stable V3 release. Candidates 3.0.0-rc.1 to 3.0.0-rc.4 were test versions; 3.0.0-rc.4 was never published.
+3.0.0 is the first stable V3 release, published on November 10, 2026. Candidates 3.0.0-rc.1 to 3.0.0-rc.4 were test versions; 3.0.0-rc.4 was never published.
+
+## Distribution
+
+- [Download stable 3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) and install its ZIP using the WordPress plugin uploader.
+- WordPress.org listing is **being prepared**, not yet available. Publishing to GitHub does not enable WordPress.org directory updates.
+- See [WordPress.org distribution preparation](docs/WORDPRESS-ORG.md) for submission, compatibility and visual assets.
+- The published GitHub `v3.0.0` tag and release ZIP are not to be replaced for documentation changes.
 
 ## Visual tools first
 
