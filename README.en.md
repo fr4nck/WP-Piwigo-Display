@@ -115,6 +115,8 @@ Shortcodes remain available for manual integrations, templates, generated conten
 - WordPress 6.0 or later;
 - PHP 8.1 through 8.4 validated by CI;
 - HTTPS-accessible Piwigo instance for the service account;
+- real-world V3 testing: WordPress 7.1.4, PHP 8.3, Piwigo 16.4.0;
+- **Piwigo OpenStreetMap compatibility not yet confirmed**: an API-response recovery fix is included, but it still needs testing on the affected installation ([issue #97](https://github.com/fr4nck/WP-Piwigo-Display/issues/97)). The plugin does not render maps or GPS locations;
 - automated checks for syntax, security, accessibility, frontend rendering, PHP compatibility, WPCS, packaging and WordPress Plugin Check.
 
 ## Documentation
@@ -128,6 +130,7 @@ Shortcodes remain available for manual integrations, templates, generated conten
 - V3 acceptance tests: `docs/RECETTE-3X.md`
 - Architecture: `docs/architecture.md`
 - Roadmap: `ROADMAP.md`
+- WordPress.org distribution: `docs/WORDPRESS-ORG.md`
 
 ## License
 
