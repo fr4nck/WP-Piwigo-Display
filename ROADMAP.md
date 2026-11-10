@@ -8,7 +8,7 @@ Cette feuille de route décrit l’état public réel de **Piwigo Display pour W
 - **2.0.0** : jalon de développement interne, **jamais publié comme release publique**.
 - **3.0.0-rc.3** : version candidate publiée, touchée par un incident de remplacement de tag/ZIP (voir le journal d'audit).
 - **3.0.0-rc.4** : candidate de maintenance jamais publiée, intégrée à la 3.0.0.
-- **3.0.0** : première version stable de la V3.
+- **3.0.0** : première version stable de la V3, publiée sur GitHub le 10 novembre 2026.
 
 Les développements initialement préparés sous le numéro 2.0.0 ont été repris, consolidés et largement étendus dans la V3.
 
@@ -44,26 +44,34 @@ Le socle 3.0 comprend notamment :
 
 La matrice de référence des interfaces est disponible dans `docs/PARITE-COMPOSEURS.md` et la recette V3 dans `docs/RECETTE-3X.md`.
 
-## Avant 3.0.0 stable
+## Après 3.0.0 — suivi des compatibilités
 
-La V3 reste une Release Candidate tant que la recette réelle n’est pas suffisamment consolidée.
+La 3.0.0 est stable et publiée. La recette réelle de la V3 a couvert WordPress 7.1.4, PHP 8.3, Piwigo 16.4.0, Gutenberg, Classic Editor, le composeur d'administration, les galeries publiques/privées, les mises à jour depuis 1.10/RC3/RC4 et les navigateurs Chromium, Firefox et WebKit. Les contrôles PHP 8.1–8.4, sécurité, accessibilité et packaging restent assurés par la CI.
 
-Travail restant :
+Points encore ouverts ou à mieux qualifier :
 
-1. installer le ZIP RC sur des WordPress de recette réels ;
-2. tester Administration, Classic Editor et Gutenberg avec des instances Piwigo réelles ;
-3. vérifier les anciens shortcodes et les principaux modes d’affichage ;
-4. vérifier ordinateur, tablette et mobile ;
-5. vérifier albums publics et compte de service ;
-6. contrôler le diagnostic Santé API & cache sur une utilisation réelle ;
-7. recueillir les retours utilisateurs et corriger les régressions bloquantes ;
-8. publier 3.0.0 stable uniquement lorsqu’aucun problème bloquant connu ne subsiste.
+- **Piwigo OpenStreetMap / géolocalisation** — [issue #97](https://github.com/fr4nck/WP-Piwigo-Display/issues/97) : un filtre isole le JSON Piwigo lorsque du HTML/JavaScript parasite est ajouté autour des réponses `ws.php?format=json`. Les tests automatiques passent, mais la compatibilité doit être vérifiée sur l'installation réellement affectée. Ne pas annoncer de compatibilité OpenStreetMap complète ni de carte GPS WordPress.
+- Quelques limites d'interface non bloquantes restent à suivre : flèches sur un diaporama à une image, statut de diagnostic neutre pour certaines URL refusées et comportement d'une poignée de redimensionnement Firefox hors fenêtre.
+- Vérifier progressivement d'autres versions WordPress/Piwigo, l'extension Classic Editor officielle et les appareils mobiles physiques. Les essais automatisés ne remplacent pas les essais réels.
 
-Les corrections de bugs et de documentation nécessaires à cette recette restent du périmètre 3.0 RC ; elles ne doivent pas être repoussées artificiellement en 3.1.
+Toute correction fonctionnelle après publication exige une nouvelle version (par exemple 3.0.1), des tests et un nouveau tag ; **ne jamais modifier `v3.0.0` ni son ZIP**.
+
+## WPORG-01 — Référencement dans le répertoire WordPress.org
+
+**État : préparation, non soumis / non approuvé.** [Suivi détaillé](docs/WORDPRESS-ORG.md).
+
+1. Maintenir un `readme.txt` clair et vérifié, avec la limite OpenStreetMap et les échanges avec le serveur Piwigo.
+2. Examiner l'identité technique existante `wp-piwigo-display` (dossier installé, fichier principal, text domain) avant de choisir le slug de soumission ; éviter les doubles installations et les ruptures de mise à jour.
+3. Vérifier les exigences du répertoire et de Plugin Check sur le paquet soumis ; contrôler les licences des dépendances et le comportement des albums privés.
+4. Préparer une icône originale et, ensuite, une bannière et des captures d'écran. Les visuels de catalogue iront dans `/assets` à la racine du dépôt SVN WordPress.org, pas dans le ZIP du plugin.
+5. Soumettre le ZIP via un compte WordPress.org ; répondre aux demandes des examinateurs.
+6. Après approbation, publier le code dans le `trunk` SVN et créer le tag de version stable, en vérifiant les mises à jour et le nom de répertoire.
+
+La soumission et la publication SVN ne sont pas automatisées avant validation explicite. GitHub reste le dépôt de développement et la référence des versions déjà publiées.
 
 ## 3.1 Core
 
-Le développement 3.1 se fait séparément de la stabilisation 3.0. Les fonctionnalités 3.1 ne doivent pas contaminer la branche RC tant qu’elles ne sont pas destinées à la V3 stable.
+Le développement 3.1 reste séparé des correctifs 3.0.x et des adaptations nécessaires à la distribution WordPress.org.
 
 Axes actuels :
 
