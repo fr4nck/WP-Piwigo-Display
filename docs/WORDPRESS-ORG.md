@@ -19,7 +19,8 @@
 - [x] Expliquer les échanges réseau avec le serveur Piwigo configuré, le chargement distant des images et la visibilité des albums privés publiés sur une page WordPress publique.
 - [ ] Vérifier auprès de WordPress.org que le slug demandé **`wp-piwigo-display`** est recevable et disponible. Ne pas choisir `piwigo-display` sans mesurer les effets sur les dossiers existants, le text domain et les mises à jour.
 - [ ] Vérifier la conformité du paquet exact à la validation du répertoire, y compris licences/mentions des dépendances embarquées (Splide 4.1.4 sous MIT), fichiers de sources et restrictions de marque.
-- [ ] Préparer et approuver une icône originale, puis une bannière et des captures avec des données de démonstration (aucun album privé réel, aucune information personnelle).
+- [x] Préparer et approuver une icône originale aux couleurs de Pêle-Mêle : [128 × 128](../.github/wordpress-org/assets/icon-128x128.png) et [256 × 256](../.github/wordpress-org/assets/icon-256x256.png). Les deux PNG sont prêts pour le futur dépôt SVN (sans inclusion dans le ZIP WordPress).
+- [ ] Préparer la bannière et les captures avec des données de démonstration (aucun album privé réel, aucune information personnelle).
 - [ ] Préparer un dossier de soumission avec un descriptif concis, le lien GitHub et les réponses aux observations des examinateurs.
 
 ## Attention au ZIP déjà publié
@@ -45,7 +46,7 @@ Utiliser une création originale qui suggère une galerie/photo et ne reproduit 
 
 Fichiers attendus par WordPress.org dans le SVN `assets/` :
 
-- `icon-128x128.png` et `icon-256x256.png` ; un `icon.svg` facultatif garde un PNG de repli.
+- `icon-128x128.png` et `icon-256x256.png` : fichiers validés disponibles dans [`.github/wordpress-org/assets/`](../.github/wordpress-org/assets/), à copier ensuite dans `assets/` du SVN WordPress.org ; un `icon.svg` facultatif garde un PNG de repli.
 - `banner-772x250.png` ; `banner-1544x500.png` facultative.
 - `screenshot-1.png`, `screenshot-2.png`, etc., avec les légendes correspondantes dans le `readme.txt`.
 
