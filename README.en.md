@@ -1,5 +1,7 @@
 # Piwigo Display
 
+<img src=".github/branding/piwigo-display-icon.png" width="144" alt="Piwigo Display icon: blue and orange photo gallery" />
+
 WordPress plugin for building and displaying Piwigo galleries directly inside WordPress through the official API, without copying images into the WordPress media library.
 
 > French documentation: see `README.md`.
