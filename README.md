@@ -2,7 +2,7 @@
 
 Plugin WordPress pour construire et afficher des galeries Piwigo directement dans WordPress, via l’API officielle, sans recopier les images dans la médiathèque WordPress.
 
-> English version: [README.en.md](README.en.md) — pour celles et ceux qui n’arrivent pas encore à utiliser Google Translate. 😄
+> English version: [README.en.md](README.en.md).
 
 ## État du projet
 
@@ -10,7 +10,14 @@ Plugin WordPress pour construire et afficher des galeries Piwigo directement dan
 
 La dernière version stable disponible dans les releases GitHub avant la V3 est **1.10.0** (15 juillet 2026). La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
 
-La 3.0.0 est la première version stable de la V3. Les candidates 3.0.0-rc.1 à 3.0.0-rc.4 étaient des versions de test ; la 3.0.0-rc.4 n’a jamais été publiée.
+La 3.0.0 est la première version stable de la V3, publiée le 10 novembre 2026. Les candidates 3.0.0-rc.1 à 3.0.0-rc.4 étaient des versions de test ; la 3.0.0-rc.4 n’a jamais été publiée.
+
+## Distribution
+
+- [Télécharger la version stable 3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) : le ZIP s'installe depuis l'administration WordPress.
+- Le référencement sur WordPress.org est **en préparation** ; l'extension n'y est pas encore disponible. Une publication GitHub ne déclenche pas les mises à jour automatiques du répertoire WordPress.org.
+- La préparation de la soumission et des visuels est décrite dans [Distribution WordPress.org](docs/WORDPRESS-ORG.md).
+- Le ZIP GitHub déjà publié et le tag `v3.0.0` ne doivent pas être remplacés pour corriger la documentation.
 
 ## Une interface visuelle avant tout
 
@@ -112,6 +119,8 @@ Les shortcodes restent disponibles pour les intégrations manuelles, les modèle
 - WordPress 6.0 ou supérieur ;
 - PHP 8.1 à 8.4 validé par CI ;
 - Piwigo accessible en HTTPS pour le compte de service ;
+- recette réelle 3.0.0 : WordPress 7.1.4, PHP 8.3, Piwigo 16.4.0 ;
+- **OpenStreetMap pour Piwigo : compatibilité non confirmée**. Un traitement des réponses API perturbées est présent, mais le problème signalé reste à revalider sur l'installation concernée ([issue #97](https://github.com/fr4nck/WP-Piwigo-Display/issues/97)). L'extension n'affiche pas de cartes GPS ;
 - contrôles automatisés de syntaxe, sécurité, accessibilité, rendu frontend, compatibilité PHP, WPCS, packaging et WordPress Plugin Check.
 
 ## Documentation
@@ -125,6 +134,7 @@ Les shortcodes restent disponibles pour les intégrations manuelles, les modèle
 - [Recette V3](docs/RECETTE-3X.md)
 - [Architecture](docs/architecture.md)
 - [Feuille de route](ROADMAP.md)
+- [Préparation WordPress.org](docs/WORDPRESS-ORG.md)
 
 ## Licence
 
