@@ -3,6 +3,7 @@
 
     var cache = null;
     var pending = null;
+    var requestGeneration = 0;
     var pickerSequence = 0;
 
     function labels() {
@@ -21,10 +22,15 @@
     }
 
     function loadAlbums(forceReload) {
-        if (forceReload) cache = null;
+        if (forceReload) {
+            cache = null;
+            pending = null;
+            requestGeneration += 1;
+        }
         if (cache) return $.Deferred().resolve(cache).promise();
         if (pending) return pending;
-        pending = $.ajax({
+        var generation = requestGeneration;
+        var request = $.ajax({
             url: WPDAlbumPickerConfig.ajaxUrl,
             method: 'POST',
             dataType: 'json',
@@ -39,11 +45,14 @@
             })) {
                 return $.Deferred().reject(labels().error || 'Impossible de charger les albums.').promise();
             }
-            cache = albums;
-            return cache;
+            if (generation === requestGeneration) cache = albums;
+            return albums;
         });
-        pending.always(function () { pending = null; });
-        return pending;
+        pending = request;
+        request.always(function () {
+            if (pending === request) pending = null;
+        });
+        return request;
     }
 
     function render($picker, albums, input, onRefresh, searchQuery) {
@@ -303,7 +312,11 @@
     window.WPDAlbumPicker = {
         attach: attach,
         attachAll: attachAll,
-        reload: function () { cache = null; }
+        reload: function () {
+            cache = null;
+            pending = null;
+            requestGeneration += 1;
+        }
     };
 
     $(function () { attachAll(document); });
