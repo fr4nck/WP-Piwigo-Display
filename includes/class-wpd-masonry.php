@@ -93,7 +93,7 @@ final class WPD_Masonry {
 			WPD_VERSION
 		);
 
-		$lightbox = filter_var( $atts['lightbox'] ?? 'true', FILTER_VALIDATE_BOOLEAN );
+		$lightbox = 'default' === (string) ( $atts['click_action'] ?? 'default' ) && filter_var( $atts['lightbox'] ?? 'true', FILTER_VALIDATE_BOOLEAN );
 		if ( $lightbox ) {
 			wp_enqueue_script( 'wp-piwigo-display' );
 		}
@@ -129,10 +129,12 @@ final class WPD_Masonry {
 				$large_url   = self::large_url( $image );
 				$title       = self::title( $image );
 				$description = self::description( $image );
-				$caption     = self::caption_text( $title, $description, $caption_mode );
+				$caption        = self::caption_text( $title, $description, $caption_mode );
+				$navigation_url = WPD_Renderer::get_piwigo_navigation_url( $image, $atts );
+				$link_url       = '' !== $navigation_url ? $navigation_url : ( '' !== $large_url ? $large_url : $image_url );
 				?>
 				<figure class="wp-piwigo-display-masonry-item">
-					<a href="<?php echo esc_url( '' !== $large_url ? $large_url : $image_url ); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr( $caption ); ?>">
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( $caption ); ?>">
 						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
