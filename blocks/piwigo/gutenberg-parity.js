@@ -73,10 +73,23 @@
     function selectedAlbumId(value, albums) {
         var entered = String(value || '').trim();
         if (/^[0-9]+$/.test(entered)) return entered;
-        var matchingName = albums.filter(function (album) {
-            return String(album.name || '') === entered || String(album.path || '') === entered;
-        })[0];
-        return matchingName ? String(matchingName.id) : '';
+        if (!entered) return '';
+
+        // PHP resolves names and paths case-insensitively, but uses Piwigo's
+        // category order. The picker may display a different sorted order:
+        // never highlight an arbitrary album when several names match.
+        var wantedPath = entered.replace(/^\/+|\/+$/g, '').toLocaleLowerCase();
+        var matchingIds = {};
+        albums.forEach(function (album) {
+            var id = String(album.id || '');
+            var name = String(album.name || '').toLocaleLowerCase();
+            var path = String(album.path || '').replace(/^\/+|\/+$/g, '').toLocaleLowerCase();
+            if (name === entered.toLocaleLowerCase() || (path && path === wantedPath)) {
+                if (id) matchingIds[id] = true;
+            }
+        });
+        var ids = Object.keys(matchingIds);
+        return ids.length === 1 ? ids[0] : '';
     }
 
     function AlbumPicker(props) {
