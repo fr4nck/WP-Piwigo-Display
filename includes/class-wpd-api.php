@@ -298,8 +298,8 @@ final class WPD_Api {
 			return absint( $album );
 		}
 
-		// An album genuinely named "#2024" must retain its historical meaning.
-		$hash_id = 1 === preg_match( '/^#[0-9]+$/D', $album );
+		// Preserve literal #names. Missing names must never silently
+		// fall back to a different numerical album ID.
 
 		$categories = $this->get_categories_for_resolution();
 		if ( is_wp_error( $categories ) ) {
@@ -334,10 +334,6 @@ final class WPD_Api {
 			if ( isset( $category['permalink'] ) && 0 === strcasecmp( trim( sanitize_text_field( (string) $category['permalink'] ), '/' ), $wanted_path ) ) {
 				return $id;
 			}
-		}
-
-		if ( $hash_id ) {
-			return absint( substr( $album, 1 ) );
 		}
 
 		return new WP_Error(
