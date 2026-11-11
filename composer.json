@@ -37,6 +37,7 @@
       "node tests/tinymce-dollar-replacement.js",
       "node tests/album-picker-errors.js",
       "node tests/album-picker-lifecycle.js",
+      "node tests/album-picker-refresh-sync.js",
       "node tests/gutenberg-shortcode-transform.js",
       "node tests/public-accessibility.js",
       "node tests/release-draft-guards.js",
