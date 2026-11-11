@@ -6,14 +6,14 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const code = fs.readFileSync(__dirname + '/../assets/js/wp-piwigo-display-album-picker.js', 'utf8');
 
-function fixture() {
+function fixture(initialValue = '') {
     const requests = [];
     const events = [];
     const focusEvents = [];
     let shortcode = '';
     const rootNode = {};
     const inputNode = {
-        value: '',
+        value: initialValue,
         dispatchEvent: function (event) {
             events.push(event.type);
             if (event.type === 'input') shortcode = '[piwigo album="' + this.value + '"]';
@@ -202,5 +202,31 @@ retry.find('wpd-album-refresh').trigger('click');
 assert.equal(retry.requests.length, 2, 'The error screen must permit a new request.');
 retry.requests[1].finish({ success: true, data: { albums: [{ id: 8, name: 'Rétabli', depth: 0 }] } });
 assert.equal(retry.find('wpd-album-name').textValue, 'Rétabli');
+
+
+const manualHash = fixture('#42');
+manualHash.button.trigger('click');
+manualHash.requests[0].finish({ success: true, data: { albums: [{ id: 42, name: 'Album 42', depth: 0 }] } });
+assert.equal(manualHash.find('wpd-album-row').attrs['aria-selected'], 'true', '#42 must highlight ID 42.');
+
+const namedHash = fixture('#2024');
+namedHash.button.trigger('click');
+namedHash.requests[0].finish({ success: true, data: { albums: [
+    { id: 77, name: '#2024', depth: 0 }, { id: 2024, name: 'Autre album', depth: 0 }
+] } });
+const selectedNamed = namedHash.picker.find('.wpd-album-row').nodes.filter(row => row.attrs['aria-selected'] === 'true');
+assert.equal(selectedNamed.length, 1, 'Exactly one album must be highlighted.');
+assert.ok(selectedNamed[0].attrs.id.endsWith('-album-77'), 'The literal album name #2024 must win.');
+
+const preselection = fixture();
+preselection.button.trigger('click');
+preselection.requests[0].finish({ success: true, data: { albums: [{ id: 7, name: 'Présélectionné', depth: 0 }] } });
+preselection.find('wpd-album-name').trigger('click');
+assert.equal(preselection.inputNode.value, '', 'Clicking the name must not confirm the album.');
+preselection.find('wpd-album-refresh').trigger('click');
+preselection.requests[1].finish({ success: true, data: { albums: [{ id: 7, name: 'Présélectionné', depth: 0 }] } });
+assert.equal(preselection.find('wpd-album-row').attrs['aria-selected'], 'true',
+    'Refreshing should retain the highlighted album.');
+assert.equal(preselection.inputNode.value, '', 'Refreshing must never validate the preselection.');
 
 console.log('Sélecteur : validation native, actualisation et réponses concurrentes : PASS.');
