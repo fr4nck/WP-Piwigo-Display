@@ -197,7 +197,7 @@ assert.equal(failedRefresh.find('wpd-album-name').textValue, 'Sauvegardé');
 const retry = fixture();
 retry.button.trigger('click');
 retry.requests[0].finish({ success: false, data: { message: 'Accès Piwigo temporairement indisponible' } });
-assert.equal(retry.find('wpd-album-refresh').textValue, 'Actualiser les albums');
+assert.equal(retry.find('wpd-album-refresh').textValue, 'Actualiser la liste des albums');
 retry.find('wpd-album-refresh').trigger('click');
 assert.equal(retry.requests.length, 2, 'The error screen must permit a new request.');
 retry.requests[1].finish({ success: true, data: { albums: [{ id: 8, name: 'Rétabli', depth: 0 }] } });
