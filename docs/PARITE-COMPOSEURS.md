@@ -17,6 +17,7 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 | Tags et mode de correspondance | Oui | Oui | Oui | Oui |
 | Légendes, style, cadrage, hauteur | Oui | Oui | Oui | Oui |
 | Lightbox et coins arrondis | Oui | Oui | Oui | Oui |
+| Action au clic : photo Piwigo / album Piwigo / local | Oui | Oui | Oui | Oui |
 | Autoplay, intervalle, vitesse | Oui | Oui | Oui | Oui |
 | Transition et direction | Oui | Oui | Oui | Oui |
 | Ratio, navigation, largeur, alignement | Oui | Oui | Oui | Oui |
