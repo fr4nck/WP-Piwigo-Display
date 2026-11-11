@@ -126,9 +126,9 @@ final class WPD_Masonry {
 					continue;
 				}
 
-				$large_url   = self::large_url( $image );
-				$title       = self::title( $image );
-				$description = self::description( $image );
+				$large_url      = self::large_url( $image );
+				$title          = self::title( $image );
+				$description    = self::description( $image );
 				$caption        = self::caption_text( $title, $description, $caption_mode );
 				$navigation_url = WPD_Renderer::get_piwigo_navigation_url( $image, $atts );
 				$link_url       = '' !== $navigation_url ? $navigation_url : ( '' !== $large_url ? $large_url : $image_url );
