@@ -98,6 +98,7 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 }
 
 require_once dirname( __DIR__ ) . '/includes/class-wpd-api.php';
+require_once dirname( __DIR__ ) . '/includes/class-wpd-cache.php';
 
 $assert = static function ( bool $condition, string $message ): void {
 	if ( ! $condition ) {
@@ -136,6 +137,8 @@ $property->setValue(
 $api = new WPD_Api( $base_url );
 
 $assert( 30 === $api->resolve_album_id( '30' ), 'A numeric album identifier must be returned unchanged.' );
+$assert( 30 === $api->resolve_album_id( '#30' ), 'An album identifier prefixed by # must resolve without category lookup.' );
+$assert( 30 === WPD_Cache::resolve_album_id( '#30', $base_url ), 'The cached album resolver must accept the # prefix.' );
 $assert( 20 === $api->resolve_album_id( 'Été 2026' ), 'An album name must still resolve.' );
 $assert( 30 === $api->resolve_album_id( '/ALSH/Été 2026/Séjour voile' ), 'A full human-readable album path must resolve to the intended nested album.' );
 $assert( 40 === $api->resolve_album_id( 'ALSH/Séjour voile' ), 'Human-readable paths must disambiguate duplicate album names.' );
