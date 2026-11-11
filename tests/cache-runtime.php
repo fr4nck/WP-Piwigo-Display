@@ -27,9 +27,13 @@ final class WPD_Service_Api {
     public static int $categories_calls = 0;
     public static int $image_calls = 0;
     public static bool $fail = false;
+    public static bool $categories_unavailable = false;
     public static array $categories = array( array( 'id' => 7, 'name' => 'Privé' ), array( 'id' => 77, 'name' => '#2024' ) );
     public function __construct( string $url ) { ++self::$instances; }
-    public function get_all_categories(): array { ++self::$categories_calls; return self::$categories; }
+    public function get_all_categories() {
+        ++self::$categories_calls;
+        return self::$categories_unavailable ? new WP_Error( 'http', 'Service Piwigo indisponible' ) : self::$categories;
+    }
     public function get_images_from_album( int $id, int $max ) {
         ++self::$image_calls;
         return self::$fail ? new WP_Error( 'http', 'secret-password=leak' ) : array( array( 'id' => $id ) );
@@ -114,4 +118,14 @@ check( is_wp_error( WPD_Cache::resolve_album_id( '#5' ) ), 'P1: apres renommage,
 check( 5 === WPD_Cache::resolve_album_id( '5' ), 'Un identifiant 5 explicitement fourni doit rester compatible.' );
 check( is_wp_error( WPD_Cache::resolve_album_id( '#7' ) ), 'La notation ambigue #7 ne doit pas contourner la recherche de nom.' );
 check( 77 === WPD_Cache::resolve_album_id( '#2024' ), 'Les noms literaux #2024 restent utilisables.' );
+// A missing #name must never fall back to a numeric private album during API failure.
+// This catches reintroductions of the former dangerous fallback in error paths.
+WPD_Service_Api::$categories_unavailable = true;
+$GLOBALS['transients'] = array();
+next_request();
+check( is_wp_error( WPD_Cache::resolve_album_id( '#5' ) ),
+    'P1: une panne de catalogue ne doit jamais convertir #5 en album prive ID 5.' );
+check( 5 === WPD_Cache::resolve_album_id( '5' ),
+    'Les identifiants numeriques explicites restent inchanges durant une panne.' );
+WPD_Service_Api::$categories_unavailable = false;
 echo "Cache : résolution, panne, contexte privé, rétablissement et session locale : PASS.\n";
