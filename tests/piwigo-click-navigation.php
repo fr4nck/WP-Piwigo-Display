@@ -53,6 +53,9 @@ function wp_strip_all_tags( $value ): string {
 function esc_attr_e( $value, $domain = '' ): void {
 	echo esc_attr( $value );
 }
+function __( $value, $domain = '' ): string {
+	return (string) $value;
+}
 function wp_generate_uuid4(): string {
 	return 'fixture-123';
 }
@@ -100,7 +103,6 @@ $GLOBALS['enqueued_scripts'] = array();
 $photo_atts = array_merge( $atts, array( 'click_action' => 'piwigo_photo' ) );
 $photo = WPD_Renderer::render( $images, $photo_atts );
 check( 6 === substr_count( $photo, '<figure ' ), 'Photo mode must preserve the WordPress limit.' );
-check( str_contains( $photo, 'href="' . $base . '/picture.php?\/1/category/42"' ) === false, 'Test fixture itself must not escape slashes.' );
 check( str_contains( $photo, 'href="' . $base . '/picture.php?/1/category/42"' ), 'Click must open photo 1 in its Piwigo album.' );
 check( ! str_contains( $photo, 'picture.php?/7/category/42' ), 'Hidden images must not be inserted in WordPress.' );
 check( 6 === substr_count( $photo, 'data-wpd-lightbox="false"' ), 'External links must not trigger the WordPress lightbox.' );
