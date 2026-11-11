@@ -1,6 +1,6 @@
 <?php
 /**
- * Static release-readiness checks for the V3 candidate.
+ * Release-readiness checks for the upcoming V3 maintenance update.
  *
  * @package WP_Piwigo_Display
  */
@@ -10,6 +10,8 @@ declare(strict_types=1);
 $plugin  = file_get_contents( __DIR__ . '/../wp-piwigo-display.php' );
 $readme  = file_get_contents( __DIR__ . '/../README.md' );
 $roadmap = file_get_contents( __DIR__ . '/../ROADMAP.md' );
+$wporg_readme = file_get_contents( __DIR__ . '/../readme.txt' );
+$changelog    = file_get_contents( __DIR__ . '/../CHANGELOG.md' );
 $recipe  = file_get_contents( __DIR__ . '/../docs/RECETTE-3X.md' );
 $parity  = file_get_contents( __DIR__ . '/../docs/PARITE-COMPOSEURS.md' );
 $metadata = json_decode( (string) file_get_contents( __DIR__ . '/../blocks/piwigo/block.json' ), true );
@@ -31,6 +33,8 @@ $assert( $header_match[1] === $constant_match[1], 'L’en-tête du plugin et WPD
 $assert( ( $metadata['version'] ?? '' ) === $header_match[1], 'La version du bloc Gutenberg doit correspondre au plugin.' );
 $assert( ( $asset['version'] ?? '' ) === $header_match[1], 'La version des scripts Gutenberg doit invalider le cache lors de la 3.0.1.' );
 $assert( '3.0.1' === $header_match[1], 'La candidate de maintenance doit être identifiée comme 3.0.1.' );
+$assert( false !== strpos( (string) $wporg_readme, 'Stable tag: 3.0.1' ), 'Le readme WordPress doit annoncer la version candidate correcte.' );
+$assert( false !== strpos( (string) $changelog, '## 3.0.1' ), 'Le journal doit documenter la maintenance 3.0.1.' );
 $assert( false !== strpos( (string) $readme, '1.10.0' ), 'Le README doit identifier 1.10.0 comme dernière stable GitHub avant V3.' );
 $assert( false !== strpos( (string) $readme, '2.0.0' ) && false !== strpos( (string) $readme, 'jamais' ), 'Le README doit préciser que la ligne 2.0.0 n’a jamais été publiée comme release publique.' );
 $assert( false !== strpos( (string) $roadmap, '## V3 — version stable 3.0.0' ), 'La feuille de route doit identifier la version V3 effectivement publiée.' );
