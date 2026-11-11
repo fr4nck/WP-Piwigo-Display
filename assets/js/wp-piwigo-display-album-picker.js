@@ -62,7 +62,8 @@
         var selectedId = preselectedId ? String(preselectedId) : enteredValue;
         if (!preselectedId && /^#[0-9]+$/.test(selectedId)) {
             var namedAlbum = albums.filter(function (album) { return String(album.name) === enteredValue; })[0];
-            selectedId = namedAlbum ? String(namedAlbum.id) : selectedId.slice(1);
+            // A #number is a literal name until the user explicitly validates a listed ID.
+            selectedId = namedAlbum ? String(namedAlbum.id) : '';
         }
         var childrenByParent = {};
         var hierarchy = [];
