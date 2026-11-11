@@ -49,8 +49,8 @@ final class WPD_Cache {
 			return new WP_Error( 'wpd_empty_album', __( 'Album non renseigné.', 'wp-piwigo-display' ) );
 		}
 
-		if ( ctype_digit( $album ) ) {
-			return absint( $album );
+		if ( 1 === preg_match( '/^#?[0-9]+$/', $album ) ) {
+			return absint( ltrim( $album, '#' ) );
 		}
 
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
