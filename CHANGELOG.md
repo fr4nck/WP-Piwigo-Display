@@ -6,7 +6,7 @@
 - Ajout d’un bouton d’actualisation dans les sélecteurs classique et Gutenberg, pour retrouver les albums ajoutés récemment sans recharger l’éditeur.
 - Protection contre les réponses AJAX périmées ; conservation du comportement de présélection et validation explicite des albums.
 - Correction du blocage de chargement Gutenberg après fermeture du panneau pendant une actualisation.
-- Prise en charge des identifiants commençant par `#` sans modifier le sens des albums réellement nommés, par exemple, « #2024 ».
+- Sécurisation des albums nommés `#2024` : aucun repli implicite de `#n` sur l’identifiant numérique `n` après renommage ou suppression (prévention d’exposition d’albums privés). Les identifiants numériques doivent être saisis sans `#`.
 - Tests de régression JavaScript et PHP renforcés ; version des scripts incrémentée pour éviter les anciens fichiers conservés en cache.
 - Cette version reste soumise à une recette réelle WordPress/Piwigo avant toute publication.
 
