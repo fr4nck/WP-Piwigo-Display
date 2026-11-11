@@ -53,6 +53,10 @@ final class WPD_Cache {
 			return absint( $album );
 		}
 
+		// Non-numeric input is always a literal album name or path.
+		// Never turn a missing #name into a different album ID: the service
+		// account could otherwise expose a private album after a rename.
+
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
 		$context    = self::get_access_context( $piwigo_url );
 		$cache_key  = 'wpd_album_' . md5( $context . '|' . $piwigo_url . '|categories' );

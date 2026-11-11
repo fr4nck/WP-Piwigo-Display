@@ -3,6 +3,7 @@
 
     var cache = null;
     var pending = null;
+    var requestGeneration = 0;
     var pickerSequence = 0;
 
     function labels() {
@@ -20,10 +21,16 @@
         return fallback;
     }
 
-    function loadAlbums() {
-        if (cache) return $.Deferred().resolve(cache).promise();
+    function loadAlbums(forceReload) {
+        if (forceReload) {
+            // Keep the last usable list until a fresh response succeeds.
+            pending = null;
+            requestGeneration += 1;
+        }
+        if (!forceReload && cache) return $.Deferred().resolve(cache).promise();
         if (pending) return pending;
-        pending = $.ajax({
+        var generation = requestGeneration;
+        var request = $.ajax({
             url: WPDAlbumPickerConfig.ajaxUrl,
             method: 'POST',
             dataType: 'json',
@@ -38,17 +45,26 @@
             })) {
                 return $.Deferred().reject(labels().error || 'Impossible de charger les albums.').promise();
             }
-            cache = albums;
-            return cache;
+            if (generation === requestGeneration) cache = albums;
+            return albums;
         });
-        pending.always(function () { pending = null; });
-        return pending;
+        pending = request;
+        request.always(function () {
+            if (pending === request) pending = null;
+        });
+        return request;
     }
 
-    function render($picker, albums, input) {
+    function render($picker, albums, input, onRefresh, searchQuery, preselectedId, focusSearch) {
         var l = labels();
         var expanded = {};
-        var selectedId = String($(input).val() || '');
+        var enteredValue = String($(input).val() || '');
+        var selectedId = preselectedId ? String(preselectedId) : enteredValue;
+        if (!preselectedId && /^#[0-9]+$/.test(selectedId)) {
+            var namedAlbum = albums.filter(function (album) { return String(album.name) === enteredValue; })[0];
+            // A #number is a literal name until the user explicitly validates a listed ID.
+            selectedId = namedAlbum ? String(namedAlbum.id) : '';
+        }
         var childrenByParent = {};
         var hierarchy = [];
         var pickerId = $picker.attr('id');
@@ -83,6 +99,9 @@
                 'aria-controls': listId,
                 autocomplete: 'off'
             });
+        var $refresh = $('<button type="button" class="button wpd-album-refresh"></button>')
+            .text(l.refresh || 'Actualiser la liste des albums');
+        $refresh.on('click', function () { onRefresh($search.val(), selectedId); });
         var $status = $('<p class="screen-reader-text wpd-album-status" role="status" aria-live="polite"></p>')
             .attr('id', statusId);
         var $list = $('<div class="wpd-album-list" role="tree"></div>')
@@ -91,7 +110,19 @@
                 'aria-label': l.results || 'Résultats des albums',
                 'aria-describedby': statusId
             });
-        $picker.append($searchLabel, $search, $status, $list);
+        $picker.append($searchLabel, $search, $refresh, $status, $list);
+
+        function confirmAlbum(album) {
+            selectedId = String(album.id);
+            $(input).val(selectedId);
+            var inputElement = $(input).get(0);
+            if (inputElement) {
+                inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            draw($search.val());
+            $(input).trigger('focus');
+        }
 
         function matchingIds(query) {
             var visible = {};
@@ -190,9 +221,7 @@
                     .attr('aria-label', (l.choose || 'Choisir cet album') + ' : ' + album.name)
                     .text(l.validate || 'Valider');
                 $confirm.on('click', function () {
-                    selectedId = id;
-                    $(input).val(album.id).trigger('input').trigger('change').trigger('focus');
-                    draw($search.val());
+                    confirmAlbum(album);
                 });
 
                 $row.append($toggle, $name, $meta, $confirm);
@@ -210,8 +239,9 @@
         }
 
         $search.on('input', function () { draw(this.value); });
-        draw('');
-        $search.trigger('focus');
+        $search.val(searchQuery || '');
+        draw($search.val());
+        if (focusSearch) $search.trigger('focus');
     }
 
     function attach(root, input) {
@@ -244,23 +274,45 @@
             'aria-haspopup': 'dialog'
         });
 
+        function mayMoveFocus() {
+            var active = document.activeElement;
+            if (!active || active === document.body) return true;
+            var pickerElement = typeof $picker.get === 'function' ? $picker.get(0) : null;
+            var buttonElement = typeof $button.get === 'function' ? $button.get(0) : null;
+            return active === buttonElement || !!(pickerElement && typeof pickerElement.contains === 'function' && pickerElement.contains(active));
+        }
+
+        function showPicker(forceReload, searchQuery, preselectedId) {
+            $button.attr('aria-expanded', 'true');
+            var $loading = $('<p class="wpd-album-loading" tabindex="-1"></p>')
+                .text(labels().loading || 'Chargement des albums…');
+            $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
+                .html($loading);
+            if (mayMoveFocus()) $loading.trigger('focus');
+            var requestId = ++activeRequest;
+            loadAlbums(forceReload).done(function (albums) {
+                if (requestId !== activeRequest || $picker.attr('hidden')) return;
+                render($picker, albums, $input, function (query, selected) {
+                    showPicker(true, query, selected);
+                }, searchQuery, preselectedId, mayMoveFocus());
+            }).fail(function (error, status) {
+                    if (requestId !== activeRequest || $picker.attr('hidden')) return;
+                    var $retry = $('<button type="button" class="button wpd-album-refresh"></button>')
+                        .text(labels().refresh || 'Actualiser la liste des albums');
+                    $retry.on('click', function () { showPicker(true, searchQuery, preselectedId); });
+                    $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
+                        .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)))
+                        .append($retry);
+                    if (mayMoveFocus()) $retry.trigger('focus');
+                });
+        }
+
         $button.on('click', function () {
             if (!$picker.attr('hidden')) {
                 closePicker(true);
                 return;
             }
-            $button.attr('aria-expanded', 'true');
-            $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
-                .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Chargement des albums…'));
-            var requestId = ++activeRequest;
-            loadAlbums().done(function (albums) {
-                if (requestId !== activeRequest || $picker.attr('hidden')) return;
-                render($picker, albums, $input);
-            }).fail(function (error, status) {
-                    if (requestId !== activeRequest || $picker.attr('hidden')) return;
-                    $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
-                        .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)));
-                });
+            showPicker(false, '');
         });
 
         $picker.on('keydown', function (event) {
@@ -282,7 +334,11 @@
     window.WPDAlbumPicker = {
         attach: attach,
         attachAll: attachAll,
-        reload: function () { cache = null; }
+        reload: function () {
+            cache = null;
+            pending = null;
+            requestGeneration += 1;
+        }
     };
 
     $(function () { attachAll(document); });

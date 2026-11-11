@@ -298,6 +298,9 @@ final class WPD_Api {
 			return absint( $album );
 		}
 
+		// Preserve literal #names. Missing names must never silently
+		// fall back to a different numerical album ID.
+
 		$categories = $this->get_categories_for_resolution();
 		if ( is_wp_error( $categories ) ) {
 			return $categories;
