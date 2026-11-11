@@ -97,7 +97,7 @@
             });
         $picker.append($searchLabel, $search, $refresh, $status, $list);
 
-        function selectAlbum(album, focusInput) {
+        function confirmAlbum(album) {
             selectedId = String(album.id);
             $(input).val(selectedId);
             var inputElement = $(input).get(0);
@@ -105,8 +105,8 @@
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 inputElement.dispatchEvent(new Event('change', { bubbles: true }));
             }
-            draw($search.val(), focusInput ? null : selectedId);
-            if (focusInput) $(input).trigger('focus');
+            draw($search.val());
+            $(input).trigger('focus');
         }
 
         function matchingIds(query) {
@@ -183,7 +183,8 @@
                     })
                     .text(album.name);
                 $name.on('click', function () {
-                    selectAlbum(album, false);
+                    selectedId = id;
+                    draw($search.val(), id);
                 }).on('keydown', function (event) {
                     if (event.key === 'ArrowDown') {
                         event.preventDefault();
@@ -205,7 +206,7 @@
                     .attr('aria-label', (l.choose || 'Choisir cet album') + ' : ' + album.name)
                     .text(l.validate || 'Valider');
                 $confirm.on('click', function () {
-                    selectAlbum(album, true);
+                    confirmAlbum(album);
                 });
 
                 $row.append($toggle, $name, $meta, $confirm);
