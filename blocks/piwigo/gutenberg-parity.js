@@ -17,8 +17,14 @@
 
     var albumCache = null;
     var albumRequest = null;
+    var albumRequestGeneration = 0;
 
-    function loadAlbums() {
+    function loadAlbums(forceReload) {
+        if (forceReload) {
+            albumCache = null;
+            albumRequest = null;
+            albumRequestGeneration += 1;
+        }
         if (albumCache) {
             return Promise.resolve(albumCache);
         }
@@ -33,7 +39,8 @@
         data.append('action', 'wpd_get_albums');
         data.append('nonce', window.WPDAlbumPickerConfig.nonce);
 
-        albumRequest = window.fetch(window.WPDAlbumPickerConfig.ajaxUrl, {
+        var generation = albumRequestGeneration;
+        var request = window.fetch(window.WPDAlbumPickerConfig.ajaxUrl, {
             method: 'POST',
             credentials: 'same-origin',
             body: data
@@ -52,13 +59,14 @@
             })) {
                 throw new Error(__('Liste des albums Piwigo invalide.', 'wp-piwigo-display'));
             }
-            albumCache = albums;
-            return albumCache;
+            if (generation === albumRequestGeneration) albumCache = albums;
+            return albums;
         }).finally(function () {
-            albumRequest = null;
+            if (albumRequest === request) albumRequest = null;
         });
 
-        return albumRequest;
+        albumRequest = request;
+        return request;
     }
 
     function AlbumPicker(props) {
@@ -83,9 +91,26 @@
         var selectedState = useState(String(props.value || ''));
         var selectedId = selectedState[0];
         var setSelectedId = selectedState[1];
+        var latestRequest = element.useRef(0);
+
+        function requestAlbums(forceReload) {
+            var requestId = ++latestRequest.current;
+            setLoading(true);
+            setError('');
+            loadAlbums(forceReload).then(function (items) {
+                if (latestRequest.current === requestId) setAlbums(items);
+            }).catch(function (exception) {
+                if (latestRequest.current === requestId) {
+                    setError(exception.message || __('Impossible de charger les albums.', 'wp-piwigo-display'));
+                }
+            }).finally(function () {
+                if (latestRequest.current === requestId) setLoading(false);
+            });
+        }
 
         function togglePicker() {
             if (open) {
+                latestRequest.current += 1;
                 setOpen(false);
                 return;
             }
@@ -93,15 +118,7 @@
             if (albums.length) {
                 return;
             }
-            setLoading(true);
-            setError('');
-            loadAlbums().then(function (items) {
-                setAlbums(items);
-            }).catch(function (exception) {
-                setError(exception.message || __('Impossible de charger les albums.', 'wp-piwigo-display'));
-            }).finally(function () {
-                setLoading(false);
-            });
+            requestAlbums(false);
         }
 
         var query = String(search || '').toLocaleLowerCase();
@@ -165,6 +182,13 @@
         ];
 
         if (open) {
+            children.push(createElement(Button, {
+                key: 'refresh',
+                variant: 'secondary',
+                disabled: loading,
+                onClick: function () { requestAlbums(true); }
+            }, __('Actualiser la liste des albums', 'wp-piwigo-display')));
+
             if (loading) {
                 children.push(createElement('div', { key: 'loading', style: { marginTop: '12px' } }, createElement(Spinner)));
             } else if (error) {
