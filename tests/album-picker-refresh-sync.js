@@ -94,6 +94,7 @@ function fixture() {
         if (typeof value === 'function') return;
         if (value === rootNode) return root;
         if (value === inputNode) return input;
+        if (value instanceof Element) return value;
         if (typeof value === 'string' && value.startsWith('<')) return new Element(value);
         throw new Error('Unexpected jQuery value');
     }
