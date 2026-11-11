@@ -140,7 +140,7 @@ Compatibility is not confirmed yet. A workaround is included for malformed API r
 * Keep newly created albums selectable and ignore stale asynchronous responses.
 * Fix administration composer shortcodes not updating after confirming an album.
 * Keep the Gutenberg selector usable after closing during a refresh.
-* Accept hash-prefixed numeric album identifiers without changing albums genuinely named, for example, #2024.
+* Preserve literal album names beginning with # (for example, #2024). Numeric album IDs must be entered without #, preventing unintended substitution of an album after a rename.
 * Add regression tests for refresh, concurrency, event dispatch and album name compatibility.
 
 = 3.0.0 =
