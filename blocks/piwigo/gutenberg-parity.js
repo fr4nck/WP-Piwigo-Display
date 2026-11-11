@@ -111,11 +111,20 @@
         function togglePicker() {
             if (open) {
                 latestRequest.current += 1;
+                setLoading(false);
+                setError('');
                 setOpen(false);
                 return;
             }
             setOpen(true);
+            setError('');
+            if (albumCache) {
+                setAlbums(albumCache);
+                setLoading(false);
+                return;
+            }
             if (albums.length) {
+                setLoading(false);
                 return;
             }
             requestAlbums(false);
