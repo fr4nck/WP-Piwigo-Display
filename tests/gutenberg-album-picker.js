@@ -168,5 +168,24 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
     assert.equal(rows.every(node => !node.props['aria-selected']), true,
         'A #number without a literal matching album must not be misrepresented as a valid numeric ID.');
 
+    // D3: equally named albums may be sorted differently than the PHP catalog.
+    const homonyms = fixture([
+        response(true, { success: true, data: { albums: [
+            { id: 30, name: 'Séjour voile', path: 'ALSH/Été 2026/Séjour voile', depth: 0 },
+            { id: 40, name: 'Séjour voile', path: 'ALSH/Séjour voile', depth: 0 }
+        ] } })
+    ]);
+    homonyms.toggle(); await flush();
+    rows = homonyms.setExternal('Séjour voile').filter(node => node.props.role === 'treeitem');
+    assert.equal(rows.length, 2);
+    assert.equal(rows.filter(row => row.props['aria-selected']).length, 0,
+        'Ambiguous identical names must not highlight an arbitrary album.');
+    rows = homonyms.setExternal('/alsh/séjour VOILE/').filter(node => node.props.role === 'treeitem');
+    assert.equal(rows[0].props['aria-selected'], false, 'A complete path should distinguish duplicate names.');
+    assert.equal(rows[1].props['aria-selected'], true, 'Path matching should ignore case and optional slashes.');
+    rows = homonyms.setExternal('40').filter(node => node.props.role === 'treeitem');
+    assert.equal(rows[0].props['aria-selected'], false);
+    assert.equal(rows[1].props['aria-selected'], true, 'Explicit numeric IDs are unambiguous.');
+
     console.log('Gutenberg : erreurs, nouvelle tentative, actualisation et reprise : PASS.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
