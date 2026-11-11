@@ -39,6 +39,7 @@ final class WPD_Shortcode {
 				'random'      => '0',
 				'max'         => '0',
 				'limit'       => '0',
+				'click_action' => 'default',
 				'sort'        => 'manual',
 				'order'       => 'desc',
 				'url'         => '',
@@ -136,7 +137,10 @@ final class WPD_Shortcode {
 			return self::render_error( __( 'Aucune image ne correspond à l’orientation demandée.', 'wp-piwigo-display' ) );
 		}
 
-		$html = WPD_Renderer::render( $images, $atts );
+		// Only the rendering layer uses these resolved values. They are not exposed as shortcode options.
+		$atts['_wpd_album_id']   = absint( $album_id );
+		$atts['_wpd_piwigo_url'] = $piwigo_url;
+		$html                    = WPD_Renderer::render( $images, $atts );
 
 		if ( 'slider' === (string) ( $atts['type'] ?? '' ) ) {
 			$width = (string) ( $atts['width'] ?? '100%' );
@@ -403,6 +407,11 @@ final class WPD_Shortcode {
 		$atts['autoplay']   = self::sanitize_bool_string( $atts['autoplay'] ?? 'true' );
 		$atts['rounded']    = self::sanitize_bool_string( $atts['rounded'] ?? 'false' );
 		$atts['lightbox']   = self::sanitize_bool_string( $atts['lightbox'] ?? 'true' );
+		$atts['click_action'] = self::sanitize_choice(
+			(string) ( $atts['click_action'] ?? 'default' ),
+			array( 'default', 'piwigo_photo', 'piwigo_album' ),
+			'default'
+		);
 		$atts['thumbnails'] = self::sanitize_bool_string( $atts['thumbnails'] ?? 'true' );
 		$atts['recursive']  = self::sanitize_bool_string( $atts['recursive'] ?? 'false' );
 		$atts['interval']   = (string) max( 1000, absint( $atts['interval'] ?? 5000 ) );
