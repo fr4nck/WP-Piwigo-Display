@@ -101,5 +101,42 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
     assert.equal(recovered.state()[3], '', 'L’actualisation doit permettre de reprendre après une erreur.');
     assert.equal(recovered.state()[1].length, 1);
 
+    // A1: closing during a refresh must not strand loading or disable Refresh forever.
+    let resolveInFlight;
+    const inFlight = new Promise(resolve => { resolveInFlight = resolve; });
+    const interrupted = fixture([
+        response(true, { success: true, data: { albums: [{ id: 17, name: 'Initial', depth: 0 }] } }),
+        inFlight,
+        response(true, { success: true, data: { albums: [{ id: 42, name: 'Nouveau', depth: 0 }] } })
+    ]);
+    interrupted.toggle(); await flush();
+    interrupted.refresh();
+    assert.equal(interrupted.state()[2], true, 'Refresh should display the spinner.');
+    interrupted.toggle();
+    assert.equal(interrupted.state()[2], false, 'Closing must clear the spinner immediately.');
+    interrupted.toggle();
+    assert.equal(interrupted.state()[2], false, 'Reopening must not keep the spinner.');
+    const refreshAfterReopen = interrupted.render().find(node => node.type === 'Button' && node.children[0] === 'Actualiser la liste des albums');
+    assert.ok(refreshAfterReopen && !refreshAfterReopen.props.disabled, 'Refresh must be enabled again.');
+    resolveInFlight(response(true, { success: true, data: { albums: [{ id: 66, name: 'Ancienne réponse', depth: 0 }] } }));
+    await flush();
+    assert.equal(interrupted.state()[1][0].id, 17, 'An obsolete response must not replace the displayed list.');
+    interrupted.refresh(); await flush();
+    assert.equal(interrupted.state()[1][0].id, 42, 'The user must be able to refresh again.');
+    assert.equal(interrupted.state()[2], false);
+
+    // Closing after a failed refresh restores the previous album list instead of a sticky error.
+    const retryAfterError = fixture([
+        response(true, { success: true, data: { albums: [{ id: 7, name: 'Original', depth: 0 }] } }),
+        response(false, { success: false, data: { message: 'Piwigo HTTP 502' } })
+    ]);
+    retryAfterError.toggle(); await flush();
+    retryAfterError.refresh(); await flush();
+    assert.equal(retryAfterError.state()[3], 'Piwigo HTTP 502');
+    retryAfterError.toggle();
+    retryAfterError.toggle();
+    assert.equal(retryAfterError.state()[3], '', 'The error should not remain on reopening.');
+    assert.equal(retryAfterError.state()[1][0].id, 7, 'Previously loaded albums must remain available.');
+
     console.log('Gutenberg : erreurs, nouvelle tentative, actualisation et reprise : PASS.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
