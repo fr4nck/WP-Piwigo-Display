@@ -134,7 +134,7 @@ function fixture() {
         assert.ok(result.length, 'Expected element: ' + className);
         return result.nodes[0];
     }
-    return { requests, events, inputNode, picker, button, find, getShortcode: () => shortcode };
+    return { requests, events, inputNode, picker, button, find, reload: () => window.WPDAlbumPicker.reload(), getShortcode: () => shortcode };
 }
 
 const f = fixture();
@@ -162,4 +162,20 @@ assert.equal(f.inputNode.value, '17', 'A preselection must not change the existi
 f.find('wpd-album-confirm').trigger('click');
 assert.equal(f.inputNode.value, '42', 'New albums must be selectable after refresh.');
 assert.equal(f.getShortcode(), '[piwigo album="42"]');
-console.log('Sélecteur : sélection native, mise à jour du shortcode et actualisation : PASS.');
+
+// A late response must not overwrite the album list returned by a newer request.
+f.find('wpd-album-refresh').trigger('click');
+assert.equal(f.requests.length, 3);
+f.button.trigger('click'); // Close the in-flight picker.
+f.reload(); // Invalidate shared cache and request, as another picker may do.
+f.button.trigger('click'); // Reopen with a distinct request.
+assert.equal(f.requests.length, 4);
+f.requests[3].finish({ success: true, data: { albums: [{ id: 77, name: 'Récent', depth: 0 }] } });
+f.requests[2].finish({ success: true, data: { albums: [{ id: 66, name: 'Obsolète', depth: 0 }] } });
+assert.equal(f.find('wpd-album-name').textValue, 'Récent', 'An older request must not redraw the newer album list.');
+f.button.trigger('click');
+f.button.trigger('click');
+assert.equal(f.requests.length, 4, 'The stale response must not replace the new cached result.');
+assert.equal(f.find('wpd-album-name').textValue, 'Récent', 'The cache must keep the latest album list.');
+
+console.log('Sélecteur : validation native, actualisation et réponses concurrentes : PASS.');
