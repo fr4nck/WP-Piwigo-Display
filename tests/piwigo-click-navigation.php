@@ -8,6 +8,8 @@
 declare(strict_types=1);
 
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+define( 'WPD_PLUGIN_URL', 'https://wordpress.example.test/plugins/piwigo-display/' );
+define( 'WPD_VERSION', '3.0.0' );
 
 $GLOBALS['enqueued_scripts'] = array();
 
@@ -65,6 +67,7 @@ final class WPD_Settings {
 	}
 }
 require_once dirname( __DIR__ ) . '/includes/class-wpd-renderer.php';
+require_once dirname( __DIR__ ) . '/includes/class-wpd-masonry.php';
 
 $base = 'https://photos.example.test/piwigo';
 $images = array();
@@ -118,6 +121,14 @@ $slider = WPD_Renderer::render( $images, $slider_atts );
 check( 6 === substr_count( $slider, 'data-wpd-lightbox="false"' ), 'Slider mode must also open Piwigo instead of the local lightbox.' );
 check( str_contains( $slider, 'href="' . $base . '/picture.php?/1/category/42"' ), 'Slider must retain the photo context.' );
 
+$masonry_atts = array_merge( $photo_atts, array( 'layout' => 'masonry' ) );
+$masonry = WPD_Masonry::render( null, $images, $masonry_atts, 'gallery' );
+check( is_string( $masonry ), 'Masonry renderer must be available.' );
+check( 8 === substr_count( $masonry, 'data-wpd-lightbox="false"' ), 'Masonry should open Piwigo pages without local lightbox.' );
+check( str_contains( $masonry, 'href="' . $base . '/picture.php?/1/category/42"' ), 'Masonry should preserve native photo navigation.' );
+$local_masonry = WPD_Masonry::render( null, $images, array_merge( $atts, array( 'layout' => 'masonry' ) ), 'gallery' );
+check( 8 === substr_count( $local_masonry, 'data-wpd-lightbox="true"' ), 'Default Masonry links must be unchanged.' );
+
 $bad = $images;
 $bad[0]['page_url'] = 'https://evil.example.test/picture.php?/1/category/42';
 $bad[1]['page_url'] = 'javascript:alert(1)';
@@ -141,4 +152,4 @@ $invalid_url = array_merge( $photo_atts, array( '_wpd_piwigo_url' => 'javascript
 $invalid_html = WPD_Renderer::render( $images, $invalid_url );
 check( str_contains( $invalid_html, 'href="' . $base . '/large-1.jpg"' ), 'Invalid base configuration must retain a local media fallback.' );
 
-echo "Piwigo click navigation: gallery, slider, limit, album context, unsafe URLs and default: PASS.\n";
+echo "Piwigo click navigation: gallery, slider, Masonry, limit, album context, unsafe URLs and default: PASS.\n";
