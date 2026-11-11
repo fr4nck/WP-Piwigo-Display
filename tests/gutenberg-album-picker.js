@@ -22,6 +22,13 @@ function fixture(responses) {
                 const index = cursor++;
                 if (!(index in slots)) slots[index] = initial;
                 return [slots[index], value => { slots[index] = value; }];
+            }, useEffect: (callback, dependencies) => {
+                const index = cursor++;
+                const previous = slots[index];
+                if (!previous || dependencies.some((dependency, i) => dependency !== previous[i])) {
+                    slots[index] = dependencies.slice();
+                    callback();
+                }
             }, useRef: initial => {
                 const index = cursor++;
                 if (!(index in slots)) slots[index] = { current: initial };
@@ -42,6 +49,11 @@ function fixture(responses) {
     const picker = flatten(wrapper).find(node => typeof node.type === 'function' && node.type.name === 'AlbumPicker');
     function render() { cursor = 0; return flatten(picker.type(picker.props)); }
     return {
+        setExternal: value => {
+            picker.props.value = value;
+            render(); // Effect synchronizes the controlled selection after a prop update.
+            return render();
+        },
         toggle: () => render().find(node => node.type === 'Button').props.onClick(),
         refresh: () => {
             const button = render().find(node => node.type === 'Button' && node.children[0] === 'Actualiser la liste des albums');
@@ -137,6 +149,24 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
     retryAfterError.toggle();
     assert.equal(retryAfterError.state()[3], '', 'The error should not remain on reopening.');
     assert.equal(retryAfterError.state()[1][0].id, 7, 'Previously loaded albums must remain available.');
+
+    const literalName = fixture([
+        response(true, { success: true, data: { albums: [
+            { id: 77, name: '#2024', depth: 0 },
+            { id: 2024, name: 'Album 2024', depth: 0 }
+        ] } })
+    ]);
+    literalName.toggle(); await flush();
+    let rows = literalName.setExternal('#2024').filter(node => node.props.role === 'treeitem');
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].props['aria-selected'], true, 'Gutenberg must highlight the literal #2024 name.');
+    assert.equal(rows[1].props['aria-selected'], false, 'The ID 2024 must not be selected for a literal #2024 name.');
+    rows = literalName.setExternal('2024').filter(node => node.props.role === 'treeitem');
+    assert.equal(rows[0].props['aria-selected'], false, 'An external albumId change must clear stale highlighting.');
+    assert.equal(rows[1].props['aria-selected'], true, 'Undo/redo and manual edits must synchronize albumId.');
+    rows = literalName.setExternal('#30').filter(node => node.props.role === 'treeitem');
+    assert.equal(rows.every(node => !node.props['aria-selected']), true,
+        'A #number without a literal matching album must not be misrepresented as a valid numeric ID.');
 
     console.log('Gutenberg : erreurs, nouvelle tentative, actualisation et reprise : PASS.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
