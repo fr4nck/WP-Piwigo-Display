@@ -6,6 +6,7 @@
     var createElement = element.createElement;
     var Fragment = element.Fragment;
     var useState = element.useState;
+    var useEffect = element.useEffect;
     var InspectorControls = blockEditor.InspectorControls;
     var PanelBody = components.PanelBody;
     var SelectControl = components.SelectControl;
@@ -69,6 +70,15 @@
         return request;
     }
 
+    function selectedAlbumId(value, albums) {
+        var entered = String(value || '').trim();
+        if (/^[0-9]+$/.test(entered)) return entered;
+        var matchingName = albums.filter(function (album) {
+            return String(album.name || '') === entered || String(album.path || '') === entered;
+        })[0];
+        return matchingName ? String(matchingName.id) : '';
+    }
+
     function AlbumPicker(props) {
         var state = useState(false);
         var open = state[0];
@@ -92,6 +102,11 @@
         var selectedId = selectedState[0];
         var setSelectedId = selectedState[1];
         var latestRequest = element.useRef(0);
+
+        // Undo/redo and manual edits can update albumId outside this picker.
+        useEffect(function () {
+            setSelectedId(String(props.value || ''));
+        }, [props.value]);
 
         function requestAlbums(forceReload) {
             var requestId = ++latestRequest.current;
@@ -218,7 +233,7 @@
                     var id = String(album.id);
                     var hasChildren = !!(childrenByParent[id] && childrenByParent[id].length);
                     var isExpanded = query ? true : !!expanded[id];
-                    var isSelected = selectedId === id;
+                    var isSelected = selectedAlbumId(selectedId, albums) === id;
 
                     return createElement('div', {
                         key: id,
