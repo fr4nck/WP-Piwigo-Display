@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 3.1 — évolution en développement, non publiée
+
+- Nouveau choix facultatif de navigation depuis les galeries WordPress : visionneuse locale, page de la photo dans Piwigo ou album Piwigo complet.
+- Conservation des limites de photos WordPress et de la navigation native de Piwigo, sans importer les médias.
+- Paramètre shortcode `click_action`, réglages Gutenberg, Classic Editor et compositeur d’administration.
+- Validation des liens de photo fournis par l’API avant leur utilisation ; lien d’album de repli ; aucune transmission des identifiants du compte de service.
+- Aucun changement du comportement des galeries existantes ; évolution isolée de la maintenance 3.0.1.
+
 ## 3.0.0 — version stable
 
 Première version stable de la V3. Elle reprend l'ensemble des changements de la candidate 3.0.0-rc.4, jamais publiée, et les corrections issues de sa requalification sous WordPress/Piwigo :
