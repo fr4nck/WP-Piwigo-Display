@@ -47,6 +47,79 @@ final class WPD_Renderer {
 	}
 
 	/**
+	 * Chooses a Piwigo page link, retaining album context for full navigation.
+	 *
+	 * @param array<string, mixed> $image Piwigo image metadata.
+	 * @param array<string, mixed> $atts  Sanitized rendering options.
+	 * @return string Piwigo page URL, or empty string for local behavior.
+	 */
+	private static function get_piwigo_navigation_url( array $image, array $atts ): string {
+		$action = (string) ( $atts['click_action'] ?? 'default' );
+		if ( ! in_array( $action, array( 'piwigo_photo', 'piwigo_album' ), true ) ) {
+			return '';
+		}
+
+		$album_id = absint( $atts['_wpd_album_id'] ?? 0 );
+		$base_url = untrailingslashit( (string) ( $atts['_wpd_piwigo_url'] ?? '' ) );
+		$base     = wp_parse_url( $base_url );
+		if (
+			0 >= $album_id
+			|| ! is_array( $base )
+			|| ! in_array( strtolower( (string) ( $base['scheme'] ?? '' ) ), array( 'http', 'https' ), true )
+			|| empty( $base['host'] )
+			|| isset( $base['user'] )
+			|| isset( $base['pass'] )
+			|| isset( $base['query'] )
+			|| isset( $base['fragment'] )
+		) {
+			return '';
+		}
+
+		$album_url = $base_url . '/index.php?/category/' . $album_id;
+		if ( 'piwigo_album' === $action ) {
+			return $album_url;
+		}
+
+		$page_url = trim( (string) ( $image['page_url'] ?? '' ) );
+		if ( '' === $page_url || str_starts_with( $page_url, '//' ) ) {
+			return $album_url;
+		}
+
+		$scheme = strtolower( (string) $base['scheme'] );
+		$host   = (string) $base['host'];
+		$port   = isset( $base['port'] ) ? ':' . absint( $base['port'] ) : '';
+		if ( str_starts_with( $page_url, '/' ) ) {
+			$page_url = $scheme . '://' . $host . $port . $page_url;
+		} elseif ( ! preg_match( '~^https?://~i', $page_url ) ) {
+			if ( preg_match( '~^[a-z][a-z0-9+.-]*:~i', $page_url ) || str_starts_with( $page_url, '#' ) ) {
+				return $album_url;
+			}
+			$page_url = $base_url . '/' . ltrim( $page_url, './' );
+		}
+
+		$page      = wp_parse_url( $page_url );
+		$base_path = rtrim( (string) ( $base['path'] ?? '' ), '/' );
+		if (
+			! is_array( $page )
+			|| strtolower( (string) ( $page['scheme'] ?? '' ) ) !== $scheme
+			|| strtolower( (string) ( $page['host'] ?? '' ) ) !== strtolower( $host )
+			|| (int) ( $page['port'] ?? 0 ) !== (int) ( $base['port'] ?? 0 )
+			|| isset( $page['user'] )
+			|| isset( $page['pass'] )
+			|| ( '' !== $base_path && ! str_starts_with( (string) ( $page['path'] ?? '' ), $base_path . '/' ) )
+		) {
+			return $album_url;
+		}
+
+		$relative_path = ltrim( substr( (string) ( $page['path'] ?? '' ), strlen( $base_path ) ), '/' );
+		if ( 1 !== preg_match( '~^picture(?:\.php)?$~i', $relative_path ) ) {
+			return $album_url;
+		}
+
+		return esc_url_raw( $page_url, array( 'http', 'https' ) );
+	}
+
+	/**
 	 * Renders a gallery.
 	 *
 	 * @param array<int, array<string, mixed>> $images Piwigo image data.
@@ -56,7 +129,7 @@ final class WPD_Renderer {
 	private static function render_gallery( array $images, array $atts ): string {
 		wp_enqueue_style( 'wp-piwigo-display' );
 
-		if ( self::is_enabled( $atts['lightbox'] ?? 'true' ) ) {
+		if ( 'default' === (string) ( $atts['click_action'] ?? 'default' ) && self::is_enabled( $atts['lightbox'] ?? 'true' ) ) {
 			wp_enqueue_script( 'wp-piwigo-display' );
 		}
 
@@ -64,7 +137,7 @@ final class WPD_Renderer {
 		$height         = self::sanitize_height( (string) ( $atts['height'] ?? '' ), '180px' );
 		$rounded_class  = self::is_enabled( $atts['rounded'] ?? 'false' ) ? ' wp-piwigo-display-rounded' : '';
 		$raw_class      = 'raw' === $fit ? ' wp-piwigo-display-raw' : '';
-		$lightbox_class = self::is_enabled( $atts['lightbox'] ?? 'true' ) ? ' wp-piwigo-display-lightbox-enabled' : '';
+		$lightbox_class = 'default' === (string) ( $atts['click_action'] ?? 'default' ) && self::is_enabled( $atts['lightbox'] ?? 'true' ) ? ' wp-piwigo-display-lightbox-enabled' : '';
 		$style_class    = ' wp-piwigo-display-style-' . self::sanitize_style( (string) ( $atts['style'] ?? 'default' ) );
 		$caption_mode   = self::resolve_caption_mode( (string) ( $atts['caption'] ?? 'default' ) );
 
@@ -82,11 +155,13 @@ final class WPD_Renderer {
 				$title            = self::get_image_title( $image );
 				$description      = self::get_image_description( $image );
 				$lightbox_caption = self::get_caption_text( $title, $description, $caption_mode );
+				$navigation_url   = self::get_piwigo_navigation_url( $image, $atts );
+				$link_url         = '' !== $navigation_url ? $navigation_url : ( '' !== $large_url ? $large_url : $image_url );
 				$orientation      = self::get_orientation_class( $image );
 				$image_fit        = self::get_image_fit( $image, $fit );
 				?>
 				<figure class="wp-piwigo-display-item <?php echo esc_attr( $orientation ); ?>" style="--wpd-current-image-fit: <?php echo esc_attr( $image_fit ); ?>;">
-					<a href="<?php echo esc_url( '' !== $large_url ? $large_url : $image_url ); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr( $lightbox_caption ); ?>">
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( $lightbox_caption ); ?>">
 						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode, 'figcaption' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
@@ -110,7 +185,7 @@ final class WPD_Renderer {
 		wp_enqueue_style( 'wpd-splide' );
 		wp_enqueue_script( 'wp-piwigo-display-slider' );
 
-		if ( self::is_enabled( $atts['lightbox'] ?? 'true' ) ) {
+		if ( 'default' === (string) ( $atts['click_action'] ?? 'default' ) && self::is_enabled( $atts['lightbox'] ?? 'true' ) ) {
 			wp_enqueue_script( 'wp-piwigo-display' );
 		}
 
@@ -125,7 +200,7 @@ final class WPD_Renderer {
 		$interval       = max( 1000, absint( $atts['interval'] ?? 5000 ) );
 		$speed          = max( 0, absint( $atts['speed'] ?? 500 ) );
 		$rounded_class  = self::is_enabled( $atts['rounded'] ?? 'false' ) ? ' wp-piwigo-display-rounded' : '';
-		$lightbox_class = self::is_enabled( $atts['lightbox'] ?? 'true' ) ? ' wp-piwigo-display-lightbox-enabled' : '';
+		$lightbox_class = 'default' === (string) ( $atts['click_action'] ?? 'default' ) && self::is_enabled( $atts['lightbox'] ?? 'true' ) ? ' wp-piwigo-display-lightbox-enabled' : '';
 		$clear_class    = self::is_enabled( $atts['transparent_background'] ?? 'false' ) ? ' wp-piwigo-display-transparent-background' : '';
 		$style_class    = ' wp-piwigo-display-style-' . self::sanitize_style( (string) ( $atts['style'] ?? 'default' ) );
 		$navigation     = self::sanitize_navigation( (string) ( $atts['navigation'] ?? 'thumbnails' ) );
@@ -159,9 +234,11 @@ final class WPD_Renderer {
 						$title            = self::get_image_title( $image );
 						$description      = self::get_image_description( $image );
 						$lightbox_caption = self::get_caption_text( $title, $description, $caption_mode );
+						$navigation_url   = self::get_piwigo_navigation_url( $image, $atts );
+						$link_url         = '' !== $navigation_url ? $navigation_url : $image_url;
 						?>
 						<li class="splide__slide">
-							<a href="<?php echo esc_url( $image_url ); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr( $lightbox_caption ); ?>">
+							<a href="<?php echo esc_url( $link_url ); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( $lightbox_caption ); ?>">
 								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
 							</a>
 							<?php echo self::render_caption( $title, $description, $caption_mode, 'div' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
