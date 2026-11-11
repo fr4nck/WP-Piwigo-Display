@@ -294,8 +294,8 @@ final class WPD_Api {
 			return new WP_Error( 'wpd_empty_album', __( 'Album non renseigné.', 'wp-piwigo-display' ) );
 		}
 
-		if ( ctype_digit( $album ) ) {
-			return absint( $album );
+		if ( 1 === preg_match( '/^#?[0-9]+$/', $album ) ) {
+			return absint( ltrim( $album, '#' ) );
 		}
 
 		$categories = $this->get_categories_for_resolution();
