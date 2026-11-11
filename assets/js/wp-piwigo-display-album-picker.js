@@ -99,7 +99,7 @@
                 autocomplete: 'off'
             });
         var $refresh = $('<button type="button" class="button wpd-album-refresh"></button>')
-            .text(l.refresh || 'Actualiser les albums');
+            .text(l.refresh || 'Actualiser la liste des albums');
         $refresh.on('click', function () { onRefresh($search.val(), selectedId); });
         var $status = $('<p class="screen-reader-text wpd-album-status" role="status" aria-live="polite"></p>')
             .attr('id', statusId);
