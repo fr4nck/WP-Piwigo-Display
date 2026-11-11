@@ -9,6 +9,7 @@ const code = fs.readFileSync(__dirname + '/../assets/js/wp-piwigo-display-album-
 function fixture() {
     const requests = [];
     const events = [];
+    const focusEvents = [];
     let shortcode = '';
     const rootNode = {};
     const inputNode = {
@@ -41,13 +42,14 @@ function fixture() {
         }
         append(...nodes) { this.children.push(...nodes); return this; }
         empty() { this.children = []; return this; }
-        html(value) { this.children = []; this.htmlValue = value; return this; }
+        html(value) { this.children = value ? [value] : []; this.htmlValue = value; return this; }
         text(value) { this.textValue = value; return this; }
         css() { return this; }
         prop() { return this; }
         addClass(value) { this.classes.push(value); return this; }
         on(event, callback) { this.handlers[event] = callback; return this; }
         trigger(event) {
+            if (event === 'focus') focusEvents.push(this);
             if (this.handlers[event]) this.handlers[event].call(this, { type: event, preventDefault() {} });
             return this;
         }
@@ -134,7 +136,7 @@ function fixture() {
         assert.ok(result.length, 'Expected element: ' + className);
         return result.nodes[0];
     }
-    return { requests, events, inputNode, picker, button, find, reload: () => window.WPDAlbumPicker.reload(), getShortcode: () => shortcode };
+    return { requests, events, focusEvents, inputNode, picker, button, find, reload: () => window.WPDAlbumPicker.reload(), getShortcode: () => shortcode };
 }
 
 const f = fixture();
@@ -177,5 +179,28 @@ f.button.trigger('click');
 f.button.trigger('click');
 assert.equal(f.requests.length, 4, 'The stale response must not replace the new cached result.');
 assert.equal(f.find('wpd-album-name').textValue, 'Récent', 'The cache must keep the latest album list.');
+
+
+const failedRefresh = fixture();
+failedRefresh.button.trigger('click');
+assert.equal(failedRefresh.focusEvents[0].classes.includes('wpd-album-loading'), true,
+    'The loading placeholder must receive focus so Escape remains usable.');
+failedRefresh.requests[0].finish({ success: true, data: { albums: [{ id: 7, name: 'Sauvegardé', depth: 0 }] } });
+failedRefresh.find('wpd-album-refresh').trigger('click');
+failedRefresh.requests[1].finish({ success: false, data: { message: 'Piwigo HTTP 502' } });
+assert.ok(failedRefresh.find('wpd-album-refresh'), 'An AJAX error must keep an explicit Retry button.');
+failedRefresh.button.trigger('click'); // Close after failure.
+failedRefresh.button.trigger('click'); // Reopen without losing previously loaded albums.
+assert.equal(failedRefresh.requests.length, 2, 'Failed refresh must preserve the last known-good album cache.');
+assert.equal(failedRefresh.find('wpd-album-name').textValue, 'Sauvegardé');
+
+const retry = fixture();
+retry.button.trigger('click');
+retry.requests[0].finish({ success: false, data: { message: 'Accès Piwigo temporairement indisponible' } });
+assert.equal(retry.find('wpd-album-refresh').textValue, 'Actualiser les albums');
+retry.find('wpd-album-refresh').trigger('click');
+assert.equal(retry.requests.length, 2, 'The error screen must permit a new request.');
+retry.requests[1].finish({ success: true, data: { albums: [{ id: 8, name: 'Rétabli', depth: 0 }] } });
+assert.equal(retry.find('wpd-album-name').textValue, 'Rétabli');
 
 console.log('Sélecteur : validation native, actualisation et réponses concurrentes : PASS.');
