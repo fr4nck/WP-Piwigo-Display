@@ -144,6 +144,7 @@ final class WPD_Classic_Editor {
 				<label><?php esc_html_e( 'Tag unique', 'wp-piwigo-display' ); ?><input type="text" data-wpd="tag"></label>
 				<label><?php esc_html_e( 'Plusieurs tags', 'wp-piwigo-display' ); ?><input type="text" data-wpd="tags" placeholder="tag1,tag2"></label>
 				<label><?php esc_html_e( 'Correspondance des tags', 'wp-piwigo-display' ); ?><select data-wpd="tag_mode"><option value="any">Au moins un</option><option value="all">Tous</option></select></label>
+				<label><?php esc_html_e( 'Action au clic sur une photo', 'wp-piwigo-display' ); ?><select data-wpd="click_action"><option value="default">Visionneuse WordPress (actuelle)</option><option value="piwigo_photo">Ouvrir la photo dans Piwigo (album complet)</option><option value="piwigo_album">Ouvrir l’album complet dans Piwigo</option></select></label>
 				<label><?php esc_html_e( 'URL Piwigo spécifique', 'wp-piwigo-display' ); ?><input type="url" data-wpd="url" placeholder="https://phototheque.example.org"></label>
 				<label class="wpd-slider-layout-option"><?php esc_html_e( 'Largeur du diaporama (%)', 'wp-piwigo-display' ); ?><input type="number" min="20" max="100" data-wpd="width" value="100"></label>
 				<label class="wpd-slider-layout-option"><?php esc_html_e( 'Alignement', 'wp-piwigo-display' ); ?><select data-wpd="align"><option value="center">Centré</option><option value="left">À gauche, texte à droite</option><option value="right">À droite, texte à gauche</option></select></label>
