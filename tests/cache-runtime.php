@@ -27,8 +27,9 @@ final class WPD_Service_Api {
     public static int $categories_calls = 0;
     public static int $image_calls = 0;
     public static bool $fail = false;
+    public static array $categories = array( array( 'id' => 7, 'name' => 'Privé' ), array( 'id' => 77, 'name' => '#2024' ) );
     public function __construct( string $url ) { ++self::$instances; }
-    public function get_all_categories(): array { ++self::$categories_calls; return array( array( 'id' => 7, 'name' => 'Privé' ), array( 'id' => 77, 'name' => '#2024' ) ); }
+    public function get_all_categories(): array { ++self::$categories_calls; return self::$categories; }
     public function get_images_from_album( int $id, int $max ) {
         ++self::$image_calls;
         return self::$fail ? new WP_Error( 'http', 'secret-password=leak' ) : array( array( 'id' => $id ) );
@@ -60,7 +61,7 @@ function next_request(): void {
 }
 $GLOBALS['transients'] = array();
 check( 7 === WPD_Cache::resolve_album_id( 'Privé' ), 'Résolution privée perdue.' );
-check( 30 === WPD_Cache::resolve_album_id( '#30' ), 'Alias #30 perdu dans le résolveur cache.' );
+check( is_wp_error( WPD_Cache::resolve_album_id( '#30' ) ), 'Un nom absent #30 ne doit pas etre converti en identifiant 30.' );
 check( 77 === WPD_Cache::resolve_album_id( '#2024' ), 'Un album nommé #2024 ne doit pas être confondu avec l’ID 2024.' );
 WPD_Cache::get_album_images( 1 );
 WPD_Cache::get_album_images( 2 );
@@ -91,4 +92,26 @@ next_request();
 check( is_wp_error( WPD_Cache::resolve_album_id( 'Privé' ) ), 'Un contributeur prévisualise un album privé.' );
 $GLOBALS['publisher'] = true;
 check( 7 === WPD_Cache::resolve_album_id( 'Privé' ), 'Un auteur ne peut plus prévisualiser les albums autorisés.' );
+// N1: A renamed #name must never silently turn into another album ID.
+$GLOBALS['preview'] = false;
+$GLOBALS['publisher'] = false;
+WPD_Service_Api::$categories = array(
+    array( 'id' => 5, 'name' => 'Album 5 privé' ),
+    array( 'id' => 70, 'name' => '#5' ),
+    array( 'id' => 77, 'name' => '#2024' )
+);
+$GLOBALS['transients'] = array();
+next_request();
+check( 70 === WPD_Cache::resolve_album_id( '#5' ), 'Le nom literal #5 doit initialement designer l album 70.' );
+WPD_Service_Api::$categories = array(
+    array( 'id' => 5, 'name' => 'Album 5 privé' ),
+    array( 'id' => 70, 'name' => 'Renommé' ),
+    array( 'id' => 77, 'name' => '#2024' )
+);
+$GLOBALS['transients'] = array();
+next_request();
+check( is_wp_error( WPD_Cache::resolve_album_id( '#5' ) ), 'P1: apres renommage, #5 ne doit jamais exposer l album prive 5.' );
+check( 5 === WPD_Cache::resolve_album_id( '5' ), 'Un identifiant 5 explicitement fourni doit rester compatible.' );
+check( is_wp_error( WPD_Cache::resolve_album_id( '#7' ) ), 'La notation ambigue #7 ne doit pas contourner la recherche de nom.' );
+check( 77 === WPD_Cache::resolve_album_id( '#2024' ), 'Les noms literaux #2024 restent utilisables.' );
 echo "Cache : résolution, panne, contexte privé, rétablissement et session locale : PASS.\n";
