@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 3.0.1 — maintenance (préparation, non publiée)
+
+- Correction du compositeur WordPress : choisir puis valider un album actualise immédiatement le shortcode via les événements DOM natifs.
+- Ajout d’un bouton d’actualisation dans les sélecteurs classique et Gutenberg, pour retrouver les albums ajoutés récemment sans recharger l’éditeur.
+- Protection contre les réponses AJAX périmées ; conservation du comportement de présélection et validation explicite des albums.
+- Correction du blocage de chargement Gutenberg après fermeture du panneau pendant une actualisation.
+- Prise en charge des identifiants commençant par `#` sans modifier le sens des albums réellement nommés, par exemple, « #2024 ».
+- Tests de régression JavaScript et PHP renforcés ; version des scripts incrémentée pour éviter les anciens fichiers conservés en cache.
+- Cette version reste soumise à une recette réelle WordPress/Piwigo avant toute publication.
+
 ## 3.0.0 — version stable
 
 Première version stable de la V3. Elle reprend l'ensemble des changements de la candidate 3.0.0-rc.4, jamais publiée, et les corrections issues de sa requalification sous WordPress/Piwigo :
