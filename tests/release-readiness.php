@@ -33,7 +33,7 @@ $assert( ( $asset['version'] ?? '' ) === $header_match[1], 'La version des scrip
 $assert( '3.0.0' === $header_match[1], 'La version stable V3 doit être identifiée comme 3.0.0.' );
 $assert( false !== strpos( (string) $readme, '1.10.0' ), 'Le README doit identifier 1.10.0 comme dernière stable GitHub avant V3.' );
 $assert( false !== strpos( (string) $readme, '2.0.0' ) && false !== strpos( (string) $readme, 'jamais' ), 'Le README doit préciser que la ligne 2.0.0 n’a jamais été publiée comme release publique.' );
-$assert( false !== strpos( (string) $roadmap, '## Avant 3.0.0 stable' ), 'La feuille de route doit garder une étape explicite avant 3.0.0 stable.' );
+$assert( false !== strpos( (string) $roadmap, '## V3 — version stable 3.0.0' ), 'La feuille de route doit identifier la version V3 deja publiee.' );
 $assert( false !== strpos( (string) $roadmap, 'recette réelle' ), 'La feuille de route doit maintenir la recette WordPress réelle comme verrou de sortie.' );
 $assert( false !== strpos( (string) $recipe, 'Décision de release' ), 'La recette doit contenir une décision explicite avant release stable.' );
 $assert( false !== strpos( (string) $recipe, '**GO / NO GO**' ), 'La recette doit imposer une décision GO ou NO GO.' );
