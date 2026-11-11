@@ -12,6 +12,7 @@ function fixture(initialValue = '') {
     const focusEvents = [];
     let shortcode = '';
     const rootNode = {};
+    const document = { activeElement: null, body: {} };
     const inputNode = {
         value: initialValue,
         dispatchEvent: function (event) {
@@ -49,7 +50,7 @@ function fixture(initialValue = '') {
         addClass(value) { this.classes.push(value); return this; }
         on(event, callback) { this.handlers[event] = callback; return this; }
         trigger(event) {
-            if (event === 'focus') focusEvents.push(this);
+            if (event === 'focus') { focusEvents.push(this); document.activeElement = this; }
             if (this.handlers[event]) this.handlers[event].call(this, { type: event, preventDefault() {} });
             return this;
         }
@@ -60,6 +61,10 @@ function fixture(initialValue = '') {
             return this;
         }
         get(index) { return index === 0 ? (this.native || this) : undefined; }
+        contains(target) {
+            if (target === this) return true;
+            return this.children.some(child => child instanceof Element && child.contains(target));
+        }
         find(selector) {
             const classMatch = selector.match(/\.([a-z0-9-]+)/);
             const className = classMatch && classMatch[1];
@@ -129,14 +134,14 @@ function fixture(initialValue = '') {
     const config = { ajaxUrl: '/wp-admin/admin-ajax.php', nonce: 'test', labels: {} };
     const window = { WPDAlbumPickerConfig: config };
     class NativeEvent { constructor(type, options) { this.type = type; this.bubbles = options.bubbles; } }
-    vm.runInNewContext(code, { jQuery: $, window, document: {}, WPDAlbumPickerConfig: config, Event: NativeEvent });
+    vm.runInNewContext(code, { jQuery: $, window, document, WPDAlbumPickerConfig: config, Event: NativeEvent });
     window.WPDAlbumPicker.attach(rootNode, inputNode);
     function find(className, rootElement = picker) {
         const result = rootElement.find('.' + className);
         assert.ok(result.length, 'Expected element: ' + className);
         return result.nodes[0];
     }
-    return { requests, events, focusEvents, inputNode, picker, button, find, reload: () => window.WPDAlbumPicker.reload(), getShortcode: () => shortcode };
+    return { requests, events, focusEvents, inputNode, picker, button, find, setExternalFocus: () => { document.activeElement = { outside: true }; }, getActive: () => document.activeElement, reload: () => window.WPDAlbumPicker.reload(), getShortcode: () => shortcode };
 }
 
 const f = fixture();
@@ -228,5 +233,18 @@ preselection.requests[1].finish({ success: true, data: { albums: [{ id: 7, name:
 assert.equal(preselection.find('wpd-album-row').attrs['aria-selected'], 'true',
     'Refreshing should retain the highlighted album.');
 assert.equal(preselection.inputNode.value, '', 'Refreshing must never validate the preselection.');
+
+
+const focus = fixture();
+focus.button.trigger('click');
+focus.setExternalFocus(); // The user moves to another field while AJAX is pending.
+const outside = focus.getActive();
+focus.requests[0].finish({ success: true, data: { albums: [{ id: 1, name: 'Photo', depth: 0 }] } });
+assert.equal(focus.getActive(), outside, 'A late success must never steal focus from another field.');
+focus.find('wpd-album-refresh').trigger('click');
+focus.setExternalFocus();
+const other = focus.getActive();
+focus.requests[1].finish({ success: false, data: { message: 'Piwigo 502' } });
+assert.equal(focus.getActive(), other, 'A late AJAX error must never steal focus from another field.');
 
 console.log('Sélecteur : validation native, actualisation et réponses concurrentes : PASS.');
