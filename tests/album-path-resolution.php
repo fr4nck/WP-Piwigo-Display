@@ -98,7 +98,6 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 }
 
 require_once dirname( __DIR__ ) . '/includes/class-wpd-api.php';
-require_once dirname( __DIR__ ) . '/includes/class-wpd-cache.php';
 
 $assert = static function ( bool $condition, string $message ): void {
 	if ( ! $condition ) {
@@ -113,6 +112,7 @@ $categories = array(
 	array( 'id' => 20, 'name' => 'Été 2026', 'uppercats' => '10,20', 'permalink' => 'ete-2026' ),
 	array( 'id' => 30, 'name' => 'Séjour voile', 'uppercats' => '10,20,30', 'permalink' => 'sejour-voile' ),
 	array( 'id' => 40, 'name' => 'Séjour voile', 'uppercats' => '10,40', 'permalink' => 'autre-sejour-voile' ),
+	array( 'id' => 77, 'name' => '#2024', 'uppercats' => '77', 'permalink' => 'album-hashtag' ),
 );
 
 $body = array(
@@ -137,8 +137,9 @@ $property->setValue(
 $api = new WPD_Api( $base_url );
 
 $assert( 30 === $api->resolve_album_id( '30' ), 'A numeric album identifier must be returned unchanged.' );
-$assert( 30 === $api->resolve_album_id( '#30' ), 'An album identifier prefixed by # must resolve without category lookup.' );
-$assert( 30 === WPD_Cache::resolve_album_id( '#30', $base_url ), 'The cached album resolver must accept the # prefix.' );
+$assert( 30 === $api->resolve_album_id( '#30' ), 'An album identifier prefixed by # must resolve when no identically named album exists.' );
+$assert( 77 === $api->resolve_album_id( '#2024' ), 'A literal album name #2024 must retain priority over the numeric alias.' );
+$assert( is_wp_error( $api->resolve_album_id( '#pas-un-id' ) ), 'Invalid hash-prefixed identifiers must not resolve as numeric IDs.' );
 $assert( 20 === $api->resolve_album_id( 'Été 2026' ), 'An album name must still resolve.' );
 $assert( 30 === $api->resolve_album_id( '/ALSH/Été 2026/Séjour voile' ), 'A full human-readable album path must resolve to the intended nested album.' );
 $assert( 40 === $api->resolve_album_id( 'ALSH/Séjour voile' ), 'Human-readable paths must disambiguate duplicate album names.' );
