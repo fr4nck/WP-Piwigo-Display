@@ -29,8 +29,8 @@ $assert( isset( $header_match[1] ), 'La version de l’en-tête du plugin doit �
 $assert( isset( $constant_match[1] ), 'La constante WPD_VERSION doit être détectable.' );
 $assert( $header_match[1] === $constant_match[1], 'L’en-tête du plugin et WPD_VERSION doivent être identiques.' );
 $assert( ( $metadata['version'] ?? '' ) === $header_match[1], 'La version du bloc Gutenberg doit correspondre au plugin.' );
-$assert( ( $asset['version'] ?? '' ) === $header_match[1], 'La version des scripts Gutenberg doit invalider le cache lors de la 3.0.0.' );
-$assert( '3.0.0' === $header_match[1], 'La version stable V3 doit être identifiée comme 3.0.0.' );
+$assert( ( $asset['version'] ?? '' ) === $header_match[1], 'La version des scripts Gutenberg doit invalider le cache lors de la 3.0.1.' );
+$assert( '3.0.1' === $header_match[1], 'La candidate de maintenance doit être identifiée comme 3.0.1.' );
 $assert( false !== strpos( (string) $readme, '1.10.0' ), 'Le README doit identifier 1.10.0 comme dernière stable GitHub avant V3.' );
 $assert( false !== strpos( (string) $readme, '2.0.0' ) && false !== strpos( (string) $readme, 'jamais' ), 'Le README doit préciser que la ligne 2.0.0 n’a jamais été publiée comme release publique.' );
 $assert( false !== strpos( (string) $roadmap, '## V3 — version stable 3.0.0' ), 'La feuille de route doit identifier la version V3 effectivement publiée.' );
