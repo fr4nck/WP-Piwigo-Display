@@ -20,7 +20,8 @@
         return fallback;
     }
 
-    function loadAlbums() {
+    function loadAlbums(forceReload) {
+        if (forceReload) cache = null;
         if (cache) return $.Deferred().resolve(cache).promise();
         if (pending) return pending;
         pending = $.ajax({
@@ -45,7 +46,7 @@
         return pending;
     }
 
-    function render($picker, albums, input) {
+    function render($picker, albums, input, onRefresh, searchQuery) {
         var l = labels();
         var expanded = {};
         var selectedId = String($(input).val() || '');
@@ -83,6 +84,9 @@
                 'aria-controls': listId,
                 autocomplete: 'off'
             });
+        var $refresh = $('<button type="button" class="button wpd-album-refresh"></button>')
+            .text(l.refresh || 'Actualiser les albums');
+        $refresh.on('click', function () { onRefresh($search.val()); });
         var $status = $('<p class="screen-reader-text wpd-album-status" role="status" aria-live="polite"></p>')
             .attr('id', statusId);
         var $list = $('<div class="wpd-album-list" role="tree"></div>')
@@ -91,7 +95,7 @@
                 'aria-label': l.results || 'Résultats des albums',
                 'aria-describedby': statusId
             });
-        $picker.append($searchLabel, $search, $status, $list);
+        $picker.append($searchLabel, $search, $refresh, $status, $list);
 
         function matchingIds(query) {
             var visible = {};
@@ -191,7 +195,13 @@
                     .text(l.validate || 'Valider');
                 $confirm.on('click', function () {
                     selectedId = id;
-                    $(input).val(album.id).trigger('input').trigger('change').trigger('focus');
+                    $(input).val(String(album.id));
+                    var inputElement = $(input).get(0);
+                    if (inputElement) {
+                        inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                        inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    $(input).trigger('focus');
                     draw($search.val());
                 });
 
@@ -210,7 +220,8 @@
         }
 
         $search.on('input', function () { draw(this.value); });
-        draw('');
+        $search.val(searchQuery || '');
+        draw($search.val());
         $search.trigger('focus');
     }
 
@@ -244,23 +255,29 @@
             'aria-haspopup': 'dialog'
         });
 
-        $button.on('click', function () {
-            if (!$picker.attr('hidden')) {
-                closePicker(true);
-                return;
-            }
+        function showPicker(forceReload, searchQuery) {
             $button.attr('aria-expanded', 'true');
             $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
                 .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Chargement des albums…'));
             var requestId = ++activeRequest;
-            loadAlbums().done(function (albums) {
+            loadAlbums(forceReload).done(function (albums) {
                 if (requestId !== activeRequest || $picker.attr('hidden')) return;
-                render($picker, albums, $input);
+                render($picker, albums, $input, function (query) {
+                    showPicker(true, query);
+                }, searchQuery);
             }).fail(function (error, status) {
                     if (requestId !== activeRequest || $picker.attr('hidden')) return;
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
                         .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)));
                 });
+        }
+
+        $button.on('click', function () {
+            if (!$picker.attr('hidden')) {
+                closePicker(true);
+                return;
+            }
+            showPicker(false, '');
         });
 
         $picker.on('keydown', function (event) {
