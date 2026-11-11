@@ -14,12 +14,11 @@ Le paramètre `album` est obligatoire.
 
 ```text
 [piwigo album="154"]
-[piwigo album="#154"]
 [piwigo album="Séjour voile"]
 [piwigo album="/ALSH/Été 2026/Séjour voile"]
 ```
 
-L’identifiant numérique sans préfixe reste le choix le plus robuste dans un shortcode. Lorsqu’un nom d’album est exactement `#2024`, il continue à désigner cet album, et non l’identifiant 2024. Si aucun album ne porte ce nom, la notation `#2024` peut être interprétée comme un identifiant : le serveur Piwigo doit rester accessible pour vérifier le nom. La sélection **visuelle** génère un identifiant sans préfixe ; une valeur `#42` saisie **manuellement** dans le compositeur peut rester telle quelle dans le shortcode.
+L’identifiant numérique **sans préfixe** est le seul format numérique fiable pour un shortcode. Un texte comme `#2024` désigne exclusivement un album dont le **nom est exactement `#2024`**, et jamais un identifiant 2024. Cette règle évite qu’un album renommé soit remplacé silencieusement par un autre album, éventuellement privé. Le sélecteur visuel insère toujours l’identifiant sans préfixe. Dans un champ manuel, pour désigner l’album numéro 42, saisissez `42` et non `#42`.
 
 `url` permet ponctuellement d’utiliser une autre galerie :
 
