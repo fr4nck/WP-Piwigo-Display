@@ -53,8 +53,9 @@ final class WPD_Cache {
 			return absint( $album );
 		}
 
-		// An album genuinely named "#2024" must retain its historical meaning.
-		$hash_id = 1 === preg_match( '/^#[0-9]+$/D', $album );
+		// Non-numeric input is always a literal album name or path.
+		// Never turn a missing #name into a different album ID: the service
+		// account could otherwise expose a private album after a rename.
 
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
 		$context    = self::get_access_context( $piwigo_url );
@@ -70,12 +71,7 @@ final class WPD_Cache {
 			return $categories;
 		}
 
-		$result = self::resolve_album_from_categories( $album, $categories );
-		if ( $hash_id && is_wp_error( $result ) ) {
-			return absint( substr( $album, 1 ) );
-		}
-
-		return $result;
+		return self::resolve_album_from_categories( $album, $categories );
 	}
 
 	/**
