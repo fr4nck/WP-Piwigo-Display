@@ -55,7 +55,7 @@
         return request;
     }
 
-    function render($picker, albums, input, onRefresh, searchQuery, preselectedId) {
+    function render($picker, albums, input, onRefresh, searchQuery, preselectedId, focusSearch) {
         var l = labels();
         var expanded = {};
         var enteredValue = String($(input).val() || '');
@@ -240,7 +240,7 @@
         $search.on('input', function () { draw(this.value); });
         $search.val(searchQuery || '');
         draw($search.val());
-        $search.trigger('focus');
+        if (focusSearch) $search.trigger('focus');
     }
 
     function attach(root, input) {
@@ -273,19 +273,27 @@
             'aria-haspopup': 'dialog'
         });
 
+        function mayMoveFocus() {
+            var active = document.activeElement;
+            if (!active || active === document.body) return true;
+            var pickerElement = typeof $picker.get === 'function' ? $picker.get(0) : null;
+            var buttonElement = typeof $button.get === 'function' ? $button.get(0) : null;
+            return active === buttonElement || !!(pickerElement && typeof pickerElement.contains === 'function' && pickerElement.contains(active));
+        }
+
         function showPicker(forceReload, searchQuery, preselectedId) {
             $button.attr('aria-expanded', 'true');
             var $loading = $('<p class="wpd-album-loading" tabindex="-1"></p>')
                 .text(labels().loading || 'Chargement des albums…');
             $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
                 .html($loading);
-            $loading.trigger('focus');
+            if (mayMoveFocus()) $loading.trigger('focus');
             var requestId = ++activeRequest;
             loadAlbums(forceReload).done(function (albums) {
                 if (requestId !== activeRequest || $picker.attr('hidden')) return;
                 render($picker, albums, $input, function (query, selected) {
                     showPicker(true, query, selected);
-                }, searchQuery, preselectedId);
+                }, searchQuery, preselectedId, mayMoveFocus());
             }).fail(function (error, status) {
                     if (requestId !== activeRequest || $picker.attr('hidden')) return;
                     var $retry = $('<button type="button" class="button wpd-album-refresh"></button>')
@@ -294,7 +302,7 @@
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
                         .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)))
                         .append($retry);
-                    $retry.trigger('focus');
+                    if (mayMoveFocus()) $retry.trigger('focus');
                 });
         }
 
