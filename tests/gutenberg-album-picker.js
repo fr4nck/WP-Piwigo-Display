@@ -22,6 +22,10 @@ function fixture(responses) {
                 const index = cursor++;
                 if (!(index in slots)) slots[index] = initial;
                 return [slots[index], value => { slots[index] = value; }];
+            }, useRef: initial => {
+                const index = cursor++;
+                if (!(index in slots)) slots[index] = { current: initial };
+                return slots[index];
             } },
             blockEditor: { InspectorControls: 'InspectorControls' },
             components,
@@ -39,6 +43,11 @@ function fixture(responses) {
     function render() { cursor = 0; return flatten(picker.type(picker.props)); }
     return {
         toggle: () => render().find(node => node.type === 'Button').props.onClick(),
+        refresh: () => {
+            const button = render().find(node => node.type === 'Button' && node.children[0] === 'Actualiser la liste des albums');
+            assert.ok(button, 'Le bouton d’actualisation doit exister.');
+            button.props.onClick();
+        },
         state: () => slots,
         calls: () => calls,
         render
@@ -70,5 +79,27 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
     retry.toggle(); retry.toggle(); await flush();
     assert.equal(retry.calls(), 2);
     assert.equal(retry.state()[3], '');
-    console.log('Gutenberg : erreurs HTTP, JSON, tableaux invalides et nouvelle tentative : PASS.');
+
+    const fresh = fixture([
+        response(true, { success: true, data: { albums: [{ id: 17, name: 'Ancien', depth: 0 }] } }),
+        response(true, { success: true, data: { albums: [{ id: 17, name: 'Ancien', depth: 0 }, { id: 42, name: 'Nouveau', depth: 0 }] } })
+    ]);
+    fresh.toggle(); await flush();
+    assert.equal(fresh.state()[1].length, 1);
+    fresh.refresh(); await flush();
+    assert.equal(fresh.calls(), 2, 'Actualiser doit appeler Piwigo malgré le cache.');
+    assert.equal(fresh.state()[1].length, 2, 'Le nouvel album doit être visible.');
+    assert.equal(fresh.state()[3], '', 'L’actualisation ne doit pas créer d’erreur.');
+
+    const recovered = fixture([
+        new Error('Réseau indisponible'),
+        response(true, { success: true, data: { albums: [{ id: 42, name: 'Nouveau', depth: 0 }] } })
+    ]);
+    recovered.toggle(); await flush();
+    assert.equal(recovered.state()[3], 'Réseau indisponible');
+    recovered.refresh(); await flush();
+    assert.equal(recovered.state()[3], '', 'L’actualisation doit permettre de reprendre après une erreur.');
+    assert.equal(recovered.state()[1].length, 1);
+
+    console.log('Gutenberg : erreurs, nouvelle tentative, actualisation et reprise : PASS.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
