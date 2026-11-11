@@ -28,7 +28,7 @@ final class WPD_Service_Api {
     public static int $image_calls = 0;
     public static bool $fail = false;
     public function __construct( string $url ) { ++self::$instances; }
-    public function get_all_categories(): array { ++self::$categories_calls; return array( array( 'id' => 7, 'name' => 'Privé' ) ); }
+    public function get_all_categories(): array { ++self::$categories_calls; return array( array( 'id' => 7, 'name' => 'Privé' ), array( 'id' => 77, 'name' => '#2024' ) ); }
     public function get_images_from_album( int $id, int $max ) {
         ++self::$image_calls;
         return self::$fail ? new WP_Error( 'http', 'secret-password=leak' ) : array( array( 'id' => $id ) );
@@ -60,6 +60,8 @@ function next_request(): void {
 }
 $GLOBALS['transients'] = array();
 check( 7 === WPD_Cache::resolve_album_id( 'Privé' ), 'Résolution privée perdue.' );
+check( 30 === WPD_Cache::resolve_album_id( '#30' ), 'Alias #30 perdu dans le résolveur cache.' );
+check( 77 === WPD_Cache::resolve_album_id( '#2024' ), 'Un album nommé #2024 ne doit pas être confondu avec l’ID 2024.' );
 WPD_Cache::get_album_images( 1 );
 WPD_Cache::get_album_images( 2 );
 check( 1 === WPD_Service_Api::$instances, 'Connexion répétée dans la même requête PHP.' );
