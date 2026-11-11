@@ -55,10 +55,15 @@
         return request;
     }
 
-    function render($picker, albums, input, onRefresh, searchQuery) {
+    function render($picker, albums, input, onRefresh, searchQuery, preselectedId) {
         var l = labels();
         var expanded = {};
-        var selectedId = String($(input).val() || '');
+        var enteredValue = String($(input).val() || '');
+        var selectedId = preselectedId ? String(preselectedId) : enteredValue;
+        if (!preselectedId && /^#[0-9]+$/.test(selectedId)) {
+            var namedAlbum = albums.filter(function (album) { return String(album.name) === enteredValue; })[0];
+            selectedId = namedAlbum ? String(namedAlbum.id) : selectedId.slice(1);
+        }
         var childrenByParent = {};
         var hierarchy = [];
         var pickerId = $picker.attr('id');
@@ -95,7 +100,7 @@
             });
         var $refresh = $('<button type="button" class="button wpd-album-refresh"></button>')
             .text(l.refresh || 'Actualiser les albums');
-        $refresh.on('click', function () { onRefresh($search.val()); });
+        $refresh.on('click', function () { onRefresh($search.val(), selectedId); });
         var $status = $('<p class="screen-reader-text wpd-album-status" role="status" aria-live="polite"></p>')
             .attr('id', statusId);
         var $list = $('<div class="wpd-album-list" role="tree"></div>')
@@ -268,7 +273,7 @@
             'aria-haspopup': 'dialog'
         });
 
-        function showPicker(forceReload, searchQuery) {
+        function showPicker(forceReload, searchQuery, preselectedId) {
             $button.attr('aria-expanded', 'true');
             var $loading = $('<p class="wpd-album-loading" tabindex="-1"></p>')
                 .text(labels().loading || 'Chargement des albums…');
@@ -278,14 +283,14 @@
             var requestId = ++activeRequest;
             loadAlbums(forceReload).done(function (albums) {
                 if (requestId !== activeRequest || $picker.attr('hidden')) return;
-                render($picker, albums, $input, function (query) {
-                    showPicker(true, query);
-                }, searchQuery);
+                render($picker, albums, $input, function (query, selected) {
+                    showPicker(true, query, selected);
+                }, searchQuery, preselectedId);
             }).fail(function (error, status) {
                     if (requestId !== activeRequest || $picker.attr('hidden')) return;
                     var $retry = $('<button type="button" class="button wpd-album-refresh"></button>')
                         .text(labels().refresh || 'Actualiser la liste des albums');
-                    $retry.on('click', function () { showPicker(true, searchQuery); });
+                    $retry.on('click', function () { showPicker(true, searchQuery, preselectedId); });
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
                         .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)))
                         .append($retry);
