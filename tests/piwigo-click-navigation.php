@@ -25,6 +25,9 @@ function sanitize_key( $value ): string {
 	return strtolower( preg_replace( '/[^a-z0-9_-]/i', '', (string) $value ) );
 }
 function apply_filters( $name, $value, ...$args ) {
+	if ( 'wp_piwigo_display_render' === $name && 'masonry' === ( $args[1]['layout'] ?? '' ) ) {
+		return WPD_Masonry::render( $value, $args[0], $args[1], $args[2] );
+	}
 	return $value;
 }
 function wp_enqueue_style( $handle ): void {}
@@ -122,12 +125,12 @@ check( 6 === substr_count( $slider, 'data-wpd-lightbox="false"' ), 'Slider mode 
 check( str_contains( $slider, 'href="' . $base . '/picture.php?/1/category/42"' ), 'Slider must retain the photo context.' );
 
 $masonry_atts = array_merge( $photo_atts, array( 'layout' => 'masonry' ) );
-$masonry = WPD_Masonry::render( null, $images, $masonry_atts, 'gallery' );
+$masonry = WPD_Renderer::render( $images, $masonry_atts );
 check( is_string( $masonry ), 'Masonry renderer must be available.' );
-check( 8 === substr_count( $masonry, 'data-wpd-lightbox="false"' ), 'Masonry should open Piwigo pages without local lightbox.' );
+check( 6 === substr_count( $masonry, 'data-wpd-lightbox="false"' ), 'Masonry must preserve limit=6 and open Piwigo pages.' );
 check( str_contains( $masonry, 'href="' . $base . '/picture.php?/1/category/42"' ), 'Masonry should preserve native photo navigation.' );
-$local_masonry = WPD_Masonry::render( null, $images, array_merge( $atts, array( 'layout' => 'masonry' ) ), 'gallery' );
-check( 8 === substr_count( $local_masonry, 'data-wpd-lightbox="true"' ), 'Default Masonry links must be unchanged.' );
+$local_masonry = WPD_Renderer::render( $images, array_merge( $atts, array( 'layout' => 'masonry' ) ) );
+check( 6 === substr_count( $local_masonry, 'data-wpd-lightbox="true"' ), 'Default Masonry links must be unchanged.' );
 
 $bad = $images;
 $bad[0]['page_url'] = 'https://evil.example.test/picture.php?/1/category/42';
