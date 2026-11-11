@@ -23,11 +23,11 @@
 
     function loadAlbums(forceReload) {
         if (forceReload) {
-            cache = null;
+            // Keep the last usable list until a fresh response succeeds.
             pending = null;
             requestGeneration += 1;
         }
-        if (cache) return $.Deferred().resolve(cache).promise();
+        if (!forceReload && cache) return $.Deferred().resolve(cache).promise();
         if (pending) return pending;
         var generation = requestGeneration;
         var request = $.ajax({
@@ -270,8 +270,11 @@
 
         function showPicker(forceReload, searchQuery) {
             $button.attr('aria-expanded', 'true');
+            var $loading = $('<p class="wpd-album-loading" tabindex="-1"></p>')
+                .text(labels().loading || 'Chargement des albums…');
             $picker.removeAttr('hidden').attr({ role: 'status', 'aria-live': 'polite' })
-                .html($('<p class="wpd-album-loading"></p>').text(labels().loading || 'Chargement des albums…'));
+                .html($loading);
+            $loading.trigger('focus');
             var requestId = ++activeRequest;
             loadAlbums(forceReload).done(function (albums) {
                 if (requestId !== activeRequest || $picker.attr('hidden')) return;
@@ -280,8 +283,13 @@
                 }, searchQuery);
             }).fail(function (error, status) {
                     if (requestId !== activeRequest || $picker.attr('hidden')) return;
+                    var $retry = $('<button type="button" class="button wpd-album-refresh"></button>')
+                        .text(labels().refresh || 'Actualiser la liste des albums');
+                    $retry.on('click', function () { showPicker(true, searchQuery); });
                     $picker.removeAttr('hidden').attr({ role: 'alert', 'aria-live': 'assertive' })
-                        .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)));
+                        .html($('<p class="notice notice-error inline"></p>').text(formatError(error, status)))
+                        .append($retry);
+                    $retry.trigger('focus');
                 });
         }
 
