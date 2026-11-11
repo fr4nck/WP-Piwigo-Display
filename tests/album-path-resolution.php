@@ -137,8 +137,8 @@ $property->setValue(
 $api = new WPD_Api( $base_url );
 
 $assert( 30 === $api->resolve_album_id( '30' ), 'A numeric album identifier must be returned unchanged.' );
-$assert( 30 === $api->resolve_album_id( '#30' ), 'An album identifier prefixed by # must resolve when no identically named album exists.' );
-$assert( 77 === $api->resolve_album_id( '#2024' ), 'A literal album name #2024 must retain priority over the numeric alias.' );
+$assert( is_wp_error( $api->resolve_album_id( '#30' ) ), 'A missing literal #30 name must not be remapped to album ID 30.' );
+$assert( 77 === $api->resolve_album_id( '#2024' ), 'A literal album name #2024 must keep its original meaning.' );
 $assert( is_wp_error( $api->resolve_album_id( '#pas-un-id' ) ), 'Invalid hash-prefixed identifiers must not resolve as numeric IDs.' );
 $assert( 20 === $api->resolve_album_id( 'Été 2026' ), 'An album name must still resolve.' );
 $assert( 30 === $api->resolve_album_id( '/ALSH/Été 2026/Séjour voile' ), 'A full human-readable album path must resolve to the intended nested album.' );
@@ -152,6 +152,8 @@ $private_categories = array(
 WPD_Service_Account::$configured = true;
 WPD_Service_Api::$categories     = $private_categories;
 $assert( 60 === $api->resolve_album_id( '/Privé/Équipe' ), 'A private album path must resolve through the service account on the configured Piwigo URL.' );
+$assert( is_wp_error( $api->resolve_album_id( '#50' ) ), 'A missing #50 name must not reveal the private album 50.' );
+$assert( 50 === $api->resolve_album_id( '50' ), 'An explicitly provided numeric private album ID keeps its original meaning.' );
 
 $other_url = 'https://other.example.test';
 $other_body = array(
