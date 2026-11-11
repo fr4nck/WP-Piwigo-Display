@@ -14,11 +14,12 @@ Le paramètre `album` est obligatoire.
 
 ```text
 [piwigo album="154"]
+[piwigo album="#154"]
 [piwigo album="Séjour voile"]
 [piwigo album="/ALSH/Été 2026/Séjour voile"]
 ```
 
-L’identifiant numérique reste le choix le plus robuste dans un shortcode écrit manuellement.
+L’identifiant numérique reste le choix le plus robuste dans un shortcode écrit manuellement. Le préfixe `#` est aussi accepté en saisie manuelle, mais le compositeur génère toujours l’identifiant sans préfixe.
 
 `url` permet ponctuellement d’utiliser une autre galerie :
 
