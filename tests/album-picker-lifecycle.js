@@ -22,6 +22,7 @@ function makePicker() {
         removeAttr: function (key) { delete this.attrs[key]; return this; },
         empty: function () { this.emptyCalls += 1; return this; },
         html: function (value) { this.htmlValue = value; return this; },
+        append: function (value) { this.retry = value; return this; },
         on: function () { return this; }
     };
     const button = {
@@ -50,7 +51,11 @@ function makePicker() {
         if (value === rootElement) return root;
         if (value === inputElement) return input;
         if (typeof value === 'string' && value.charAt(0) === '<') {
-            return { text: function (msg) { this.message = String(msg); return this; } };
+            return {
+                text: function (msg) { this.message = String(msg); return this; },
+                on: function () { return this; },
+                trigger: function () { return this; }
+            };
         }
         throw new Error('Unexpected jQuery call');
     }
