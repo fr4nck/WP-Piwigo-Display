@@ -49,9 +49,12 @@ final class WPD_Cache {
 			return new WP_Error( 'wpd_empty_album', __( 'Album non renseigné.', 'wp-piwigo-display' ) );
 		}
 
-		if ( 1 === preg_match( '/^#?[0-9]+$/', $album ) ) {
-			return absint( ltrim( $album, '#' ) );
+		if ( ctype_digit( $album ) ) {
+			return absint( $album );
 		}
+
+		// An album genuinely named "#2024" must retain its historical meaning.
+		$hash_id = 1 === preg_match( '/^#[0-9]+$/D', $album );
 
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
 		$context    = self::get_access_context( $piwigo_url );
@@ -67,7 +70,12 @@ final class WPD_Cache {
 			return $categories;
 		}
 
-		return self::resolve_album_from_categories( $album, $categories );
+		$result = self::resolve_album_from_categories( $album, $categories );
+		if ( $hash_id && is_wp_error( $result ) && 'wpd_album_not_found' === $result->get_error_code() ) {
+			return absint( substr( $album, 1 ) );
+		}
+
+		return $result;
 	}
 
 	/**
