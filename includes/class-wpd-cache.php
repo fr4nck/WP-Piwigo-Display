@@ -71,7 +71,7 @@ final class WPD_Cache {
 		}
 
 		$result = self::resolve_album_from_categories( $album, $categories );
-		if ( $hash_id && is_wp_error( $result ) && 'wpd_album_not_found' === $result->get_error_code() ) {
+		if ( $hash_id && is_wp_error( $result ) ) {
 			return absint( substr( $album, 1 ) );
 		}
 
