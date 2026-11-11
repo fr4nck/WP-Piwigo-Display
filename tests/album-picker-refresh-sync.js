@@ -21,6 +21,7 @@ function fixture() {
     };
     class Element {
         constructor(html) {
+            this.length = 1;
             this.children = [];
             this.handlers = {};
             this.attrs = {};
