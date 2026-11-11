@@ -53,7 +53,7 @@ final class WPD_Renderer {
 	 * @param array<string, mixed> $atts  Sanitized rendering options.
 	 * @return string Piwigo page URL, or empty string for local behavior.
 	 */
-	private static function get_piwigo_navigation_url( array $image, array $atts ): string {
+	public static function get_piwigo_navigation_url( array $image, array $atts ): string {
 		$action = (string) ( $atts['click_action'] ?? 'default' );
 		if ( ! in_array( $action, array( 'piwigo_photo', 'piwigo_album' ), true ) ) {
 			return '';
