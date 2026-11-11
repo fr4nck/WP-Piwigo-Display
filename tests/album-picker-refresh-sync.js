@@ -212,7 +212,10 @@ assert.equal(retry.find('wpd-album-name').textValue, 'Rétabli');
 const manualHash = fixture('#42');
 manualHash.button.trigger('click');
 manualHash.requests[0].finish({ success: true, data: { albums: [{ id: 42, name: 'Album 42', depth: 0 }] } });
-assert.equal(manualHash.find('wpd-album-row').attrs['aria-selected'], 'true', '#42 must highlight ID 42.');
+assert.equal(manualHash.find('wpd-album-row').attrs['aria-selected'], 'false', '#42 without a literal name must not suggest a numeric ID.');
+manualHash.find('wpd-album-confirm').trigger('click');
+assert.equal(manualHash.inputNode.value, '42', 'Explicit validation must write the canonical numeric ID.');
+assert.equal(manualHash.getShortcode(), '[piwigo album="42"]');
 
 const namedHash = fixture('#2024');
 namedHash.button.trigger('click');
