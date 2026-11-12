@@ -9,9 +9,9 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 
-// Retain shared settings and credentials by default. An explicit, site-owner
-// opt-in is required for an irreversible purge after all copies are removed.
-if ( ! defined( 'WPD_PURGE_DATA_ON_UNINSTALL' ) || true !== WPD_PURGE_DATA_ON_UNINSTALL ) {
+// Explicit retention is available for planned reinstallation. On a normal,
+// final removal, credentials must not remain in the database.
+if ( defined( 'WPD_KEEP_DATA_ON_UNINSTALL' ) && true === WPD_KEEP_DATA_ON_UNINSTALL ) {
     return;
 }
 
