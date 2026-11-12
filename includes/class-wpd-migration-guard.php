@@ -17,7 +17,11 @@ final class WPD_Migration_Guard {
 
 	private const LEGACY_PLUGIN = 'wp-piwigo-display/wp-piwigo-display.php';
 
-	/** @var array<string, bool> */
+	/**
+	 * Track plugins already registered during this request.
+	 *
+	 * @var array<string, bool>
+	 */
 	private static array $registered = array();
 
 	/**
@@ -70,13 +74,16 @@ final class WPD_Migration_Guard {
 					return;
 				}
 
-				$wpd_legacy = get_plugins()[ $candidate ] ?? array();
+				$wpd_legacy  = get_plugins()[ $candidate ] ?? array();
 				$wpd_version = trim( (string) ( $wpd_legacy['Version'] ?? '' ) );
 				if ( '' === $wpd_version || version_compare( $wpd_version, '3.0.0', '<=' ) ) {
 					wp_die(
 						esc_html__( 'Suppression interdite : mettez d’abord à jour Piwigo Display 3.0.0 vers 3.0.1 dans son dossier historique, sans désinstallation.', 'wp-piwigo-display' ),
 						esc_html__( 'Migration Piwigo Display non sécurisée', 'wp-piwigo-display' ),
-						array( 'response' => 409, 'back_link' => true )
+						array(
+							'response'  => 409,
+							'back_link' => true,
+						)
 					);
 				}
 			},
@@ -117,7 +124,12 @@ final class WPD_Migration_Guard {
 		$active = self::active_plugins_on_current_site();
 
 		if ( $network_wide && is_multisite() ) {
-			foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $site_id ) {
+			foreach ( get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			) as $site_id ) {
 				switch_to_blog( (int) $site_id );
 				try {
 					$active = array_merge( $active, (array) get_option( 'active_plugins', array() ) );
@@ -153,10 +165,10 @@ final class WPD_Migration_Guard {
 		}
 
 		$installed = function_exists( 'get_plugins' ) ? get_plugins() : array();
-		$data = $installed[ $candidate ] ?? array();
-		$name = trim( (string) ( $data['Name'] ?? '' ) );
-		$domain = (string) ( $data['TextDomain'] ?? '' );
-		$uri = (string) ( $data['PluginURI'] ?? '' );
+		$data      = $installed[ $candidate ] ?? array();
+		$name      = trim( (string) ( $data['Name'] ?? '' ) );
+		$domain    = (string) ( $data['TextDomain'] ?? '' );
+		$uri       = (string) ( $data['PluginURI'] ?? '' );
 
 		return 0 === stripos( $name, 'Piwigo Display' )
 			|| 'wp-piwigo-display' === $domain
@@ -198,7 +210,10 @@ final class WPD_Migration_Guard {
 		wp_die(
 			esc_html__( 'Désactivez d’abord l’autre copie de Piwigo Display. Ne la supprimez pas : sa désinstallation pourrait effacer les réglages partagés.', 'wp-piwigo-display' ),
 			esc_html__( 'Activation de Piwigo Display bloquée', 'wp-piwigo-display' ),
-			array( 'response' => 409, 'back_link' => true )
+			array(
+				'response'  => 409,
+				'back_link' => true,
+			)
 		);
 	}
 }
