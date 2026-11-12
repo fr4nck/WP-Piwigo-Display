@@ -12,7 +12,7 @@ Le paquet **GitHub** 3.0.1 déclare \`Update URI: https://github.com/fr4nck/WP-P
 
 - Le bootstrap non conditionnel de 3.0.0 devient une closure ; les deux copies peuvent être chargées sans redéclaration de cette fonction. Testé hors ligne avec dépendances WordPress simulées.
 - Un garde refuse une activation concurrente, y compris sur un autre blog lors de l'activation réseau. En cas d'état forcé comportant deux copies actives, il peut désactiver la copie secondaire dans l'administration sans exécuter de désinstallation. L'ancien répertoire a priorité.
-- \`uninstall.php\` de la **nouvelle** version conserve toute donnée par défaut, y compris les credentials du compte de service. Seul \`define( 'WPD_PURGE_DATA_ON_UNINSTALL', true );\` autorise une purge si le code peut confirmer qu'aucune autre installation de Piwigo Display n'est présente. Attention : cette option de conservation signifie que des identifiants peuvent subsister après un retrait définitif.
+- \`uninstall.php\` de la **nouvelle** version conserve impérativement les réglages et identifiants **lorsqu'une autre copie de Piwigo Display est installée**. Lors du retrait définitif de la dernière copie, il nettoie normalement les options du compte de service, comme la version 3.0.0. Pour une réinstallation volontaire sans autre copie, le propriétaire peut demander explicitement la conservation par \`define( 'WPD_KEEP_DATA_ON_UNINSTALL', true );\`, en acceptant que les identifiants restent dans la base. Si la liste des plugins est indisponible, le script s'abstient de toute purge.
 - **Impossible de modifier rétroactivement 3.0.0** : son désinstalleur efface les deux options. Lors de la migration, ne jamais utiliser le bouton « Supprimer » sur l'ancienne copie 3.0.0.
 
 ## Installation neuve

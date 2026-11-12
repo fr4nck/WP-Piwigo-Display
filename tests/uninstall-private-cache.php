@@ -56,7 +56,6 @@ if ( ! $found ) {
 
 // WordPress calls uninstall.php with this guard set.
 define( 'WP_UNINSTALL_PLUGIN', 'wp-piwigo-display/wp-piwigo-display.php' );
-define( 'WPD_PURGE_DATA_ON_UNINSTALL', true );
 function get_plugins(): array {
     return array( 'wp-piwigo-display/wp-piwigo-display.php' => array( 'Name' => 'Piwigo Display' ) );
 }

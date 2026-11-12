@@ -1,9 +1,8 @@
 <?php
-/** Explicit purge for sole copy works across all test sites, restoring context. */
+/** Removing the last installed copy normally purges credentials on all sites. */
 declare(strict_types=1);
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 define( 'WP_UNINSTALL_PLUGIN', 'wp-piwigo-display/wp-piwigo-display.php' );
-define( 'WPD_PURGE_DATA_ON_UNINSTALL', true );
 $GLOBALS['migration_deleted'] = array();
 $GLOBALS['migration_blog'] = 1;
 $GLOBALS['migration_stack'] = array();
@@ -25,6 +24,6 @@ final class WPD_Migration_Db {
 $GLOBALS['wpdb'] = new WPD_Migration_Db();
 require dirname( __DIR__ ) . '/uninstall.php';
 if ( 4 !== count( $GLOBALS['migration_deleted'] ) || 1 !== $GLOBALS['migration_blog'] ) {
-	fwrite( STDERR, "FAIL explicit multisite purge\n" ); exit( 1 );
+	fwrite( STDERR, "FAIL final multisite cleanup\n" ); exit( 1 );
 }
-echo "PASS explicitly requested purge only, per site\n";
+echo "PASS final-copy cleanup on each test site\n";
