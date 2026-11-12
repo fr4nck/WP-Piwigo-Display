@@ -237,7 +237,7 @@ jobs:
 
 
   integration:
-    name: WordPress jetable / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }}
+    name: WordPress jetable / ${{ matrix.mode }} / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }}
     needs: package
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -247,8 +247,16 @@ jobs:
         include:
           - php: '8.1'
             wordpress: '6.9'
+            mode: single
           - php: '8.4'
             wordpress: '7.1.4'
+            mode: single
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: multisite
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: multisite
     services:
       mysql:
         image: mysql:8.0
@@ -294,4 +302,10 @@ jobs:
           WP_VERSION: ${{ matrix.wordpress }}
           WP_CLI_PHAR: ${{ runner.temp }}/wp-cli.phar
           WPQA_PKG_DIR: ${{ runner.temp }}/piwigo-zip-candidates
-        run: bash tests/ci-wordpress-migration.sh
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.mode }}" == multisite ]]; then
+            bash tests/ci-wordpress-multisite.sh
+          else
+            bash tests/ci-wordpress-migration.sh
+          fi
