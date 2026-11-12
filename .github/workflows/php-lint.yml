@@ -161,10 +161,25 @@ jobs:
       - name: Check packaged frontend assets
         run: php tests/package-assets.php build/wp-piwigo-display
 
-      - name: Create verification ZIP (not a release)
+      - name: Prepare separate WordPress.org verification tree
+        shell: bash
         run: |
+          set -euo pipefail
+          mkdir -p build/plugin-check/piwigo-display
+          rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
+          php tests/package-assets.php build/plugin-check/piwigo-display
+
+      - name: Create both verification ZIPs (never publish)
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
           cd build
-          zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
+          zip -qr "piwigo-display-${VERSION}.zip" wp-piwigo-display
+          cd plugin-check
+          zip -qr "../piwigo-display-wporg-${VERSION}-candidate.zip" piwigo-display
 
       - name: Verify ZIP and record provenance
         shell: bash
@@ -185,7 +200,24 @@ jobs:
             echo 'Fichiers indésirables dans le ZIP.' >&2
             exit 1
           fi
-          sha256sum "$ZIP" > SHA256SUMS
+          ORG_ZIP="piwigo-display-wporg-${VERSION}-candidate.zip"
+          unzip -tq "$ORG_ZIP"
+          test "$(unzip -Z1 "$ORG_ZIP" | cut -d/ -f1 | sort -u)" = 'piwigo-display'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'piwigo-display/wp-piwigo-display.php'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'piwigo-display/includes/class-wpd-migration-guard.php'
+          unzip -p "$ORG_ZIP" piwigo-display/wp-piwigo-display.php | grep -Fq ' * Text Domain: piwigo-display'
+          if unzip -p "$ORG_ZIP" piwigo-display/wp-piwigo-display.php | grep -Eq '^ \* Update URI:'; then
+            echo 'Update URI must be absent from WordPress.org candidate.' >&2
+            exit 1
+          fi
+          unzip -p "$ORG_ZIP" piwigo-display/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
+          unzip -p "$ORG_ZIP" piwigo-display/blocks/piwigo/block.json | grep -Fq '"textdomain": "piwigo-display"'
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          if unzip -Z1 "$ORG_ZIP" | grep -E '^piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Unwanted file in WordPress.org candidate.' >&2
+            exit 1
+          fi
+          sha256sum "$ZIP" "$ORG_ZIP" > SHA256SUMS
           printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
           cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
 
@@ -195,6 +227,7 @@ jobs:
           name: piwigo-display-${{ steps.version.outputs.version }}-${{ github.sha }}
           path: |
             build/piwigo-display-${{ steps.version.outputs.version }}.zip
+            build/piwigo-display-wporg-${{ steps.version.outputs.version }}-candidate.zip
             build/SHA256SUMS
             build/PROVENANCE.txt
           if-no-files-found: error
