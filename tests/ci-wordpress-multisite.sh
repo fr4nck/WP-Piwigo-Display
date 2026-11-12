@@ -49,8 +49,8 @@ ACTIVE_HASH="$(network_digest)"
 
 # Simulate the incoherent state from CA-301-002. The legacy code and the
 # protected network distribution now coexist on site b2.
-wpqa --url="$B2" option update active_plugins '["wp-display4piwigo/wp-piwigo-display.php"]' --format=json
-SUBSCRIBER_ID="$(wpqa --url="$B2" user create ci_subscriber ci-subscriber@example.invalid --role=subscriber --porcelain)"
+wpqa --url="$B2" option update active_plugins '["wp-piwigo-display/wp-piwigo-display.php"]' --format=json
+SUBSCRIBER_ID="$(wpqa --url="$B2" user create cisubscriber ci-subscriber@example.invalid --role=subscriber --porcelain)"
 wpqa --url="$B2" eval "wp_set_current_user($SUBSCRIBER_ID); do_action('admin_init');"
 [[ "$(network_digest)" == "$ACTIVE_HASH" ]] || fail "Subscriber admin_init deactivated Piwigo Display network-wide"
 [[ "$(wpqa --url="$B3" eval 'echo shortcode_exists("piwigo") ? "YES" : "NO";')" == YES ]] || fail "Site b3 lost shortcode after subscriber request"
