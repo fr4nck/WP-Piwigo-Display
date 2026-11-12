@@ -6,6 +6,8 @@
 
 Ne jamais renommer les clés WordPress `wp_piwigo_display_options` et `wp_piwigo_display_service_account`, les blocs `wp-piwigo-display/gallery` ni les shortcodes `[piwigo]`. Les anciennes pages, galeries et diaporamas doivent continuer à fonctionner sans modification.
 
+**Contrat d'identité des paquets :** même si le nom commercial ou le répertoire WordPress.org est modifié, la nouvelle distribution doit conserver une signature stable d'origine (`Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display`) ou le fichier principal historique `wp-piwigo-display.php`. Le désinstalleur reconnaît ces marqueurs ; sans aucun d'eux et avec un nom et domaine de traduction différents, il ne peut pas identifier une copie sœur et la purge ne peut pas être considérée sûre. L'identité sera vérifiée dans le ZIP candidat avant tout déploiement.
+
 La variante **GitHub** 3.0.1 possède `Update URI: https://github.com/fr4nck/WP-Piwigo-Display`, pour isoler les mises à jour natives WordPress.org. Cela n'installe pas de système automatique de mise à jour depuis GitHub. Le futur paquet WordPress.org sera préparé **séparément**, sans cet en-tête et avec son domaine de traduction égal au slug approuvé. Les exceptions `TextDomainMismatch` de la CI historique ne constituent pas une conformité WordPress.org.
 
 ## Règle P0 : mise à jour en place obligatoire AVANT toute bascule
