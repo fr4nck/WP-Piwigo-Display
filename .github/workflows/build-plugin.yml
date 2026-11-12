@@ -117,7 +117,7 @@ jobs:
           mkdir -p build/plugin-check/piwigo-display
           rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
 
-      - name: Normalize isolated WordPress.org candidate
+      - name: Normalize isolated WordPress.org translation candidate
         shell: bash
         run: |
           set -euo pipefail
@@ -130,7 +130,7 @@ jobs:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # The legacy hook names are excluded; gettext mismatches are not excluded.
+          # Keep only legacy hook exceptions. Text domains are checked without exclusions.
           ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Build directly installable ZIP
@@ -146,7 +146,8 @@ jobs:
           set -euo pipefail
           ZIP="${{ steps.version.outputs.zip }}"
           test -f "$ZIP"
-          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/wp-piwigo-display.php
+          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/wp-piwigo-display.php$')" -eq 1
+          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/includes/class-wpd-migration-guard.php$')" -eq 1
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
           ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
 
@@ -161,117 +162,6 @@ jobs:
           set -euo pipefail
           sha256sum "$ZIP" > SHA256SUMS
           printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
-
-      - name: Conserver le ZIP candidat sans publication
-        uses: actions/upload-artifact@v4
-        with:
-          name: piwigo-display-${{ github.sha }}-verification
-          path: |
-            ${{ steps.version.outputs.zip }}
-            SHA256SUMS
-            PROVENANCE.txt
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Résumer la vérification
-        run: echo 'ZIP de recette uniquement ; aucune release publiée par ce travail.' >> "$GITHUB_STEP_SUMMARY"
-
-  prepare-release-draft:
-    name: Préparer un brouillon pour un nouveau tag
-    needs: build-package
-    if: github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Récupérer le paquet vérifié
-        uses: actions/download-artifact@v4
-        with:
-          name: piwigo-display-${{ github.sha }}-verification
-
-      - name: Préparer le brouillon sans publier
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.build-package.outputs.version }}
-          ZIP: ${{ needs.build-package.outputs.zip }}
-        run: bash .github/scripts/prepare-release-draft.sh
-)" -eq 1
-          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/includes/class-wpd-migration-guard.php
-          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
-          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
-
-      - name: Enregistrer la provenance du candidat
-        shell: bash
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          ZIP: ${{ steps.version.outputs.zip }}
-        run: |
-          set -euo pipefail
-          sha256sum "$ZIP" > SHA256SUMS
-          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
-
-      - name: Conserver le ZIP candidat sans publication
-        uses: actions/upload-artifact@v4
-        with:
-          name: piwigo-display-${{ github.sha }}-verification
-          path: |
-            ${{ steps.version.outputs.zip }}
-            SHA256SUMS
-            PROVENANCE.txt
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Résumer la vérification
-        run: echo 'ZIP de recette uniquement ; aucune release publiée par ce travail.' >> "$GITHUB_STEP_SUMMARY"
-
-  prepare-release-draft:
-    name: Préparer un brouillon pour un nouveau tag
-    needs: build-package
-    if: github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Récupérer le paquet vérifié
-        uses: actions/download-artifact@v4
-        with:
-          name: piwigo-display-${{ github.sha }}-verification
-
-      - name: Préparer le brouillon sans publier
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.build-package.outputs.version }}
-          ZIP: ${{ needs.build-package.outputs.zip }}
-        run: bash .github/scripts/prepare-release-draft.sh
-)" -eq 1
-          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
-          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
-
-      - name: Enregistrer la provenance du candidat
-        shell: bash
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          ZIP: ${{ steps.version.outputs.zip }}
-        run: |
-          set -euo pipefail
-          sha256sum "$ZIP" > SHA256SUMS
-          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
 
       - name: Conserver le ZIP candidat sans publication
         uses: actions/upload-artifact@v4
