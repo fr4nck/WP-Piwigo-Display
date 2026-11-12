@@ -115,6 +115,19 @@ jobs:
           mkdir -p build/plugin-check/piwigo-display
           rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
 
+      - name: Check the WordPress.org candidate without GitHub Update URI
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Only the disposable Plugin Check tree is normalized. The ZIP for
+          # existing GitHub users retains its isolation header.
+          CHECK=build/plugin-check/piwigo-display/wp-piwigo-display.php
+          sed -i '/^ \* Update URI: https:\/\/github\.com\/fr4nck\/WP-Piwigo-Display$/d' "$CHECK"
+          if grep -Eq '^[[:space:]]*\*[[:space:]]*Update URI:' "$CHECK"; then
+            echo "Unexpected Update URI in WordPress.org candidate" >&2
+            exit 1
+          fi
+
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
