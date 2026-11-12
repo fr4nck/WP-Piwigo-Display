@@ -17,12 +17,25 @@ if ( 1 !== preg_match( '/^ \* Update URI: https:\/\/github\.com\/fr4nck\/WP-Piwi
 foreach ( array( 'php-lint.yml', 'build-plugin.yml' ) as $workflow ) {
 	$text = (string) file_get_contents( __DIR__ . '/../.github/workflows/' . $workflow );
 
-	if ( ! str_contains( $text, 'Check the WordPress.org candidate without GitHub Update URI' )
-		|| ! str_contains( $text, 'Unexpected Update URI in WordPress.org candidate' )
+	if ( ! str_contains( $text, 'php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display' )
+		|| ! str_contains( $text, "ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'" )
+		|| str_contains( $text, 'TextDomainMismatch' )
+		|| str_contains( $text, 'textdomain_mismatch' )
 		|| str_contains( $text, 'plugin_updater_detected' ) ) {
 		fwrite( STDERR, "WordPress.org candidate staging guard missing in {$workflow}.\n" );
 		exit( 1 );
 	}
 }
 
-echo "Update channel separation contract: PASS.\n";
+$package = (string) file_get_contents( __DIR__ . '/../.github/workflows/build-plugin.yml' );
+if ( 1 !== substr_count( $package, '  build-package:' )
+	|| 1 !== substr_count( $package, '  prepare-release-draft:' )
+	|| 1 !== substr_count( $package, "grep -c '^wp-piwigo-display/wp-piwigo-display.php
+" )
+	|| 1 !== substr_count( $package, "grep -c '^wp-piwigo-display/includes/class-wpd-migration-guard.php
+" ) ) {
+	fwrite( STDERR, "Package workflow duplicated or archive verification damaged.\n" );
+	exit( 1 );
+}
+
+echo "Update-channel and package-workflow integrity: PASS.\n";
