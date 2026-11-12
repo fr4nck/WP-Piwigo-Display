@@ -6,7 +6,9 @@ $block = json_decode( (string) file_get_contents( $root . '/blocks/piwigo/block.
 $shortcode = (string) file_get_contents( $root . '/includes/class-wpd-shortcode.php' );
 $settings = (string) file_get_contents( $root . '/includes/class-wpd-settings.php' );
 $service = (string) file_get_contents( $root . '/includes/class-wpd-service-account.php' );
-if ( 'wp-piwigo-display/gallery' !== ( $block['name'] ?? '' )
+$plugin = (string) file_get_contents( $root . '/wp-piwigo-display.php' );
+if ( ! str_contains( $plugin, 'Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display' )
+	|| 'wp-piwigo-display/gallery' !== ( $block['name'] ?? '' )
 	|| ! str_contains( $shortcode, "add_shortcode( 'piwigo'" )
 	|| ! str_contains( $settings, 'wp_piwigo_display_options' )
 	|| ! str_contains( $service, 'wp_piwigo_display_service_account' ) ) {
