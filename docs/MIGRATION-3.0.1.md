@@ -1,6 +1,6 @@
 # MIG-301 — Transition GitHub vers WordPress.org
 
-État au 12 novembre 2026 : **correctifs en PR, non fusionnés ni publiés**. Cette procédure est obligatoire pour toute migration existante, mais ne vaut **pas** recette WordPress/Piwigo réelle ni autorisation de déploiement. Le tag et l'archive v3.0.0 restent immuables. Aucun slug WordPress.org n'est considéré approuvé.
+État au 12 novembre 2026 : **correctifs en PR, non fusionnés ni publiés**. Cette procédure est obligatoire pour toute migration existante, mais ne vaut **pas** recette WordPress/Piwigo réelle ni autorisation de déploiement. Le tag et l'archive v3.0.0 restent immuables. Aucun slug WordPress.org n'est considéré approuvé. La copie de recette WordPress.org utilise provisoirement le dossier/domaine `display4piwigo` et le nom affiché `Display4Piwigo`; les identifiants persistants `[piwigo]`, `wp-piwigo-display/gallery` et les options restent intacts.
 
 ## Contrat de compatibilité
 

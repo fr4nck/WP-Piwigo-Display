@@ -74,8 +74,8 @@ jobs:
 
       - name: Prepare WordPress.org Plugin Check distribution
         run: |
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a ./ build/plugin-check/piwigo-display/ \
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a ./ build/plugin-check/display4piwigo/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -96,13 +96,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
           grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display' wp-piwigo-display.php
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/piwigo-display'
+          build-dir: './build/plugin-check/display4piwigo'
           exclude-directories: 'vendor,tests,build'
           strict: true
           # Check translation domains strictly on the disposable WordPress.org candidate.
@@ -167,10 +167,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
-          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
-          php tests/package-assets.php build/plugin-check/piwigo-display
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a build/wp-piwigo-display/ build/plugin-check/display4piwigo/
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          php tests/package-assets.php build/plugin-check/display4piwigo
 
       - name: Create both verification ZIPs (never publish)
         shell: bash
@@ -181,7 +181,7 @@ jobs:
           cd build
           zip -qr "piwigo-display-${VERSION}.zip" wp-piwigo-display
           cd plugin-check
-          zip -qr "../piwigo-display-wporg-${VERSION}-candidate.zip" piwigo-display
+          zip -qr "../display4piwigo-wporg-${VERSION}-candidate.zip" display4piwigo
 
       - name: Verify ZIP and record provenance
         shell: bash
@@ -202,20 +202,21 @@ jobs:
             echo 'Fichiers indésirables dans le ZIP.' >&2
             exit 1
           fi
-          ORG_ZIP="piwigo-display-wporg-${VERSION}-candidate.zip"
+          ORG_ZIP="display4piwigo-wporg-${VERSION}-candidate.zip"
           unzip -tq "$ORG_ZIP"
-          test "$(unzip -Z1 "$ORG_ZIP" | cut -d/ -f1 | sort -u)" = 'piwigo-display'
-          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'piwigo-display/wp-piwigo-display.php'
-          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'piwigo-display/includes/class-wpd-migration-guard.php'
-          unzip -p "$ORG_ZIP" piwigo-display/wp-piwigo-display.php | grep -Fq ' * Text Domain: piwigo-display'
-          if unzip -p "$ORG_ZIP" piwigo-display/wp-piwigo-display.php | grep -Eq '^ \* Update URI:'; then
+          test "$(unzip -Z1 "$ORG_ZIP" | cut -d/ -f1 | sort -u)" = 'display4piwigo'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/wp-piwigo-display.php'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/includes/class-wpd-migration-guard.php'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Text Domain: display4piwigo'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Plugin Name: Display4Piwigo'
+          if unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Eq '^ \* Update URI:'; then
             echo 'Update URI must be absent from WordPress.org candidate.' >&2
             exit 1
           fi
-          unzip -p "$ORG_ZIP" piwigo-display/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
-          unzip -p "$ORG_ZIP" piwigo-display/blocks/piwigo/block.json | grep -Fq '"textdomain": "piwigo-display"'
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-display4piwigo/gallery"'
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"textdomain": "display4piwigo"'
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
-          if unzip -Z1 "$ORG_ZIP" | grep -E '^piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+          if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
             echo 'Unwanted file in WordPress.org candidate.' >&2
             exit 1
           fi
@@ -229,7 +230,7 @@ jobs:
           name: piwigo-display-${{ steps.version.outputs.version }}-${{ github.sha }}
           path: |
             build/piwigo-display-${{ steps.version.outputs.version }}.zip
-            build/piwigo-display-wporg-${{ steps.version.outputs.version }}-candidate.zip
+            build/display4piwigo-wporg-${{ steps.version.outputs.version }}-candidate.zip
             build/SHA256SUMS
             build/PROVENANCE.txt
           if-no-files-found: error

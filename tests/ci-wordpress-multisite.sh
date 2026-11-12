@@ -8,7 +8,7 @@ umask 077
 : "${WP_CLI_PHAR:?}"
 : "${WPQA_PKG_DIR:?}"
 GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.1.zip"
-ORG_ZIP="$WPQA_PKG_DIR/piwigo-display-wporg-3.0.1-candidate.zip"
+ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.1-candidate.zip"
 test -f "$GH_ZIP"; test -f "$ORG_ZIP"
 (cd "$WPQA_PKG_DIR" && sha256sum --check SHA256SUMS)
 
@@ -33,23 +33,23 @@ wpqa site create --slug=b3 --title="Site b3" --email=ci@example.invalid
 wpqa plugin install "$GH_ZIP"
 wpqa plugin install "$ORG_ZIP"
 wpqa --url="$B2" plugin activate wp-piwigo-display
-if wpqa plugin activate piwigo-display --network; then
+if wpqa plugin activate display4piwigo --network; then
   fail "Network activation was accepted despite b2 already running GitHub Piwigo Display"
 fi
 wpqa --url="$B2" plugin is-active wp-piwigo-display || fail "Conflicting network activation disturbed b2"
 echo "WP_MULTISITE_STAGE=network_activation_refused"
 
 wpqa --url="$B2" plugin deactivate wp-piwigo-display
-wpqa plugin activate piwigo-display --network
+wpqa plugin activate display4piwigo --network
 network_digest() {
   wpqa eval 'echo hash("sha256", serialize(get_site_option("active_sitewide_plugins",array())));'
 }
 ACTIVE_HASH="$(network_digest)"
-[[ "$(wpqa eval 'echo isset(get_site_option("active_sitewide_plugins")["piwigo-display/wp-piwigo-display.php"]) ? "YES" : "NO";')" == YES ]] || fail "WordPress.org candidate not network-active"
+[[ "$(wpqa eval 'echo isset(get_site_option("active_sitewide_plugins")["display4piwigo/wp-piwigo-display.php"]) ? "YES" : "NO";')" == YES ]] || fail "WordPress.org candidate not network-active"
 
 # Simulate the incoherent state from CA-301-002. The legacy code and the
 # protected network distribution now coexist on site b2.
-wpqa --url="$B2" option update active_plugins '["wp-piwigo-display/wp-piwigo-display.php"]' --format=json
+wpqa --url="$B2" option update active_plugins '["wp-display4piwigo/wp-piwigo-display.php"]' --format=json
 SUBSCRIBER_ID="$(wpqa --url="$B2" user create ci_subscriber ci-subscriber@example.invalid --role=subscriber --porcelain)"
 wpqa --url="$B2" eval "wp_set_current_user($SUBSCRIBER_ID); do_action('admin_init');"
 [[ "$(network_digest)" == "$ACTIVE_HASH" ]] || fail "Subscriber admin_init deactivated Piwigo Display network-wide"

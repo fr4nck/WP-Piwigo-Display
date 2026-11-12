@@ -62,6 +62,30 @@ if ( 1 !== $header_changes || 1 !== $update_uri_removed ) {
 	exit( 2 );
 }
 
+if ( 'display4piwigo' === $slug ) {
+	// The candidate's public name avoids implying it is an official Piwigo plugin.
+	// This does NOT rename legacy block IDs, option names or PHP entrypoints.
+	$entry = preg_replace_callback(
+		'/^([ \t]*\*[ \t]*Plugin Name:[ \t]*)Piwigo Display[ \t]*$/m',
+		static function ( array $match ): string {
+			return $match[1] . 'Display4Piwigo';
+		},
+		$entry,
+		1,
+		$name_changes
+	);
+	$readme_file = $target . '/readme.txt';
+	$readme = is_file( $readme_file ) ? (string) file_get_contents( $readme_file ) : '';
+	if ( 1 !== $name_changes || ! str_starts_with( $readme, '=== Piwigo Display ===' ) ) {
+		fwrite( STDERR, "Unexpected public product name in WordPress.org staging.\n" );
+		exit( 2 );
+	}
+	file_put_contents(
+		$readme_file,
+		'=== Display4Piwigo ===' . substr( $readme, strlen( '=== Piwigo Display ===' ) )
+	);
+}
+
 $block = (string) file_get_contents( $block_file );
 if ( ! str_contains( $block, '"name": "wp-piwigo-display/gallery"' ) ) {
 	fwrite( STDERR, "Persistent Gutenberg block name has changed.\n" );
@@ -218,6 +242,7 @@ if ( ! str_contains( $entry, 'Text Domain: ' . $slug )
 	|| ! str_contains( $service, 'wp_piwigo_display_service_account' )
 	|| ! str_contains( $shortcode, "add_shortcode( 'piwigo'" )
 	|| ! str_contains( $cache, "'wp-piwigo-display'" )
+	|| ( 'display4piwigo' === $slug && ! str_contains( $entry, 'Plugin Name: Display4Piwigo' ) )
 ) {
 	fwrite( STDERR, "Candidate changed a persistent identity or failed to separate update channels.\n" );
 	exit( 1 );

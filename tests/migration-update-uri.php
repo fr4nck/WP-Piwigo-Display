@@ -16,7 +16,7 @@ if ( 1 !== preg_match( '/^ \* Update URI: https:\/\/github\.com\/fr4nck\/WP-Piwi
 $workflows = array( 'php-lint.yml', 'build-plugin.yml' );
 foreach ( $workflows as $workflow ) {
 	$text = (string) file_get_contents( dirname( __DIR__ ) . '/.github/workflows/' . $workflow );
-	if ( ! str_contains( $text, 'php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display' )
+	if ( ! str_contains( $text, 'php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo' )
 		|| ! str_contains( $text, "ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'" )
 		|| str_contains( $text, 'TextDomainMismatch' )
 		|| str_contains( $text, 'textdomain_mismatch' )

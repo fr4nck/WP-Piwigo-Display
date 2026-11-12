@@ -9,7 +9,7 @@ umask 077
 [[ -f "$WP_CLI_PHAR" && -d "$WPQA_PKG_DIR" ]] || exit 2
 
 GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.1.zip"
-ORG_ZIP="$WPQA_PKG_DIR/piwigo-display-wporg-3.0.1-candidate.zip"
+ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.1-candidate.zip"
 for f in "$GH_ZIP" "$ORG_ZIP" "$WPQA_PKG_DIR/SHA256SUMS"; do test -f "$f"; done
 (cd "$WPQA_PKG_DIR" && sha256sum --check SHA256SUMS)
 
@@ -65,14 +65,14 @@ assert_identity "GitHub in-place 3.0.1"
 echo "WP_MIGRATION_STAGE=github_in_place_pass"
 
 wpqa plugin install "$ORG_ZIP"
-if wpqa plugin activate piwigo-display; then fail "Dual activation allowed"; fi
-if wpqa plugin is-active piwigo-display; then fail "Rejected plugin was activated"; fi
+if wpqa plugin activate display4piwigo; then fail "Dual activation allowed"; fi
+if wpqa plugin is-active display4piwigo; then fail "Rejected plugin was activated"; fi
 wpqa plugin is-active wp-piwigo-display || fail "Existing plugin was deactivated"
 assert_options "rejected dual activation"
 echo "WP_MIGRATION_STAGE=dual_activation_guard_pass"
 
 wpqa plugin deactivate wp-piwigo-display
-wpqa plugin activate piwigo-display
+wpqa plugin activate display4piwigo
 assert_options "switch to separate directory"
 assert_content "switch to separate directory"
 assert_identity "new candidate active"
@@ -82,7 +82,7 @@ assert_content "removing protected old folder"
 assert_identity "old folder removed"
 echo "WP_MIGRATION_STAGE=old_folder_removed_without_loss"
 
-wpqa plugin uninstall piwigo-display --deactivate
+wpqa plugin uninstall display4piwigo --deactivate
 [[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Final uninstall did not remove credentials"
 assert_content "last uninstall"
 echo "WP_MIGRATION_STAGE=final_uninstall_scrubs_secrets"

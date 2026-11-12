@@ -114,20 +114,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a build/wp-piwigo-display/ build/plugin-check/display4piwigo/
 
       - name: Normalize isolated WordPress.org translation candidate
         shell: bash
         run: |
           set -euo pipefail
-          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
-          grep -Fq '"name": "wp-piwigo-display/gallery"' build/plugin-check/piwigo-display/blocks/piwigo/block.json
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          grep -Fq '"name": "wp-piwigo-display/gallery"' build/plugin-check/display4piwigo/blocks/piwigo/block.json
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/piwigo-display'
+          build-dir: './build/plugin-check/display4piwigo'
           exclude-directories: 'vendor,tests,build'
           strict: true
           # Keep only legacy hook exceptions. Text domains are checked without exclusions.
