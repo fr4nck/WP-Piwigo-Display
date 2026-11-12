@@ -165,6 +165,7 @@ foreach ( $files as $file ) {
 	$ext = strtolower( $file->getExtension() );
 	if ( 'php' === $ext ) {
 		$old = (string) file_get_contents( $filename );
+		$count = 0;
 		$new = $rewrite_php( $old, $slug, $gettext_functions, $count );
 		if ( $count > 0 ) {
 			file_put_contents( $filename, $new );
@@ -193,6 +194,7 @@ $remaining_gettext = 0;
 foreach ( $files as $file ) {
 	if ( $file->isFile() && 'php' === strtolower( $file->getExtension() ) ) {
 		$after = (string) file_get_contents( $file->getPathname() );
+		$found = 0;
 		$rewrite_php( $after, $slug, $gettext_functions, $found );
 		$remaining_gettext += $found;
 	}
