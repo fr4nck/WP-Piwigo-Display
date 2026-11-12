@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-plugin.yml'
+      - '.github/scripts/prepare-org-candidate.php'
       - 'composer.json'
       - 'wp-piwigo-display.php'
       - 'includes/**'
@@ -116,18 +117,12 @@ jobs:
           mkdir -p build/plugin-check/piwigo-display
           rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
 
-      - name: Check the WordPress.org candidate without GitHub Update URI
+      - name: Normalize isolated WordPress.org candidate
         shell: bash
         run: |
           set -euo pipefail
-          # Only the disposable Plugin Check tree is normalized. The ZIP for
-          # existing GitHub users retains its isolation header.
-          CHECK=build/plugin-check/piwigo-display/wp-piwigo-display.php
-          sed -i '/^ \* Update URI: https:\/\/github\.com\/fr4nck\/WP-Piwigo-Display$/d' "$CHECK"
-          if grep -Eq '^[[:space:]]*\*[[:space:]]*Update URI:' "$CHECK"; then
-            echo "Unexpected Update URI in WordPress.org candidate" >&2
-            exit 1
-          fi
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
+          grep -Fq '"name": "wp-piwigo-display/gallery"' build/plugin-check/piwigo-display/blocks/piwigo/block.json
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
@@ -135,10 +130,8 @@ jobs:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Compatibility exceptions only: historical hooks and text domain stay unchanged.
-          # The WordPress.org candidate is checked under `piwigo-display`, while the actual
-          # GitHub upgrade ZIP stays rooted at `wp-piwigo-display` for existing installations.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
+          # The legacy hook names are excluded; gettext mismatches are not excluded.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Build directly installable ZIP
         shell: bash
@@ -161,9 +154,9 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          ZIP: ${{ steps.version.outputs.zip }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          ZIP: ${{ steps.version.outputs.zip }}
         run: |
           set -euo pipefail
           sha256sum "$ZIP" > SHA256SUMS
@@ -219,13 +212,11 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           ZIP: ${{ steps.version.outputs.zip }}
         run: |
           set -euo pipefail
           sha256sum "$ZIP" > SHA256SUMS
-          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
 
       - name: Conserver le ZIP candidat sans publication
         uses: actions/upload-artifact@v4
@@ -276,13 +267,11 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           ZIP: ${{ steps.version.outputs.zip }}
         run: |
           set -euo pipefail
           sha256sum "$ZIP" > SHA256SUMS
-          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
 
       - name: Conserver le ZIP candidat sans publication
         uses: actions/upload-artifact@v4

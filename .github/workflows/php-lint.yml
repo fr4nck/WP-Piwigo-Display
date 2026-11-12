@@ -92,18 +92,11 @@ jobs:
             --exclude 'README.en.md' \
             --exclude '*.zip'
 
-      - name: Check the WordPress.org candidate without GitHub Update URI
+      - name: Normalize candidate gettext domains without editing the GitHub package
         shell: bash
         run: |
           set -euo pipefail
-          # This is only the disposable WordPress.org check tree. Never rewrite
-          # the GitHub package or its Update URI header in the source.
-          CHECK=build/plugin-check/piwigo-display/wp-piwigo-display.php
-          sed -i '/^ \* Update URI: https:\/\/github\.com\/fr4nck\/WP-Piwigo-Display$/d' "$CHECK"
-          if grep -Eq '^[[:space:]]*\*[[:space:]]*Update URI:' "$CHECK"; then
-            echo "Unexpected Update URI in WordPress.org candidate" >&2
-            exit 1
-          fi
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
           grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display' wp-piwigo-display.php
 
       - name: Run WordPress Plugin Check
@@ -112,10 +105,8 @@ jobs:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Compatibility exceptions only: the historical public hooks and text domain
-          # stay unchanged so existing integrations/translations keep working. The public
-          # product name and WordPress.org candidate slug are both `Piwigo Display` / `piwigo-display`.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
+          # Check translation domains strictly on the disposable WordPress.org candidate.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
