@@ -9,27 +9,39 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 
-// Explicit retention is available for planned reinstallation. On a normal,
-// final removal, credentials must not remain in the database.
-if ( defined( 'WPD_KEEP_DATA_ON_UNINSTALL' ) && true === WPD_KEEP_DATA_ON_UNINSTALL ) {
-    return;
+/**
+ * Allows a final uninstall to remove credentials, but never while another
+ * installed copy might still rely on these shared WordPress options.
+ *
+ * @return bool Whether a destructive cleanup is permitted.
+ */
+function wp_piwigo_display_may_purge_data(): bool {
+    // Keep data for an explicitly requested backup/reinstallation workflow.
+    if ( defined( 'WPD_KEEP_DATA_ON_UNINSTALL' ) && true === WPD_KEEP_DATA_ON_UNINSTALL ) {
+        return false;
+    }
+
+    // Fail closed if installed plugins cannot be inspected.
+    if ( ! function_exists( 'get_plugins' ) ) {
+        $plugin_api = defined( 'ABSPATH' ) ? ABSPATH . 'wp-admin/includes/plugin.php' : '';
+        if ( '' !== $plugin_api && is_readable( $plugin_api ) ) {
+            require_once $plugin_api;
+        }
+    }
+    if ( ! function_exists( 'get_plugins' ) ) {
+        return false;
+    }
+    foreach ( get_plugins() as $plugin_file => $plugin_data ) {
+        if ( $plugin_file !== WP_UNINSTALL_PLUGIN && 'Piwigo Display' === trim( (string) ( $plugin_data['Name'] ?? '' ) ) ) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
-// Fail closed if installed plugins cannot be inspected; never guess whether
-// another distribution still needs these options (including on multisite).
-if ( ! function_exists( 'get_plugins' ) ) {
-    $wpd_plugin_api = defined( 'ABSPATH' ) ? ABSPATH . 'wp-admin/includes/plugin.php' : '';
-    if ( '' !== $wpd_plugin_api && is_readable( $wpd_plugin_api ) ) {
-        require_once $wpd_plugin_api;
-    }
-}
-if ( ! function_exists( 'get_plugins' ) ) {
+if ( ! wp_piwigo_display_may_purge_data() ) {
     return;
-}
-foreach ( get_plugins() as $wpd_plugin_file => $wpd_plugin_data ) {
-    if ( $wpd_plugin_file !== WP_UNINSTALL_PLUGIN && 'Piwigo Display' === trim( (string) ( $wpd_plugin_data['Name'] ?? '' ) ) ) {
-        return;
-    }
 }
 
 /**
