@@ -66,15 +66,13 @@ final class WPD_Migration_Guard {
 		add_action(
 			'pre_uninstall_plugin',
 			static function ( string $candidate ) use ( $self ): void {
-				if ( self::LEGACY_PLUGIN !== $candidate || $self === $candidate ) {
+				if ( $self === $candidate || ! self::is_family_plugin( $candidate ) ) {
 					return;
 				}
 
-				if ( ! function_exists( 'get_plugins' ) ) {
-					return;
-				}
-
-				$wpd_legacy  = get_plugins()[ $candidate ] ?? array();
+				// Unknown inventory/version is not evidence that removing the old
+				// copy is safe. Fail closed while this protector is loaded.
+				$wpd_legacy  = function_exists( 'get_plugins' ) ? ( get_plugins()[ $candidate ] ?? array() ) : array();
 				$wpd_version = trim( (string) ( $wpd_legacy['Version'] ?? '' ) );
 				if ( '' === $wpd_version || version_compare( $wpd_version, '3.0.0', '<=' ) ) {
 					wp_die(
