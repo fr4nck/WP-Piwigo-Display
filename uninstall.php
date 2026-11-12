@@ -1,75 +1,163 @@
 <?php
 /**
- * Uninstall cleanup for WP Piwigo Display.
+ * Remove Piwigo Display data only after the last compatible distribution goes.
  *
  * @package WP_Piwigo_Display
  */
+
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-    exit;
+	exit;
 }
 
-/**
- * Removes plugin options and WordPress transients for the current site.
- */
-function wp_piwigo_display_uninstall_site_data(): void {
-    global $wpdb;
+// Keep all variables and callbacks local. WordPress can include more than one
+// distribution's uninstall.php during a single delete_plugins() invocation.
+call_user_func(
+	static function (): void {
+		// Deliberate retention is useful during a supervised reinstall.
+		if ( defined( 'WPD_KEEP_DATA_ON_UNINSTALL' )
+			&& filter_var( WPD_KEEP_DATA_ON_UNINSTALL, FILTER_VALIDATE_BOOLEAN )
+		) {
+			return;
+		}
 
-    delete_option( 'wp_piwigo_display_options' );
-    delete_option( 'wp_piwigo_display_service_account' );
-    delete_transient( 'wpd_api_health_metrics' );
+		// Fail closed: an unknown installation state must not erase credentials.
+		if ( ! function_exists( 'get_plugins' ) ) {
+			$wpd_api_file = defined( 'ABSPATH' ) ? ABSPATH . 'wp-admin/includes/plugin.php' : '';
+			if ( '' !== $wpd_api_file && is_readable( $wpd_api_file ) ) {
+				require_once $wpd_api_file;
+			}
+		}
+		if ( ! function_exists( 'get_plugins' ) ) {
+			return;
+		}
 
-    $prefixes = array(
-        '_transient_wpd_album_',
-        '_transient_timeout_wpd_album_',
-        '_transient_wpd_stale_',
-        '_transient_timeout_wpd_stale_',
-        '_transient_wpd_lock_',
-        '_transient_timeout_wpd_lock_',
-    );
-    $patterns = array_map(
-        static function ( string $prefix ) use ( $wpdb ): string {
-            return $wpdb->esc_like( $prefix ) . '%';
-        },
-        $prefixes
-    );
-    $query = $wpdb->prepare(
-        "SELECT option_name FROM {$wpdb->options}
-        WHERE option_name LIKE %s
-           OR option_name LIKE %s
-           OR option_name LIKE %s
-           OR option_name LIKE %s
-           OR option_name LIKE %s
-           OR option_name LIKE %s",
-        $patterns[0],
-        $patterns[1],
-        $patterns[2],
-        $patterns[3],
-        $patterns[4],
-        $patterns[5]
-    );
-    $names = $wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Only plugin-owned transient keys are selected.
+		$wpd_installed = get_plugins();
+		if ( ! is_array( $wpd_installed ) ) {
+			return;
+		}
 
-    foreach ( is_array( $names ) ? $names : array() as $name ) {
-        if ( str_starts_with( $name, '_transient_timeout_' ) ) {
-            $transient = substr( $name, strlen( '_transient_timeout_' ) );
-        } elseif ( str_starts_with( $name, '_transient_' ) ) {
-            $transient = substr( $name, strlen( '_transient_' ) );
-        } else {
-            continue;
-        }
-        delete_transient( $transient );
-    }
-}
+		// WP_UNINSTALL_PLUGIN may still point to the FIRST plugin in a batch.
+		// Match the current uninstall.php directory to exactly one main file.
+		// This also works when a future WordPress.org package renames its entrypoint.
+		$wpd_self = WP_UNINSTALL_PLUGIN;
+		if ( function_exists( 'plugin_basename' ) ) {
+			$wpd_directory = dirname( plugin_basename( __DIR__ . '/uninstall.php' ) );
+			$wpd_main_files = array_values(
+				array_filter(
+					array_keys( $wpd_installed ),
+					static function ( $wpd_file ) use ( $wpd_directory ): bool {
+						return is_string( $wpd_file ) && dirname( $wpd_file ) === $wpd_directory;
+					}
+				)
+			);
+			if ( 1 !== count( $wpd_main_files ) ) {
+				return; // Unknown or ambiguous installation: preserve credentials.
+			}
+			$wpd_self = $wpd_main_files[0];
+		}
 
-if ( is_multisite() ) {
-    foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $wp_piwigo_display_site_id ) {
-        switch_to_blog( (int) $wp_piwigo_display_site_id );
-        try {
-            wp_piwigo_display_uninstall_site_data();
-        } finally {
-            restore_current_blog();
-        }
-    }
-} else {
-    wp_piwigo_display_uninstall_site_data();
-}
+		if ( ! isset( $wpd_installed[ $wpd_self ] ) ) {
+			return;
+		}
+
+		foreach ( $wpd_installed as $wpd_other => $wpd_header ) {
+			if ( ! is_string( $wpd_other ) || $wpd_other === $wpd_self || ! is_array( $wpd_header ) ) {
+				continue;
+			}
+
+			$wpd_name = trim( (string) ( $wpd_header['Name'] ?? '' ) );
+			$wpd_domain = (string) ( $wpd_header['TextDomain'] ?? '' );
+			$wpd_uri = (string) ( $wpd_header['PluginURI'] ?? '' );
+
+			// The guard file is a stable family signature retained in both
+			// distributions. Metadata and entrypoint names may differ entirely
+			// in the future WordPress.org package.
+			$wpd_family_guard = defined( 'WP_PLUGIN_DIR' )
+				? rtrim( WP_PLUGIN_DIR, '/\\' ) . '/' . dirname( $wpd_other ) . '/includes/class-wpd-migration-guard.php'
+				: '';
+			$wpd_same_family = 'wp-piwigo-display.php' === basename( $wpd_other )
+				|| 0 === stripos( $wpd_name, 'Piwigo Display' )
+				|| 'wp-piwigo-display' === $wpd_domain
+				|| 0 === stripos( $wpd_uri, 'https://github.com/fr4nck/WP-Piwigo-Display' )
+				|| ( '' !== $wpd_family_guard && is_file( $wpd_family_guard ) );
+
+			if ( ! $wpd_same_family ) {
+				continue;
+			}
+
+			// get_plugins() may be cached during a group removal. The previous
+			// package is no longer a sibling once WordPress deleted its file.
+			if ( defined( 'WP_PLUGIN_DIR' )
+				&& ! is_file( rtrim( WP_PLUGIN_DIR, '/\\' ) . '/' . $wpd_other )
+			) {
+				continue;
+			}
+
+			// Another installed copy may use these settings and credentials.
+			return;
+		}
+
+		$wpd_delete_site = static function (): void {
+			global $wpdb;
+
+			delete_option( 'wp_piwigo_display_options' );
+			delete_option( 'wp_piwigo_display_service_account' );
+			delete_transient( 'wpd_api_health_metrics' );
+
+			$wpd_prefixes = array(
+				'_transient_wpd_album_',
+				'_transient_timeout_wpd_album_',
+				'_transient_wpd_stale_',
+				'_transient_timeout_wpd_stale_',
+				'_transient_wpd_lock_',
+				'_transient_timeout_wpd_lock_',
+			);
+			$wpd_patterns = array_map(
+				static function ( string $wpd_prefix ) use ( $wpdb ): string {
+					return $wpdb->esc_like( $wpd_prefix ) . '%';
+				},
+				$wpd_prefixes
+			);
+			$wpd_query = $wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options}
+				WHERE option_name LIKE %s
+				   OR option_name LIKE %s
+				   OR option_name LIKE %s
+				   OR option_name LIKE %s
+				   OR option_name LIKE %s
+				   OR option_name LIKE %s",
+				$wpd_patterns[0],
+				$wpd_patterns[1],
+				$wpd_patterns[2],
+				$wpd_patterns[3],
+				$wpd_patterns[4],
+				$wpd_patterns[5]
+			); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The table name is from the trusted wpdb object.
+
+			$wpd_names = $wpdb->get_col( $wpd_query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared immediately above using six LIKE placeholders; only plugin-owned transients are deleted.
+			foreach ( is_array( $wpd_names ) ? $wpd_names : array() as $wpd_name ) {
+				if ( str_starts_with( $wpd_name, '_transient_timeout_' ) ) {
+					$wpd_transient = substr( $wpd_name, strlen( '_transient_timeout_' ) );
+				} elseif ( str_starts_with( $wpd_name, '_transient_' ) ) {
+					$wpd_transient = substr( $wpd_name, strlen( '_transient_' ) );
+				} else {
+					continue;
+				}
+				delete_transient( $wpd_transient );
+			}
+		};
+
+		if ( is_multisite() ) {
+			foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $wpd_site_id ) {
+				switch_to_blog( (int) $wpd_site_id );
+				try {
+					$wpd_delete_site();
+				} finally {
+					restore_current_blog();
+				}
+			}
+		} else {
+			$wpd_delete_site();
+		}
+	}
+);

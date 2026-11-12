@@ -92,16 +92,21 @@ jobs:
             --exclude 'README.en.md' \
             --exclude '*.zip'
 
+      - name: Normalize candidate gettext domains without editing the GitHub package
+        shell: bash
+        run: |
+          set -euo pipefail
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/piwigo-display piwigo-display
+          grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display' wp-piwigo-display.php
+
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
           build-dir: './build/plugin-check/piwigo-display'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Compatibility exceptions only: the historical public hooks and text domain
-          # stay unchanged so existing integrations/translations keep working. The public
-          # product name and WordPress.org candidate slug are both `Piwigo Display` / `piwigo-display`.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
+          # Check translation domains strictly on the disposable WordPress.org candidate.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
@@ -112,10 +117,14 @@ jobs:
       - name: Check PHP 8.4 syntax
         run: composer lint
 
+      - name: Run frontend and migration regressions under PHP 8.4
+        run: composer test:frontend
+
   package:
     name: Paquet ZIP
     needs: quality
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
+    # PR artifacts are disposable verification candidates, never public releases.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -152,7 +161,7 @@ jobs:
       - name: Check packaged frontend assets
         run: php tests/package-assets.php build/wp-piwigo-display
 
-      - name: Create ZIP
+      - name: Create verification ZIP (not a release)
         run: |
           cd build
           zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
@@ -161,6 +170,8 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           cd build
@@ -168,13 +179,14 @@ jobs:
           unzip -tq "$ZIP"
           test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
           unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/includes/class-wpd-migration-guard.php' > /dev/null
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
           if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
             echo 'Fichiers indésirables dans le ZIP.' >&2
             exit 1
           fi
           sha256sum "$ZIP" > SHA256SUMS
-          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
           cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifact
