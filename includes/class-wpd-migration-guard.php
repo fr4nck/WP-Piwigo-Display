@@ -30,7 +30,10 @@ final class WPD_Migration_Guard {
 					wp_die(
 						esc_html__( 'Désactivez d’abord l’autre copie de Piwigo Display. Ne la supprimez pas : sa désinstallation pourrait effacer les réglages partagés.', 'wp-piwigo-display' ),
 						esc_html__( 'Activation de Piwigo Display bloquée', 'wp-piwigo-display' ),
-						array( 'response' => 409, 'back_link' => true )
+						array(
+							'response'  => 409,
+							'back_link' => true,
+						)
 					);
 				}
 			}
@@ -85,7 +88,12 @@ final class WPD_Migration_Guard {
 		$active = self::active_plugins_on_current_site();
 
 		if ( $network_wide && is_multisite() ) {
-			foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $site_id ) {
+			foreach ( get_sites(
+				array(
+					'fields' => 'ids',
+					'number' => 0,
+				)
+			) as $site_id ) {
 				switch_to_blog( (int) $site_id );
 				try {
 					$active = array_merge( $active, (array) get_option( 'active_plugins', array() ) );
