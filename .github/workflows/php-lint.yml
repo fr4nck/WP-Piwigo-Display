@@ -213,7 +213,7 @@ jobs:
             echo 'Update URI must be absent from WordPress.org candidate.' >&2
             exit 1
           fi
-          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-display4piwigo/gallery"'
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
           unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"textdomain": "display4piwigo"'
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
           if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
