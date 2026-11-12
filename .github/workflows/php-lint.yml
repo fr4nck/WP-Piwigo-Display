@@ -129,7 +129,8 @@ jobs:
   package:
     name: Paquet ZIP
     needs: quality
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
+    # PR artifacts are disposable verification candidates, never public releases.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -166,7 +167,7 @@ jobs:
       - name: Check packaged frontend assets
         run: php tests/package-assets.php build/wp-piwigo-display
 
-      - name: Create ZIP
+      - name: Create verification ZIP (not a release)
         run: |
           cd build
           zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
