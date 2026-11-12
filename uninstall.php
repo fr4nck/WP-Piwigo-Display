@@ -115,7 +115,7 @@ call_user_func(
 				$wpd_patterns[5]
 			); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The table name is from the trusted wpdb object.
 
-			$wpd_names = $wpdb->get_col( $wpd_query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned transient cleanup.
+			$wpd_names = $wpdb->get_col( $wpd_query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared immediately above using six LIKE placeholders; only plugin-owned transients are deleted.
 			foreach ( is_array( $wpd_names ) ? $wpd_names : array() as $wpd_name ) {
 				if ( str_starts_with( $wpd_name, '_transient_timeout_' ) ) {
 					$wpd_transient = substr( $wpd_name, strlen( '_transient_timeout_' ) );
