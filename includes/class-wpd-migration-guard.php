@@ -1,6 +1,7 @@
 <?php
 /**
  * Guard Piwigo Display during a transition between distribution directories.
+ * Family signature: includes/class-wpd-migration-guard.php (retain across packages).
  *
  * @package WP_Piwigo_Display
  */
@@ -168,9 +169,14 @@ final class WPD_Migration_Guard {
 		$domain    = (string) ( $data['TextDomain'] ?? '' );
 		$uri       = (string) ( $data['PluginURI'] ?? '' );
 
+		$family_guard = defined( 'WP_PLUGIN_DIR' )
+			? rtrim( WP_PLUGIN_DIR, '/\\' ) . '/' . dirname( $candidate ) . '/includes/class-wpd-migration-guard.php'
+			: '';
+
 		return 0 === stripos( $name, 'Piwigo Display' )
 			|| 'wp-piwigo-display' === $domain
-			|| 0 === strpos( $uri, 'https://github.com/fr4nck/WP-Piwigo-Display' );
+			|| 0 === stripos( $uri, 'https://github.com/fr4nck/WP-Piwigo-Display' )
+			|| ( '' !== $family_guard && is_file( $family_guard ) );
 	}
 
 	/**

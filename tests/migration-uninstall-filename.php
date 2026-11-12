@@ -13,6 +13,13 @@ function get_plugins(): array {
 function delete_option( string $key ): bool { $GLOBALS['deleted'][] = $key; return true; }
 function delete_transient( string $key ): bool { return true; }
 function is_multisite(): bool { return false; }
+final class WPD_Mutant_Test_Db {
+	public string $options = 'wp_options';
+	public function esc_like( string $pattern ): string { return $pattern; }
+	public function prepare( string $sql, ...$args ): string { return $sql; }
+	public function get_col( string $sql ): array { return array(); }
+}
+$GLOBALS['wpdb'] = new WPD_Mutant_Test_Db();
 require dirname( __DIR__ ) . '/uninstall.php';
 if ( array() !== $GLOBALS['deleted'] ) {
 	fwrite( STDERR, "FAIL renamed sibling was not protected by entrypoint identity\n" );

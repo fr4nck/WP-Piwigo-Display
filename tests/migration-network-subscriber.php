@@ -36,6 +36,10 @@ function deactivate_plugins( $plugin, bool $silent = false, $network_wide = null
 require dirname( __DIR__ ) . '/includes/class-wpd-migration-guard.php';
 WPD_Migration_Guard::register( '/tmp/wp-disposable/wp-content/plugins/display4piwigo/wp-piwigo-display.php' );
 
+// Exercise admin_init as well: the initial vulnerability was hidden there.
+foreach ( $GLOBALS['hooks']['admin_init'] ?? array() as $callback ) {
+	$callback();
+}
 ob_start();
 foreach ( $GLOBALS['hooks']['admin_notices'] ?? array() as $callback ) {
 	$callback();
@@ -46,6 +50,9 @@ if ( '' !== $subscriber_html || array() !== $GLOBALS['deleted'] ) {
 	exit( 1 );
 }
 $GLOBALS['authorized'] = true;
+foreach ( $GLOBALS['hooks']['admin_init'] ?? array() as $callback ) {
+	$callback();
+}
 ob_start();
 foreach ( $GLOBALS['hooks']['admin_notices'] ?? array() as $callback ) {
 	$callback();

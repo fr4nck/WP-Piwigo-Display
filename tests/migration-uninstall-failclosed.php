@@ -8,6 +8,13 @@ function delete_option( string $key ): bool { $GLOBALS['deleted'][] = $key; retu
 function delete_transient( string $key ): bool { return true; }
 function is_multisite(): bool { return false; }
 // Deliberately no get_plugins() and no readable wp-admin/includes/plugin.php.
+final class WPD_Mutant_Test_Db {
+	public string $options = 'wp_options';
+	public function esc_like( string $pattern ): string { return $pattern; }
+	public function prepare( string $sql, ...$args ): string { return $sql; }
+	public function get_col( string $sql ): array { return array(); }
+}
+$GLOBALS['wpdb'] = new WPD_Mutant_Test_Db();
 require dirname( __DIR__ ) . '/uninstall.php';
 if ( array() !== $GLOBALS['deleted'] ) {
 	fwrite( STDERR, "FAIL uninstall purged despite unknown installed copies\n" );

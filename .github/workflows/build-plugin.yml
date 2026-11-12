@@ -160,11 +160,13 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           ZIP: ${{ steps.version.outputs.zip }}
         run: |
           set -euo pipefail
           sha256sum "$ZIP" > SHA256SUMS
-          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
 
       - name: Conserver le ZIP candidat sans publication
         uses: actions/upload-artifact@v4

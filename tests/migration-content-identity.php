@@ -7,7 +7,9 @@ $shortcode = (string) file_get_contents( $root . '/includes/class-wpd-shortcode.
 $settings = (string) file_get_contents( $root . '/includes/class-wpd-settings.php' );
 $service = (string) file_get_contents( $root . '/includes/class-wpd-service-account.php' );
 $plugin = (string) file_get_contents( $root . '/wp-piwigo-display.php' );
-if ( ! str_contains( $plugin, 'Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display' )
+$family_guard = (string) file_get_contents( $root . '/includes/class-wpd-migration-guard.php' );
+if ( ! str_contains( $family_guard, 'Family signature: includes/class-wpd-migration-guard.php' )
+	|| ! str_contains( $plugin, 'Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display' )
 	|| 'wp-piwigo-display/gallery' !== ( $block['name'] ?? '' )
 	|| ! str_contains( $shortcode, "add_shortcode( 'piwigo'" )
 	|| ! str_contains( $settings, 'wp_piwigo_display_options' )

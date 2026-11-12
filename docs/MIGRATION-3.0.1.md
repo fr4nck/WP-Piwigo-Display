@@ -6,7 +6,7 @@
 
 Ne jamais renommer les clés WordPress `wp_piwigo_display_options` et `wp_piwigo_display_service_account`, les blocs `wp-piwigo-display/gallery` ni les shortcodes `[piwigo]`. Les anciennes pages, galeries et diaporamas doivent continuer à fonctionner sans modification.
 
-**Contrat d'identité des paquets :** même si le nom commercial ou le répertoire WordPress.org est modifié, la nouvelle distribution doit conserver une signature stable d'origine (`Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display`) ou le fichier principal historique `wp-piwigo-display.php`. Le désinstalleur reconnaît ces marqueurs ; sans aucun d'eux et avec un nom et domaine de traduction différents, il ne peut pas identifier une copie sœur et la purge ne peut pas être considérée sûre. L'identité sera vérifiée dans le ZIP candidat avant tout déploiement.
+**Contrat d'identité des paquets :** les futures distributions doivent conserver le fichier `includes/class-wpd-migration-guard.php`, servant de signature de famille stable même si le nom affiché, le fichier principal, l'URI et le domaine de traduction changent. Le désinstalleur reconnaît aussi le fichier principal historique, le nom, le domaine et l'URI GitHub sans dépendre de sa casse. Un paquet qui retire ce fichier ET modifie tous les marqueurs historiques n'est **pas sûr** : la désinstallation peut supprimer les options communes. Vérifier concrètement la signature et les deux ordres de retrait sur le ZIP officiel, avant tout déploiement.
 
 La variante **GitHub** 3.0.1 possède `Update URI: https://github.com/fr4nck/WP-Piwigo-Display`, pour isoler les mises à jour natives WordPress.org. Cela n'installe pas de système automatique de mise à jour depuis GitHub. Le futur paquet WordPress.org sera préparé **séparément**, sans cet en-tête et avec son domaine de traduction égal au slug approuvé. Les exceptions `TextDomainMismatch` de la CI historique ne constituent pas une conformité WordPress.org.
 
@@ -20,6 +20,22 @@ La variante **GitHub** 3.0.1 possède `Update URI: https://github.com/fr4nck/WP-
 4. Désactiver l'ancienne copie GitHub **sans la supprimer**. Activer la nouvelle copie. Vérifier shortcodes, blocs, diaporamas, albums, droits publics/privés, identifiants du compte de service et canaux de mise à jour.
 5. En cas de problème, désactiver la nouvelle copie et réactiver la copie GitHub 3.0.1 ; comparer les options. Si elles ont changé de manière incompatible, restaurer la sauvegarde.
 6. Uniquement après recette et accord explicite, retirer le dossier GitHub **3.0.1** en suivant la procédure qualifiée. Son désinstalleur conserve les données si une copie sœur est installée. Ne jamais supprimer la 3.0.0 non corrigée via l'interface ou WP-CLI.
+
+## Limites établies par le contre-audit CA-301-R2
+
+- **Multisite P1 :** ne jamais supprimer l'ancienne 3.0.0 depuis l'administration réseau si la 3.0.1 protectrice n'est active que sur un autre blog. WordPress peut charger le désinstalleur 3.0.0 sur le site principal, **effacer options et identifiants sur tous les sites**, sans avoir chargé le nouveau garde. Le seul parcours autorisé commence par la mise à jour du dossier GitHub **en place** vers 3.0.1, vérification du ZIP et sauvegardes.
+- **`WPD_KEEP_DATA_ON_UNINSTALL` ne protège pas la 3.0.0 :** cette constante n'existe pas dans le désinstalleur historique. Elle ne doit jamais être présentée comme un filet de sécurité pour cette version.
+- **Paquets WordPress.org :** la variante officielle ne doit pas être déclarée prête tant que sa signature familiale, son domaine de traduction, son canal de mises à jour et son slug réellement approuvé n'ont pas été testés sans les exceptions historiques.
+- **Origine d'un ZIP de PR :** GitHub Actions exécute généralement le commit temporaire de fusion de la PR ; consigner séparément le SHA du checkout testé et le SHA de la tête de PR. Ne jamais les présenter comme identiques sans comparaison.
+- **Périmètre de recette :** CA-301-R2 a validé des rendus historiques sur WordPress 6.9 / PHP 8.1 et WordPress 7.1.4 / PHP 8.4 avec Piwigo de test. Le sélecteur Gutenberg navigateur, les albums privés HTTPS via compte de service et l'effet externe d'`Update URI` restent non qualifiés.
+
+## Checklist pour la future intégration 3.0.1
+
+- Harmoniser `Version` dans l'en-tête PHP, `WPD_VERSION`, `blocks/piwigo/block.json`, `blocks/piwigo/index.asset.php`, les métadonnées ZIP et la documentation. La branche #137 isolée est encore marquée 3.0.0 : ne jamais la publier telle quelle.
+- Rejouer les migrations sur des WordPress et des Piwigo **jetables**, y compris multisite et les diaporamas existants.
+- Vérifier la signature `includes/class-wpd-migration-guard.php` dans les deux paquets GitHub / WordPress.org, avec un main PHP et un nom de produit renommés.
+- Démontrer la conformité de traduction WordPress.org **sans masquer** `TextDomainMismatch`.
+- Faire approuver la publication explicitement, après nouveau contre-audit.
 
 ## Protection et limites
 

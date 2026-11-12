@@ -36,11 +36,25 @@ call_user_func(
 			return;
 		}
 
-		// WP_UNINSTALL_PLUGIN remains set to the FIRST plugin in a batch.
-		// Resolve our own file instead. The fallback is only for isolated shims.
-		$wpd_self = function_exists( 'plugin_basename' )
-			? plugin_basename( __DIR__ . '/wp-piwigo-display.php' )
-			: WP_UNINSTALL_PLUGIN;
+		// WP_UNINSTALL_PLUGIN may still point to the FIRST plugin in a batch.
+		// Match the current uninstall.php directory to exactly one main file.
+		// This also works when a future WordPress.org package renames its entrypoint.
+		$wpd_self = WP_UNINSTALL_PLUGIN;
+		if ( function_exists( 'plugin_basename' ) ) {
+			$wpd_directory = dirname( plugin_basename( __DIR__ . '/uninstall.php' ) );
+			$wpd_main_files = array_values(
+				array_filter(
+					array_keys( $wpd_installed ),
+					static function ( $wpd_file ) use ( $wpd_directory ): bool {
+						return is_string( $wpd_file ) && dirname( $wpd_file ) === $wpd_directory;
+					}
+				)
+			);
+			if ( 1 !== count( $wpd_main_files ) ) {
+				return; // Unknown or ambiguous installation: preserve credentials.
+			}
+			$wpd_self = $wpd_main_files[0];
+		}
 
 		if ( ! isset( $wpd_installed[ $wpd_self ] ) ) {
 			return;
@@ -55,12 +69,17 @@ call_user_func(
 			$wpd_domain = (string) ( $wpd_header['TextDomain'] ?? '' );
 			$wpd_uri = (string) ( $wpd_header['PluginURI'] ?? '' );
 
-			// Match the historical entrypoint, renamed public titles and the
-			// GitHub distribution identity. Never rely on the display name alone.
+			// The guard file is a stable family signature retained in both
+			// distributions. Metadata and entrypoint names may differ entirely
+			// in the future WordPress.org package.
+			$wpd_family_guard = defined( 'WP_PLUGIN_DIR' )
+				? rtrim( WP_PLUGIN_DIR, '/\\' ) . '/' . dirname( $wpd_other ) . '/includes/class-wpd-migration-guard.php'
+				: '';
 			$wpd_same_family = 'wp-piwigo-display.php' === basename( $wpd_other )
 				|| 0 === stripos( $wpd_name, 'Piwigo Display' )
 				|| 'wp-piwigo-display' === $wpd_domain
-				|| 0 === strpos( $wpd_uri, 'https://github.com/fr4nck/WP-Piwigo-Display' );
+				|| 0 === stripos( $wpd_uri, 'https://github.com/fr4nck/WP-Piwigo-Display' )
+				|| ( '' !== $wpd_family_guard && is_file( $wpd_family_guard ) );
 
 			if ( ! $wpd_same_family ) {
 				continue;
