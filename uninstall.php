@@ -18,16 +18,16 @@ if ( defined( 'WPD_KEEP_DATA_ON_UNINSTALL' ) && true === WPD_KEEP_DATA_ON_UNINST
 // Fail closed if installed plugins cannot be inspected; never guess whether
 // another distribution still needs these options (including on multisite).
 if ( ! function_exists( 'get_plugins' ) ) {
-    $plugin_api = defined( 'ABSPATH' ) ? ABSPATH . 'wp-admin/includes/plugin.php' : '';
-    if ( '' !== $plugin_api && is_readable( $plugin_api ) ) {
-        require_once $plugin_api;
+    $wpd_plugin_api = defined( 'ABSPATH' ) ? ABSPATH . 'wp-admin/includes/plugin.php' : '';
+    if ( '' !== $wpd_plugin_api && is_readable( $wpd_plugin_api ) ) {
+        require_once $wpd_plugin_api;
     }
 }
 if ( ! function_exists( 'get_plugins' ) ) {
     return;
 }
-foreach ( get_plugins() as $plugin_file => $plugin_data ) {
-    if ( $plugin_file !== WP_UNINSTALL_PLUGIN && 'Piwigo Display' === trim( (string) ( $plugin_data['Name'] ?? '' ) ) ) {
+foreach ( get_plugins() as $wpd_plugin_file => $wpd_plugin_data ) {
+    if ( $wpd_plugin_file !== WP_UNINSTALL_PLUGIN && 'Piwigo Display' === trim( (string) ( $wpd_plugin_data['Name'] ?? '' ) ) ) {
         return;
     }
 }
