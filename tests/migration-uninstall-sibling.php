@@ -6,7 +6,7 @@ define( 'WP_UNINSTALL_PLUGIN', 'wp-piwigo-display/wp-piwigo-display.php' );
 $GLOBALS['migration_deleted'] = array();
 function get_plugins(): array { return array(
 	'wp-piwigo-display/wp-piwigo-display.php' => array( 'Name' => 'Piwigo Display' ),
-	'display4piwigo/wp-piwigo-display.php' => array( 'Name' => 'Piwigo Display' ),
+	'display4piwigo/wp-piwigo-display.php' => array( 'Name' => 'Piwigo Display (WordPress.org)' ),
 ); }
 function delete_option( string $key ): bool { $GLOBALS['migration_deleted'][] = $key; return true; }
 function delete_transient( string $key ): bool { $GLOBALS['migration_deleted'][] = $key; return true; }

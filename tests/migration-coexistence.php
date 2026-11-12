@@ -34,6 +34,7 @@ copy( dirname( __DIR__ ) . '/wp-piwigo-display.php', $new_path . '/wp-piwigo-dis
 copy( dirname( __DIR__ ) . '/includes/class-wpd-migration-guard.php', $new_path . '/includes/class-wpd-migration-guard.php' );
 define( 'ABSPATH', $root . '/' );
 $GLOBALS['migration_hooks'] = array();
+function plugin_basename( string $file ): string { return basename( dirname( $file ) ) . '/' . basename( $file ); }
 function plugin_dir_path( string $file ): string { return dirname( $file ) . '/'; }
 function plugin_dir_url( string $file ): string { return 'https://example.test/' . basename( dirname( $file ) ) . '/'; }
 function add_action( string $hook, callable $callback ): void { $GLOBALS['migration_hooks'][ $hook ][] = $callback; }
