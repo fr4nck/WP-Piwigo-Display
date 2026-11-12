@@ -9,6 +9,7 @@
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: wp-piwigo-display
+ * Update URI: https://github.com/fr4nck/WP-Piwigo-Display
  *
  * @package WP_Piwigo_Display
  */
@@ -32,6 +33,12 @@ if ( ! defined( 'WPD_PLUGIN_DIR' ) ) {
 if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
 	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
+// This guard must load before the legacy-class early return: activation may be
+// attempted while the old GitHub copy is already active.
+if ( ! class_exists( 'WPD_Migration_Guard', false ) ) {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpd-migration-guard.php';
+}
+WPD_Migration_Guard::register( __FILE__ );
 
 $wp_piwigo_display_loaded_classes = array(
 	'WPD_Plugin',
@@ -86,7 +93,7 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
  *
  * @return void
  */
-function wp_piwigo_display_bootstrap_plugin(): void {
+add_action( 'plugins_loaded', static function (): void {
 	WPD_Api_Metrics::register();
 	WPD_Plugin::init();
 	WPD_Service_Account::register();
@@ -102,6 +109,4 @@ function wp_piwigo_display_bootstrap_plugin(): void {
 	WPD_Gutenberg_Parity::register();
 	WPD_Shapes::register();
 	WPD_Piwigo_Response_Compat::register();
-}
-
-add_action( 'plugins_loaded', 'wp_piwigo_display_bootstrap_plugin' );
+} );

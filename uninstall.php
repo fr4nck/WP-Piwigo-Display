@@ -8,6 +8,30 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
+
+// Retain shared settings and credentials by default. An explicit, site-owner
+// opt-in is required for an irreversible purge after all copies are removed.
+if ( ! defined( 'WPD_PURGE_DATA_ON_UNINSTALL' ) || true !== WPD_PURGE_DATA_ON_UNINSTALL ) {
+    return;
+}
+
+// Fail closed if installed plugins cannot be inspected; never guess whether
+// another distribution still needs these options (including on multisite).
+if ( ! function_exists( 'get_plugins' ) ) {
+    $plugin_api = defined( 'ABSPATH' ) ? ABSPATH . 'wp-admin/includes/plugin.php' : '';
+    if ( '' !== $plugin_api && is_readable( $plugin_api ) ) {
+        require_once $plugin_api;
+    }
+}
+if ( ! function_exists( 'get_plugins' ) ) {
+    return;
+}
+foreach ( get_plugins() as $plugin_file => $plugin_data ) {
+    if ( $plugin_file !== WP_UNINSTALL_PLUGIN && 'Piwigo Display' === trim( (string) ( $plugin_data['Name'] ?? '' ) ) ) {
+        return;
+    }
+}
+
 /**
  * Removes plugin options and WordPress transients for the current site.
  */
