@@ -93,20 +93,23 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
  *
  * @return void
  */
-add_action( 'plugins_loaded', static function (): void {
-	WPD_Api_Metrics::register();
-	WPD_Plugin::init();
-	WPD_Service_Account::register();
+add_action(
+	'plugins_loaded',
+	static function (): void {
+		WPD_Api_Metrics::register();
+		WPD_Plugin::init();
+		WPD_Service_Account::register();
 
-	if ( ! WPD_Service_Account::is_configured() ) {
-		remove_action( 'wp_ajax_wpd_get_albums', array( WPD_Service_Account::class, 'ajax_get_albums' ), 1 );
+		if ( ! WPD_Service_Account::is_configured() ) {
+			remove_action( 'wp_ajax_wpd_get_albums', array( WPD_Service_Account::class, 'ajax_get_albums' ), 1 );
+		}
+
+		WPD_Classic_Editor::register();
+		WPD_Slider_Transitions::register();
+		WPD_Masonry::register();
+		WPD_Composer_Parity::register();
+		WPD_Gutenberg_Parity::register();
+		WPD_Shapes::register();
+		WPD_Piwigo_Response_Compat::register();
 	}
-
-	WPD_Classic_Editor::register();
-	WPD_Slider_Transitions::register();
-	WPD_Masonry::register();
-	WPD_Composer_Parity::register();
-	WPD_Gutenberg_Parity::register();
-	WPD_Shapes::register();
-	WPD_Piwigo_Response_Compat::register();
-} );
+);
