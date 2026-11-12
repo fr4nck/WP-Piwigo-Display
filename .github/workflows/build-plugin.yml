@@ -6,6 +6,7 @@ on:
     branches:
       - 'release/**'
       - 'audit/**'
+      - 'candidate/**'
     tags:
       - 'v*'
   pull_request:
