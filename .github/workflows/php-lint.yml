@@ -126,6 +126,9 @@ jobs:
       - name: Check PHP 8.4 syntax
         run: composer lint
 
+      - name: Run frontend and migration regressions under PHP 8.4
+        run: composer test:frontend
+
   package:
     name: Paquet ZIP
     needs: quality
