@@ -14,6 +14,8 @@ La dernière version stable disponible dans les releases GitHub avant la V3 est 
 
 La 3.0.0 est la première version stable de la V3, publiée le 10 novembre 2026. Les candidates 3.0.0-rc.1 à 3.0.0-rc.4 étaient des versions de test ; la 3.0.0-rc.4 n’a jamais été publiée.
 
+**Maintenance en préparation : 3.0.1**, non publiée. La branche de correctif de la PR #133 prépare les sélecteurs d’albums et la synchronisation du compositeur. La 3.0.0 reste la dernière version publique tant qu’aucune nouvelle release n’est créée.
+
 ## Distribution
 
 - [Télécharger la version stable 3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) : le ZIP s'installe depuis l'administration WordPress.

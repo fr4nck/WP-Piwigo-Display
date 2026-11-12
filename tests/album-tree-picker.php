@@ -25,7 +25,7 @@ $assert( false !== strpos( (string) $classic, 'hierarchy.length = depth + 1' ), 
 $assert( false !== strpos( (string) $classic, 'function branchIsVisible(album)' ), 'Le sélecteur classique doit vérifier toute la chaîne des ancêtres avant d’afficher un descendant.' );
 $assert( false !== strpos( (string) $classic, 'if (!expanded[String(ids[index])]) return false;' ), 'Un descendant classique doit rester caché dès qu’un ancêtre est replié.' );
 $assert( false !== strpos( (string) $classic, "'aria-expanded': branchExpanded ? 'true' : 'false'" ), 'Le bouton d’ouverture classique doit exposer son état ARIA.' );
-$assert( false !== strpos( (string) $classic, '$(input).val(album.id)' ), 'Le champ album ne doit être modifié qu’au clic de validation explicite.' );
+$assert( false !== strpos( (string) $classic, '$(input).val(selectedId)' ), 'Le champ album ne doit être modifié qu’au clic de validation explicite.' );
 
 $assert( false !== strpos( (string) $gutenberg, "role: 'treeitem'" ), 'Gutenberg doit exposer une arborescence accessible.' );
 $assert( false !== strpos( (string) $gutenberg, "__('Valider'" ), 'Gutenberg doit proposer une validation explicite.' );

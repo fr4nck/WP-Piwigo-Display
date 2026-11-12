@@ -24,6 +24,7 @@ function simulateFailure(payload, status, businessError) {
         },
         removeAttr: function (key) { delete this.attrs[key]; return this; },
         html: function (value) { this.content = value; return this; },
+        append: function (value) { this.retry = value; return this; },
         empty: function () { return this; },
         on: function () { return this; }
     };
@@ -62,7 +63,9 @@ function simulateFailure(payload, status, businessError) {
         if (value === inputNode) return input;
         if (typeof value === 'string' && value.charAt(0) === '<') {
             return {
-                text: function (message) { this.message = String(message); return this; }
+                text: function (message) { this.message = String(message); return this; },
+                on: function () { return this; },
+                trigger: function () { return this; }
             };
         }
         throw new Error('Appel jQuery inattendu');

@@ -112,6 +112,7 @@ $categories = array(
 	array( 'id' => 20, 'name' => 'Été 2026', 'uppercats' => '10,20', 'permalink' => 'ete-2026' ),
 	array( 'id' => 30, 'name' => 'Séjour voile', 'uppercats' => '10,20,30', 'permalink' => 'sejour-voile' ),
 	array( 'id' => 40, 'name' => 'Séjour voile', 'uppercats' => '10,40', 'permalink' => 'autre-sejour-voile' ),
+	array( 'id' => 77, 'name' => '#2024', 'uppercats' => '77', 'permalink' => 'album-hashtag' ),
 );
 
 $body = array(
@@ -136,6 +137,9 @@ $property->setValue(
 $api = new WPD_Api( $base_url );
 
 $assert( 30 === $api->resolve_album_id( '30' ), 'A numeric album identifier must be returned unchanged.' );
+$assert( is_wp_error( $api->resolve_album_id( '#30' ) ), 'A missing literal #30 name must not be remapped to album ID 30.' );
+$assert( 77 === $api->resolve_album_id( '#2024' ), 'A literal album name #2024 must keep its original meaning.' );
+$assert( is_wp_error( $api->resolve_album_id( '#pas-un-id' ) ), 'Invalid hash-prefixed identifiers must not resolve as numeric IDs.' );
 $assert( 20 === $api->resolve_album_id( 'Été 2026' ), 'An album name must still resolve.' );
 $assert( 30 === $api->resolve_album_id( '/ALSH/Été 2026/Séjour voile' ), 'A full human-readable album path must resolve to the intended nested album.' );
 $assert( 40 === $api->resolve_album_id( 'ALSH/Séjour voile' ), 'Human-readable paths must disambiguate duplicate album names.' );
@@ -148,6 +152,8 @@ $private_categories = array(
 WPD_Service_Account::$configured = true;
 WPD_Service_Api::$categories     = $private_categories;
 $assert( 60 === $api->resolve_album_id( '/Privé/Équipe' ), 'A private album path must resolve through the service account on the configured Piwigo URL.' );
+$assert( is_wp_error( $api->resolve_album_id( '#50' ) ), 'A missing #50 name must not reveal the private album 50.' );
+$assert( 50 === $api->resolve_album_id( '50' ), 'An explicitly provided numeric private album ID keeps its original meaning.' );
 
 $other_url = 'https://other.example.test';
 $other_body = array(
