@@ -1,35 +1,34 @@
 # MIG-301 — Transition GitHub vers WordPress.org
 
-État au 12 novembre 2026 : préparation de migration **non fusionnée, non publiée, non validée sur WordPress réel**. Ne pas modifier le tag et l'archive GitHub `v3.0.0`. Aucun slug WordPress.org n'est approuvé ou arrêté ici.
+État au 12 novembre 2026 : **correctifs en PR, non fusionnés ni publiés**. Cette procédure est obligatoire pour toute migration existante, mais ne vaut **pas** recette WordPress/Piwigo réelle ni autorisation de déploiement. Le tag et l'archive v3.0.0 restent immuables. Aucun slug WordPress.org n'est considéré approuvé.
 
 ## Contrat de compatibilité
 
-Conserver les clés WordPress `wp_piwigo_display_options` et `wp_piwigo_display_service_account`, les contenus Gutenberg `wp-piwigo-display/gallery` et le shortcode `[piwigo]`. Ne pas renommer les identifiants des contenus WordPress lors d'une migration de distribution.
+Ne jamais renommer les clés WordPress `wp_piwigo_display_options` et `wp_piwigo_display_service_account`, les blocs `wp-piwigo-display/gallery` ni les shortcodes `[piwigo]`. Les anciennes pages, galeries et diaporamas doivent continuer à fonctionner sans modification.
 
-Le paquet **GitHub** 3.0.1 déclare `Update URI: https://github.com/fr4nck/WP-Piwigo-Display` pour éviter une récupération accidentelle par le catalogue WordPress.org. Cela ne fournit pas un mécanisme de mise à jour GitHub automatique. Le futur paquet **WordPress.org** doit retirer cet en-tête, utiliser le domaine de traduction exactement égal au slug attribué (en-tête principal, `block.json`, chaînes gettext) et prouver son canal de mise à jour séparé.
+La variante **GitHub** 3.0.1 possède `Update URI: https://github.com/fr4nck/WP-Piwigo-Display`, pour isoler les mises à jour natives WordPress.org. Cela n'installe pas de système automatique de mise à jour depuis GitHub. Le futur paquet WordPress.org sera préparé **séparément**, sans cet en-tête et avec son domaine de traduction égal au slug approuvé. Les exceptions `TextDomainMismatch` de la CI historique ne constituent pas une conformité WordPress.org.
 
-## Protections candidates
+## Règle P0 : mise à jour en place obligatoire AVANT toute bascule
 
-- Le bootstrap non conditionnel de 3.0.0 devient une closure ; les deux copies peuvent être chargées sans redéclaration de cette fonction. Testé hors ligne avec dépendances WordPress simulées.
-- Un garde refuse une activation concurrente, y compris sur un autre blog lors de l'activation réseau. En cas d'état forcé comportant deux copies actives, il peut désactiver la copie secondaire dans l'administration sans exécuter de désinstallation. L'ancien répertoire a priorité.
-- `uninstall.php` de la **nouvelle** version conserve impérativement les réglages et identifiants **lorsqu'une autre copie de Piwigo Display est installée**. Lors du retrait définitif de la dernière copie, il nettoie normalement les options du compte de service, comme la version 3.0.0. Pour une réinstallation volontaire sans autre copie, le propriétaire peut demander explicitement la conservation par `define( 'WPD_KEEP_DATA_ON_UNINSTALL', true );`, en acceptant que les identifiants restent dans la base. Si la liste des plugins est indisponible, le script s'abstient de toute purge.
-- **Impossible de modifier rétroactivement 3.0.0** : son désinstalleur efface les deux options. Lors de la migration, ne jamais utiliser le bouton « Supprimer » sur l'ancienne copie 3.0.0.
+**Interdiction de migrer directement d'une 3.0.0 installée vers un deuxième répertoire, puis de supprimer l'ancienne copie.** Le `uninstall.php` historique 3.0.0 efface les options partagées, même si une nouvelle copie est active. La nouvelle version ne peut pas corriger une 3.0.0 qui n'a pas été mise à jour.
 
-## Installation neuve
+1. Faire une sauvegarde complète vérifiée : base SQL, fichiers WordPress, `wp-config.php`, ZIP de la 3.0.0, hash des options et preuves des diaporamas. Conserver les secrets hors des journaux.
+2. Mettre à jour **dans le même répertoire `wp-piwigo-display/`** la 3.0.0 vers le **ZIP GitHub 3.0.1 qualifié**, sans désinstaller. Vérifier le numéro de version, les fichiers réels, en particulier le nouveau `uninstall.php`, et toutes les options.
+3. Installer le futur paquet WordPress.org (après attribution du slug) dans son dossier, **sans l'activer**.
+4. Désactiver l'ancienne copie GitHub **sans la supprimer**. Activer la nouvelle copie. Vérifier shortcodes, blocs, diaporamas, albums, droits publics/privés, identifiants du compte de service et canaux de mise à jour.
+5. En cas de problème, désactiver la nouvelle copie et réactiver la copie GitHub 3.0.1 ; comparer les options. Si elles ont changé de manière incompatible, restaurer la sauvegarde.
+6. Uniquement après recette et accord explicite, retirer le dossier GitHub **3.0.1** en suivant la procédure qualifiée. Son désinstalleur conserve les données si une copie sœur est installée. Ne jamais supprimer la 3.0.0 non corrigée via l'interface ou WP-CLI.
 
-Installer le futur candidat officiel seul sur un WordPress jetable ; contrôler réglages, identifiant de bloc, shortcode, médias, traductions et provenance des mises à jour.
+## Protection et limites
 
-## Migration d'une copie GitHub 3.0.0
+- Les deux ordres de chargement ne redéfinissent plus le bootstrap PHP, mais **aucune double activation n'est autorisée**.
+- La garde refuse l'activation concurrente dans son contexte (site ou réseau), y compris l'activation inverse lorsque la nouvelle copie est déjà chargée.
+- Il n'existe **aucune désactivation automatique depuis admin_init**. Un administrateur est averti et corrige manuellement un état incohérent. Un abonné ne peut pas provoquer une désactivation réseau en visitant son profil.
+- Le hook `pre_uninstall_plugin` peut interrompre une tentative de suppression de la 3.0.0 **si** la nouvelle copie est chargée dans cette requête ; ce n'est ni une protection rétroactive universelle, ni une garantie quand le plugin protecteur est inactif. L'annulation repose sur un arrêt explicite, pas sur un simple retour d'action WordPress.
+- La suppression groupée de deux copies protégées utilise leurs fichiers locaux pour décider quel est le dernier paquet encore installé ; la copie finale nettoie normalement les secrets. Si la liste d'extensions n'est pas fiable, la purge est évitée.
+- La conservation volontaire `WPD_KEEP_DATA_ON_UNINSTALL` accepte `true`, `1` ou `'true'` ; elle **laisse les identifiants en base**, donc ne pas l'utiliser sans raison documentée.
+- Ne pas tenter d'activation silencieuse, de réparation automatique via base SQL, de déploiement multisite incomplet ou de remplacement de fichiers à chaud. Une copie active uniquement sur un autre site peut ne pas être chargée au moment d'une tentative d'activation réseau inverse : ce scénario doit être contre-qualifié sur WordPress réel.
 
-1. Sauvegarder et vérifier la base, les fichiers et `wp-config.php`, conserver le ZIP original ; ne pas journaliser les secrets.
-2. Si la destination est **GitHub 3.0.1 dans le même dossier**, effectuer une mise à jour ZIP en place, **sans désinstallation**. Comparer les options, le compte de service, les blocs et shortcodes, et le rendu d'albums de test.
-3. Si la destination est un **nouveau répertoire WordPress.org** : installer le nouveau paquet **sans l'activer**, désactiver sans supprimer l'ancien, puis activer uniquement le nouveau.
-4. Comparer les options, les contenus et les droits de lecture d'albums publics/privés sur **Piwigo de test**. Vérifier le ZIP et le dossier ciblés par les mises à jour.
-5. Retour arrière : désactiver la nouvelle copie, réactiver l'ancienne et contrôler l'intégrité. En cas de données modifiées de manière incompatible, restaurer base et fichiers depuis la sauvegarde.
-6. **Ne jamais désinstaller l'ancienne 3.0.0 par WordPress** ; une fois la recette réellement passée, archiver son dossier hors `wp-content/plugins`, sans exécuter `uninstall.php`.
+## Qualification avant publication
 
-## Recette obligatoire avant merge/publication
-
-Exécuter les tests `migration-*.php` ainsi que `tests/uninstall-private-cache.php`. Répéter sur véritables WordPress 6.x/7.x, PHP 8.1 et 8.4 et multisite jetable : activation normale et conflit, cas avec deux répertoires, suppression 3.0.1, reprise de configuration, mise à jour ZIP, contenu Gutenberg, shortcode, photos publiques/privées autorisées ou refusées, UI et retour arrière. Tester les updaters tiers présents. Ne pas qualifier une migration WordPress réelle sur la seule base de mocks PHP.
-
-Pas de merge, nouveau tag, release, soumission WordPress.org ni intervention sur production sans validation explicite.
+Vérifier les suites de test PHP 8.1/8.4, les mutants MG05/MG12/MG13, la suppression groupée WP-CLI, la portée réseau avec utilisateur abonné, le retour arrière, le passage ZIP GitHub 3.0.0 → 3.0.1, l'identité bloc/shortcode, la sortie du paquet ZIP et les mises à jour. Vérifier le domaine de traduction sans masquer artificiellement les écarts. Exécuter une vraie recette WordPress + MySQL + Piwigo avant publication. Ne toucher ni à la PR #133, ni aux branches canoniques, ni à la production.
