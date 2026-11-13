@@ -60,6 +60,19 @@ jobs:
         shell: bash
         run: node tests/e2e/browser.cjs gutenberg
 
+      - name: Install official Classic Editor 1.7.0 on disposable WordPress
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root plugin install classic-editor --version=1.7.0 --activate
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root option update classic-editor-replace classic
+
+      - name: Test real Classic Editor shortcode builder
+        shell: bash
+        run: node tests/e2e/browser.cjs classic
+
       - name: Save synthetic test screenshots and assertions
         if: always()
         uses: actions/upload-artifact@v4
