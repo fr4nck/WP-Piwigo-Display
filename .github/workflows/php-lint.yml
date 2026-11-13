@@ -318,12 +318,13 @@ jobs:
             --output "${{ runner.temp }}/wp-cli.phar"
           php "${{ runner.temp }}/wp-cli.phar" --info
 
-      - name: Exercise published 3.0.0 to 3.0.1 migration on actual WordPress
+      - name: Exercise 3.0.0 to 3.0.1 to 3.1.0 and rollback on WordPress
         shell: bash
         env:
           WP_VERSION: ${{ matrix.wordpress }}
           WP_CLI_PHAR: ${{ runner.temp }}/wp-cli.phar
           WPQA_PKG_DIR: ${{ runner.temp }}/piwigo-zip-candidates
+          WPQA_VERSION: ${{ needs.package.outputs.version }}
         run: |
           set -euo pipefail
           if [[ "${{ matrix.mode }}" == multisite ]]; then

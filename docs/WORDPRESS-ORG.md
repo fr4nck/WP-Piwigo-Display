@@ -1,12 +1,12 @@
 # WPORG-01 — Préparer la diffusion sur WordPress.org
 
-État au 10 novembre 2026 : **préparation documentaire ; extension non soumise et non approuvée**. La release GitHub [v3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) reste la version stable publique.
+État au 13 novembre 2026 : **préparation documentaire ; extension non soumise et non approuvée**. Dernière version stable GitHub : [v3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1). Candidate 3.1.0 non publiée ; nom envisagé Display4Piwigo et slug `display4piwigo` non attribué.
 
 ## Périmètre et références
 
 - Extension : **Piwigo Display**, licence GPLv3 ou ultérieure.
-- Version stable : **3.0.0**, commit `1e679ec9cc9ec61a60064c17776dfbfe3d1ab340`.
-- ZIP GitHub validé : `piwigo-display-3.0.0.zip`, SHA-256 `50681266437068e425d6504b8f7c7e4d2517403003673f49c8a30b4df28d08c5`.
+- Version stable : **3.0.1**, commit `1e679ec9cc9ec61a60064c17776dfbfe3d1ab340`.
+- ZIP GitHub officiel 3.0.1 : `piwigo-display-3.0.1.zip`, SHA-256 `20faab8e598299a7db5d3ace1622f3b8f7c464c27b0ce16778ab93e7c1e59ed4`.
 - Dossier de l'extension installé chez les utilisateurs : `wp-piwigo-display`.
 - Fichier principal : `wp-piwigo-display.php` ; text domain : `wp-piwigo-display`.
 - Documentation officielle : [préparation et soumission](https://developer.wordpress.org/plugins/wordpress-org/planning-submitting-and-maintaining-plugins/), [utilisation de SVN](https://developer.wordpress.org/plugins/wordpress-org/how-to-use-subversion/), [assets](https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/), [règles](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/).
@@ -17,7 +17,7 @@
 - [x] Base du `readme.txt`, en-tête, licence et tests automatiques Plugin Check disponibles.
 - [x] Limite de compatibilité **Piwigo OpenStreetMap** explicitée : [issue #97](https://github.com/fr4nck/WP-Piwigo-Display/issues/97) toujours ouverte. Le filtre de nettoyage des réponses API a des tests automatiques, mais aucune validation réelle sur l'installation concernée ; aucune fonction de carte/GPS annoncée.
 - [x] Expliquer les échanges réseau avec le serveur Piwigo configuré, le chargement distant des images et la visibilité des albums privés publiés sur une page WordPress publique.
-- [ ] Vérifier auprès de WordPress.org que le slug demandé **`wp-piwigo-display`** est recevable et disponible. Ne pas choisir `piwigo-display` sans mesurer les effets sur les dossiers existants, le text domain et les mises à jour.
+- [ ] Faire approuver par WordPress.org le slug candidat **`display4piwigo`**. Aucune attribution ni soumission n'est présumée.
 - [ ] Vérifier la conformité du paquet exact à la validation du répertoire, y compris licences/mentions des dépendances embarquées (Splide 4.1.4 sous MIT), fichiers de sources et restrictions de marque.
 - [x] Préparer et approuver une icône originale aux couleurs de Pêle-Mêle : [128 × 128](../.github/wordpress-org/assets/icon-128x128.png) et [256 × 256](../.github/wordpress-org/assets/icon-256x256.png). Les deux PNG sont prêts pour le futur dépôt SVN (sans inclusion dans le ZIP WordPress).
 - [ ] Préparer la bannière et les captures avec des données de démonstration (aucun album privé réel, aucune information personnelle).

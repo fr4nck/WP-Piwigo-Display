@@ -7,8 +7,10 @@ umask 077
 : "${WP_VERSION:?}"
 : "${WP_CLI_PHAR:?}"
 : "${WPQA_PKG_DIR:?}"
-GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.1.zip"
-ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.1-candidate.zip"
+: "${WPQA_VERSION:?Candidate version required}"
+[[ "$WPQA_VERSION" == "3.1.0" ]] || exit 2
+GH_ZIP="$WPQA_PKG_DIR/piwigo-display-${WPQA_VERSION}.zip"
+ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-${WPQA_VERSION}-candidate.zip"
 test -f "$GH_ZIP"; test -f "$ORG_ZIP"
 (cd "$WPQA_PKG_DIR" && sha256sum --check SHA256SUMS)
 
@@ -31,6 +33,7 @@ B3='http://piwigo-qa.local/b3/'
 wpqa site create --slug=b2 --title="Site b2" --email=ci@example.invalid
 wpqa site create --slug=b3 --title="Site b3" --email=ci@example.invalid
 wpqa plugin install "$GH_ZIP"
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "$WPQA_VERSION" ]] || fail "Candidate version mismatch"
 wpqa plugin install "$ORG_ZIP"
 wpqa --url="$B2" plugin activate wp-piwigo-display
 if wpqa plugin activate display4piwigo --network; then

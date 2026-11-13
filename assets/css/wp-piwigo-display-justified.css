@@ -6,7 +6,9 @@
 }
 
 .wp-piwigo-display-justified-item {
-	flex: var(--wpd-justified-grow, 1) 1 calc(var(--wpd-justified-row-height, 220px) * var(--wpd-justified-ratio, 1));
+	/* Small tolerance prevents 2 natural 330px items from wrapping in a 645px
+	 * theme column when they can be justified at roughly 212px height. */
+	flex: var(--wpd-justified-grow, 1) 1 calc(var(--wpd-justified-row-height, 220px) * var(--wpd-justified-ratio, 1) * 0.95);
 	margin: 0;
 	min-width: 0;
 	position: relative;
