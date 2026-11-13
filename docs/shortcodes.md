@@ -44,6 +44,16 @@ Si l’API Piwigo ne fournit pas un lien de photo acceptable, le plugin utilise 
 
 Le réglage est disponible dans le compositeur d’administration, Classic Editor et Gutenberg. L’ouverture externe remplace la lightbox locale pour les images de cette galerie, mais ne désactive pas le diaporama WordPress.
 
+## Galerie Justified (candidate 3.1)
+
+Le mode `justified` aligne les photos en rangées à hauteur cohérente, sans modifier les albums d’origine.
+
+```text
+[piwigo album="154" type="justified" justified_row_height="220" justified_gap="8"]
+```
+
+La hauteur est bornée à 100–600 px et l’espacement à 0–64 px. Le paramètre facultatif `click_action` reste disponible pour ouvrir l’album complet dans Piwigo. Ce mode est en cours de qualification, il n’est pas livré dans la 3.0.1 publique.
+
 ## Modes d’affichage
 
 Le paramètre `type` détermine la façon dont les photos sont présentées. Les trois modes utilisent les mêmes sources Piwigo et peuvent partager les filtres, légendes et options générales ; le choix dépend surtout de l’usage éditorial recherché.

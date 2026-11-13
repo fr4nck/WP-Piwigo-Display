@@ -1,0 +1,38 @@
+.wp-piwigo-display-justified {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--wpd-justified-gap, 8px);
+	align-items: stretch;
+}
+
+.wp-piwigo-display-justified-item {
+	flex: var(--wpd-justified-grow, 1) 1 calc(var(--wpd-justified-row-height, 220px) * var(--wpd-justified-ratio, 1));
+	margin: 0;
+	min-width: 0;
+	position: relative;
+}
+
+.wp-piwigo-display-justified-item > a {
+	display: block;
+	height: var(--wpd-justified-row-height, 220px);
+	overflow: hidden;
+}
+
+.wp-piwigo-display-justified-item img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.wp-piwigo-display-justified-tail {
+	flex-grow: 999999;
+	flex-basis: var(--wpd-justified-row-height, 220px);
+	height: 0;
+}
+
+@media (max-width: 782px) {
+	.wp-piwigo-display-justified {
+		--wpd-justified-row-height: min(180px, 42vw);
+	}
+}
