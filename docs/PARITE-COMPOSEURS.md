@@ -12,6 +12,7 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 | Masonry | Oui | Oui | Oui | Oui |
 | Justified (candidate 3.1, non publiée) | Oui | Oui | Oui | Oui |
 | Collage / Pêle-mêle (candidate 3.1, non publiée) | Oui | Oui | Oui | Oui |
+| Texte rempli de photos (candidate 3.1, polices système uniquement) | Oui | Oui | Oui | Oui |
 | Presets | Oui | Oui | Oui | Oui |
 | Limite, maximum, dernières, aléatoires | Oui | Oui | Oui | Oui |
 | Tri et ordre | Oui | Oui | Oui | Oui |

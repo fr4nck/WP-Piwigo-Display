@@ -64,6 +64,22 @@ Le mode `collage` crée une composition reproductible de photographies inclinée
 
 Le collage conserve le nombre de photos demandé et accepte `click_action="piwigo_photo"` ou `click_action="piwigo_album"` pour rejoindre Piwigo. Les limites techniques sont rotation 0–15°, dispersion 0–50, chevauchement 0–40, taille 120–420 et variation 0–50 %. Cette candidate n’est pas publiée.
 
+## Texte rempli de photos (candidate 3.1)
+
+Le mode `photo-text` affiche un texte sémantique dont les lettres sont remplies par une composition de photos Piwigo (SVG décoratif `aria-hidden`). Il accepte jusqu’à quatre lignes. Les retours à la ligne sont encodés sous la forme `\\n` dans un shortcode compact.
+
+```text
+[piwigo album="154" type="photo-text" photo_text="PÊLE\\nMÊLE" photo_text_font="system" photo_text_fill_mode="collage" photo_text_seed="2026" photo_text_max_images="20"]
+```
+
+Remplissage disponible : `grid`, `masonry` ou `collage`, reproductible pour une graine et des photos identiques. Réglages : police, graisse, taille, interlettrage, hauteur de ligne, largeur maximale, alignement, densité, contours, arrière-plan, nombre de photos et dispersion en mode collage. La valeur `photo_text_max_images` est limitée à 1–40.
+
+Cette première étape utilise uniquement les polices présentes sur l’appareil ou fournies par le thème : `inherit`, `system`, `serif` et `mono`. Les imports WOFF/WOFF2 et les polices embarquées doivent être qualifiés séparément, sans introduire de service de police distant.
+
+**Navigation vers Piwigo :** contrairement aux galeries photo et aux collages, le texte SVG ne comporte pas de lien individuel vers chaque photographie. Le paramètre `click_action` ne transforme pas encore ce mode en lien cliquable ; pour accéder à l’album complet, ajouter un lien textuel WordPress adjacent. Ce comportement est explicite afin de ne pas prétendre répondre à la demande du forum avec un mécanisme non développé.
+
+Le mode est une candidate non publiée. Les contenus historiques restent inchangés.
+
 ## Modes d’affichage
 
 Le paramètre `type` détermine la façon dont les photos sont présentées. Les trois modes utilisent les mêmes sources Piwigo et peuvent partager les filtres, légendes et options générales ; le choix dépend surtout de l’usage éditorial recherché.

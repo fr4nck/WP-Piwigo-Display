@@ -119,6 +119,26 @@ final class WPD_Block {
 				'collageOverlap'   => 'collage_overlap',
 				'collageSize'      => 'collage_size',
 				'collageVariation' => 'collage_variation',
+			),
+			array(
+				'photoText'              => 'photo_text',
+				'photoTextSeed'          => 'photo_text_seed',
+				'photoTextFont'          => 'photo_text_font',
+				'photoTextWeight'        => 'photo_text_weight',
+				'photoTextSize'          => 'photo_text_size',
+				'photoTextLetterSpacing' => 'photo_text_letter_spacing',
+				'photoTextLineHeight'    => 'photo_text_line_height',
+				'photoTextMaxWidth'      => 'photo_text_max_width',
+				'photoTextAlign'         => 'photo_text_align',
+				'photoTextFillMode'      => 'photo_text_fill_mode',
+				'photoTextDensity'       => 'photo_text_density',
+				'photoTextRotation'      => 'photo_text_rotation',
+				'photoTextSpread'        => 'photo_text_spread',
+				'photoTextMaxImages'     => 'photo_text_max_images',
+				'photoTextOutline'       => 'photo_text_outline',
+				'photoTextOutlineWidth'  => 'photo_text_outline_width',
+				'photoTextOutlineColor'  => 'photo_text_outline_color',
+				'photoTextBackground'    => 'photo_text_background',
 			)
 		);
 		$atts = array();
