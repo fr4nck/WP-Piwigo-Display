@@ -26,7 +26,8 @@ docker exec -u 0 wpd-310-piwigo chmod 0666 /var/www/html/piwigo/osmmap.php
 docker exec wpd-310-piwigo test -f /var/www/html/piwigo/osmmap.php
 echo "OSM_DISPOSABLE_ENTRYPOINT_WRITABLE=PASS"
 docker cp tests/e2e/activate-osm.php wpd-310-piwigo:/var/www/html/piwigo/ci-activate-osm.php
-docker exec -w /var/www/html/piwigo wpd-310-piwigo php84 ci-activate-osm.php
+: "${WPD_PIWIGO_PHP:?Expected PHP binary from disposable lab}"
+docker exec -w /var/www/html/piwigo wpd-310-piwigo "$WPD_PIWIGO_PHP" ci-activate-osm.php
 docker exec wpd-310-piwigo rm -f /var/www/html/piwigo/ci-activate-osm.php
 # Give a test photo GPS coordinates, so OSM can exercise its actual category
 # and picture hooks instead of running against an album without geodata.
