@@ -9,6 +9,13 @@ git clone --quiet https://github.com/Piwigo/piwigo-openstreetmap.git "$WPD_LAB/o
 git -C "$WPD_LAB/osm" checkout --quiet 567f7aae970f41524c03e93b4cd2543d0548d039
 docker exec wpd-310-piwigo mkdir -p /var/www/html/piwigo/plugins/piwigo-openstreetmap
 docker cp "$WPD_LAB/osm/." wpd-310-piwigo:/var/www/html/piwigo/plugins/piwigo-openstreetmap/
+# Git checkout inherits the CI runner's restrictive umask 077. Docker cp
+# retains unreadable 0600/0700 modes, but Piwigo's web PHP user must be
+# able to load plugin/main.inc.php and its PHP assets.
+docker exec wpd-310-piwigo \
+  chmod -R a+rX /var/www/html/piwigo/plugins/piwigo-openstreetmap
+docker exec wpd-310-piwigo sh -c \
+  'test "$(stat -c %a /var/www/html/piwigo/plugins/piwigo-openstreetmap/main.inc.php)" = 644'
 docker cp tests/e2e/activate-osm.php wpd-310-piwigo:/var/www/html/piwigo/ci-activate-osm.php
 docker exec -w /var/www/html/piwigo wpd-310-piwigo php84 ci-activate-osm.php
 docker exec wpd-310-piwigo rm -f /var/www/html/piwigo/ci-activate-osm.php
