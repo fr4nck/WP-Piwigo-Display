@@ -14,7 +14,7 @@ La dernière version stable disponible dans les releases GitHub avant la V3 est 
 
 La 3.0.0 est la première version stable de la V3, publiée le 10 novembre 2026. Les candidates 3.0.0-rc.1 à 3.0.0-rc.4 étaient des versions de test ; la 3.0.0-rc.4 n’a jamais été publiée.
 
-La [3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1) corrige le sélecteur d'albums et sécurise la migration. **3.1.0 est une candidate non publiée** : navigation Piwigo, Justified, Collage, formes, SVG, texte-photo et polices locales. Voir [migration 3.0.1 → 3.1.0](docs/MIGRATION-3.1.0.md).
+La [3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1) corrige le sélecteur d'albums et sécurise la migration. **3.1.0-rc.1 est une préversion GitHub destinée aux essais, sans remplacer la 3.0.1 stable** : navigation Piwigo, Justified, Collage, formes, SVG, texte-photo et polices locales. Voir [migration 3.0.1 → 3.1.0](docs/MIGRATION-3.1.0.md).
 
 ## Distribution
 

@@ -7,7 +7,7 @@ umask 077
 : "${WP_CLI_PHAR:?WP-CLI required}"
 : "${WPQA_PKG_DIR:?Packages required}"
 : "${WPQA_VERSION:?Candidate version required}"
-[[ "$WPQA_VERSION" == "3.1.0" ]] || exit 2
+[[ "$WPQA_VERSION" == "3.1.0-rc.1" ]] || exit 2
 [[ -f "$WP_CLI_PHAR" && -d "$WPQA_PKG_DIR" ]] || exit 2
 
 GH_ZIP="$WPQA_PKG_DIR/piwigo-display-${WPQA_VERSION}.zip"

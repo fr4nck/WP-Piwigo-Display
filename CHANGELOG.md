@@ -1,6 +1,13 @@
 # Journal des versions
 
-## 3.1.0 — candidate (non publiée)
+## 3.1.0-rc.1 — première préversion GitHub (pour les essais)
+
+- Paquet ZIP pour préproduction sans remplacement de la 3.0.1 stable.
+- Navigation facultative photo/album, Justified, Collage, masques SVG, texte-photo et deux polices libres locales.
+- Recettes jetables validées sur Piwigo 16.2 + Bootstrap Darkroom et Piwigo 16.4 + OpenStreetMap avec marqueur GPS.
+- Le cas exact de l'utilisatrice de l'issue OpenStreetMap #97 reste à confirmer.
+
+## 3.1.0 — préparation de la future stable
 
 - Navigation facultative vers les photos ou albums Piwigo.
 - Nouveaux modes Justified, Collage et Texte-photo ; 18 formes et masques SVG contrôlés.
