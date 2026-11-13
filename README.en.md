@@ -12,7 +12,7 @@ WordPress plugin for building and displaying Piwigo galleries directly inside Wo
 
 The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026). The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
 
-3.0.0 was the first stable V3 release (November 10, 2026), followed by 3.0.1 (November 13, 2026). 3.1.0 is an unpublished candidate adding optional Piwigo links, Justified, Collage, SVG masks, photo-text and bundled OFL fonts.
+3.0.0 was the first stable V3 release (November 10, 2026), followed by 3.0.1 (November 13, 2026). 3.1.0-rc.1 is a GitHub pre-release candidate (not stable 3.1.0) adding optional Piwigo links, Justified, Collage, SVG masks, photo-text and bundled OFL fonts.
 
 ## Distribution
 
