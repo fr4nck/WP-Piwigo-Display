@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
 
 const lab = process.env.WPD_LAB;
 const phase = process.argv[2];
-assert.ok(lab && ['baseline', 'osm', 'gutenberg'].includes(phase), 'bad E2E phase');
+assert.ok(lab && ['baseline', 'osm', 'gutenberg', 'classic'].includes(phase), 'bad E2E phase');
 const reportDir = path.join(lab, 'reports');
 fs.mkdirSync(reportDir, { recursive: true });
 const pages = Object.fromEntries(
@@ -36,7 +36,7 @@ async function run() {
     }
   });
   try {
-    if (phase === 'gutenberg') {
+    if (phase === 'gutenberg' || phase === 'classic') {
       await page.goto('http://127.0.0.1:8088/wp-login.php', { waitUntil: 'domcontentloaded' });
       await page.locator('#user_login').fill('ci_admin');
       await page.locator('#user_pass').fill('ci-only-wordpress');
@@ -44,6 +44,28 @@ async function run() {
         page.waitForURL(/wp-admin/, { timeout: 25000 }),
         page.locator('#wp-submit').click()
       ]);
+      if (phase === 'classic') {
+        await page.goto('http://127.0.0.1:8088/wp-admin/post-new.php?post_type=page', {
+          waitUntil: 'domcontentloaded'
+        });
+        // This is the official Classic Editor screen, loaded after Gutenberg checks.
+        const open = page.locator('button.wpd-open-builder').first();
+        await open.waitFor({ state: 'visible', timeout: 30000 });
+        await open.click();
+        const dialog = page.locator('#wpd-classic-builder');
+        await dialog.waitFor({ state: 'visible', timeout: 15000 });
+        await dialog.locator('[data-wpd="album"]').fill(process.env.WPD_ALBUM);
+        await dialog.locator('[data-wpd="type"]').selectOption('justified');
+        const preview = await dialog.locator('[data-wpd-preview]').inputValue();
+        assert.ok(preview.includes('album="' + process.env.WPD_ALBUM + '"'),
+          'Classic builder lost the selected Piwigo album');
+        assert.ok(preview.includes('type="justified"'),
+          'Classic builder failed to generate the Justified shortcode');
+        assert.ok(await dialog.locator('.wpd-justified-options').first().isVisible(),
+          'Classic Editor Justified controls are not visible');
+        observations.classicGeneratedShortcode = preview;
+        console.log('REAL_CLASSIC_EDITOR_BUILDER=PASS');
+      } else {
       await page.goto('http://127.0.0.1:8088/wp-admin/post-new.php?post_type=page', {
         waitUntil: 'domcontentloaded'
       });
@@ -63,6 +85,7 @@ async function run() {
       assert.match((await page.locator('body').innerText()), /Composer|galerie|diaporama/i);
       observations.adminComposer = 'PASS';
       console.log('REAL_GUTENBERG_AND_COMPOSER=PASS');
+      }
     } else {
       for (const [slug, selector] of expected) {
         const id = pages[slug];
@@ -95,6 +118,17 @@ async function run() {
       assert.equal(piwigoPage.status(), 200);
       assert.ok((await page.locator('body').innerText()).length > 20);
       observations.piwigoAlbum = 'PASS';
+      if (phase === 'osm') {
+        // The OSM extension must actually render its map on the geotagged
+        // Piwigo category. HTTP 200 alone would be a false-positive.
+        const map = page.locator('#map');
+        assert.ok(await map.count(), 'real Piwigo OpenStreetMap container is absent');
+        assert.ok(await map.isVisible(), 'real Piwigo OpenStreetMap container is hidden');
+        assert.ok(await page.locator('script[src*="leaflet"]').count(),
+          'OpenStreetMap did not enqueue its real Leaflet assets');
+        observations.osmMap = 'VISIBLE';
+        console.log('REAL_PIWIGO_OPENSTREETMAP_VISIBLE=PASS');
+      }
       console.log('REAL_PIWIGO_BROWSER_' + phase.toUpperCase() + '=PASS');
     }
     assert.deepEqual(badAssets, [], '404/500 on local JS, CSS, WOFF2 assets');
