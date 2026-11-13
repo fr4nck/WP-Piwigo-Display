@@ -232,6 +232,7 @@ make_page justified "[piwigo album=\"$ALBUM\" type=\"justified\" limit=\"6\"]"
 make_page collage "[piwigo album=\"$ALBUM\" type=\"collage\" limit=\"6\"]"
 make_page phototext "[piwigo album=\"$ALBUM\" type=\"photo-text\" photo_text=\"CI TEST\" limit=\"6\"]"
 make_page albumlink "[piwigo album=\"$ALBUM\" click_action=\"piwigo_album\" limit=\"6\"]"
+make_page photolink "[piwigo album=\"$ALBUM\" click_action=\"piwigo_photo\" limit=\"6\"]"
 make_page block "<!-- wp:wp-piwigo-display/gallery {\"albumId\":\"$ALBUM\",\"displayType\":\"gallery\"} /-->"
 make_page alias "[piwigo album=\"#2024\" limit=\"6\"]"
 php -S 127.0.0.1:8088 -t "$WP" > "$LAB/wp-server.log" 2>&1 &
