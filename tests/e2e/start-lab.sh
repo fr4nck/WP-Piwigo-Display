@@ -97,13 +97,17 @@ for i in 1 2 3 4 5 6; do
     imagejpeg($im, getenv("CI_FIXTURE_PATH"), 84);
     imagedestroy($im);
   '
-  curl --fail --silent --show-error -b "$COOK" -c "$COOK" \
+  UPLOAD_RESPONSE=$(curl --fail --silent --show-error -b "$COOK" -c "$COOK" \
     --form 'method=pwg.images.addSimple' \
     --form "image=@$CI_FIXTURE_PATH;type=image/jpeg" \
     --form "category=$ALBUM" \
     --form "name=CI photo $i" \
-    'http://127.0.0.1:8090/ws.php?format=json' |
-    jq -e '.stat == "ok"' >/dev/null
+    'http://127.0.0.1:8090/ws.php?format=json')
+  if ! jq -e '.stat == "ok"' <<< "$UPLOAD_RESPONSE" >/dev/null; then
+    echo "PIWIGO_IMAGE_UPLOAD_REJECTED_INDEX=$i" >&2
+    jq -r '[.stat // "unknown", (.err // "none" | tostring), .message // "none"] | join(" / ")' <<< "$UPLOAD_RESPONSE" >&2
+    exit 5
+  fi
 done
 ws pwg.categories.getImages --data-urlencode "cat_id=$ALBUM" |
   jq -e '.stat == "ok" and (.result.images | length >= 6)' >/dev/null
