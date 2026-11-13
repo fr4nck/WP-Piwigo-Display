@@ -185,8 +185,13 @@ wpqa option update home 'http://127.0.0.1:8088' --quiet
   { echo 'CI WordPress siteurl mismatch' >&2; exit 7; }
 
 rsync -a "$GITHUB_WORKSPACE/" "$LAB/stage/wp-piwigo-display/" \
-  --exclude .git --exclude .github --exclude tests --exclude vendor \
-  --exclude node_modules --exclude build --exclude '*.zip'
+  --exclude '/.git/' --exclude '/.github/' --exclude '/tests/' \
+  --exclude '/vendor/' --exclude '/node_modules/' --exclude '/build/' \
+  --exclude '*.zip'
+# The upstream Splide dependency is bundled under assets/vendor/ and MUST NOT
+# be mistaken for a project-root Composer vendor directory.
+test -f "$LAB/stage/wp-piwigo-display/assets/vendor/splide/splide.min.js"
+test -f "$LAB/stage/wp-piwigo-display/assets/vendor/splide/splide.min.css"
 (cd "$LAB/stage" && zip -qr "$LAB/candidate-3.1.0.zip" wp-piwigo-display)
 # WordPress protects public sites against SSRF/loopback URLs. This filter is
 # only installed inside the CI disposable WordPress, NEVER packaged in Piwigo
