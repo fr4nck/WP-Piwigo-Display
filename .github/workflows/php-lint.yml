@@ -223,6 +223,9 @@ jobs:
           sha256sum "$ZIP" "$ORG_ZIP" > SHA256SUMS
           printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
           cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
+          # Also record per-distribution hashes in the durable CI log.
+          cat SHA256SUMS
+          cat PROVENANCE.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

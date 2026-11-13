@@ -76,6 +76,23 @@ wpqa plugin activate display4piwigo
 assert_options "switch to separate directory"
 assert_content "switch to separate directory"
 assert_identity "new candidate active"
+
+# A real rollback must work before deleting the former GitHub directory.
+# No options, saved blocks or shortcode content may be modified.
+wpqa plugin deactivate display4piwigo
+wpqa plugin activate wp-piwigo-display
+assert_options "rollback from WordPress.org candidate to GitHub 3.0.1"
+assert_content "rollback to GitHub 3.0.1"
+assert_identity "rollback to GitHub 3.0.1"
+echo "WP_MIGRATION_STAGE=rollback_to_github_pass"
+
+wpqa plugin deactivate wp-piwigo-display
+wpqa plugin activate display4piwigo
+assert_options "resuming WordPress.org candidate after rollback"
+assert_content "resuming WordPress.org candidate"
+assert_identity "resuming WordPress.org candidate"
+echo "WP_MIGRATION_STAGE=resume_wporg_pass"
+
 wpqa plugin uninstall wp-piwigo-display
 assert_options "removing protected old folder"
 assert_content "removing protected old folder"
@@ -86,4 +103,31 @@ wpqa plugin uninstall display4piwigo --deactivate
 [[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Final uninstall did not remove credentials"
 assert_content "last uninstall"
 echo "WP_MIGRATION_STAGE=final_uninstall_scrubs_secrets"
+
+# Independently exercise a true batched core delete_plugins() call.
+# The two protected copies are installed but inactive; only the last
+# uninstaller is allowed to remove the shared configuration and credentials.
+wpqa plugin install "$GH_ZIP"
+wpqa plugin install "$ORG_ZIP"
+wpqa eval 'update_option("wp_piwigo_display_options",array("piwigo_url"=>"https://ci.example.invalid/gallery"));update_option("wp_piwigo_display_service_account",array("enabled"=>false,"username"=>"ci","password"=>"fake-only"));'
+wpqa eval '
+  require_once ABSPATH . "wp-admin/includes/file.php";
+  require_once ABSPATH . "wp-admin/includes/plugin.php";
+  if (!defined("FS_METHOD")) { define("FS_METHOD", "direct"); }
+  if (!WP_Filesystem()) { fwrite(STDERR, "Filesystem unavailable\n"); exit(1); }
+  $result = delete_plugins(array(
+    "wp-piwigo-display/wp-piwigo-display.php",
+    "display4piwigo/wp-piwigo-display.php"
+  ));
+  if (is_wp_error($result) || true !== $result) {
+    fwrite(STDERR, "Batched delete_plugins failed\n");
+    exit(1);
+  }
+  echo "WP_GROUP_DELETE_PASS";
+' | grep -Fxq 'WP_GROUP_DELETE_PASS' || fail "Batched WordPress uninstall failed"
+if wpqa plugin is-installed wp-piwigo-display; then fail "GitHub plugin survives group deletion"; fi
+if wpqa plugin is-installed display4piwigo; then fail "WordPress.org candidate survives group deletion"; fi
+[[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Batched final uninstall retained credentials"
+assert_content "batched last uninstall"
+echo "WP_MIGRATION_STAGE=group_uninstall_pass"
 echo "WP_MIGRATION_PASS WP=$WP_VERSION"
