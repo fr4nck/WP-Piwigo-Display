@@ -133,6 +133,19 @@ for i in 1 2 3 4 5 6; do
     fi
     exit 5
   fi
+  # Use Piwigo's actual public admin API to publish and associate the image.
+  # addSimple alone may leave new uploads in the pending lounge even though
+  # the file itself has been imported successfully.
+  PHOTO_ID=$(jq -er '.result.image_id' "$LAB/upload-response.json")
+  PUBLISH_RESULT=$(ws pwg.images.setInfo \
+    --data-urlencode "image_id=$PHOTO_ID" \
+    --data-urlencode "categories=$ALBUM" \
+    --data-urlencode 'multiple_value_mode=append')
+  if ! jq -e '.stat == "ok"' <<< "$PUBLISH_RESULT" >/dev/null 2>&1; then
+    echo "PIWIGO_PUBLISH_PHOTO_FAILED_INDEX=$i" >&2
+    jq -r '[.stat // "unknown", (.err // "none" | tostring), .message // "none"] | join(" / ")' <<< "$PUBLISH_RESULT" >&2
+    exit 5
+  fi
 done
 echo "PIWIGO_DB_IMAGE_TOTAL=$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -h 127.0.0.1 -uroot -N piwigo -e 'SELECT COUNT(*) FROM piwigo_images')"
 echo "PIWIGO_DB_IMAGE_LINKS=$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -h 127.0.0.1 -uroot -N piwigo -e "SELECT COUNT(*) FROM piwigo_image_category WHERE category_id=$ALBUM")"
