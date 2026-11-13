@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 3.1.0
+Stable tag: 3.1.0-rc.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,7 +16,7 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. Version 3.0.1 was released on November 13, 2026; version 3.1.0 is an unpublished verification candidate. WordPress.org directory distribution is being prepared and is not yet available.
+Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. Version 3.0.1 was released on November 13, 2026; version 3.1.0-rc.1 is a GitHub pre-release candidate, not the stable 3.1.0 release. WordPress.org directory distribution is being prepared and is not yet available.
 
 Version 3.0.0 includes:
 
@@ -134,7 +134,7 @@ Compatibility is not confirmed yet. A workaround is included for malformed API r
 
 == Changelog ==
 
-= 3.1.0 (unpublished candidate) =
+= 3.1.0-rc.1 (GitHub pre-release candidate) =
 
 * Optional Piwigo click navigation, Justified and Collage layouts, 18 shapes, sanitized SVG masks, photo-filled text and two bundled OFL fonts.
 * Existing gallery, slider, shortcode and block identities remain unchanged.
