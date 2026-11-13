@@ -24,7 +24,7 @@ for i in $(seq 1 80); do
   sleep 2
 done
 docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -uroot -e \
-  'CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+  "CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON wordpress.* TO 'ci'@'%';"
 docker run -d --name wpd-310-piwigo --network wpd-310-e2e \
   -p 127.0.0.1:8090:80 -e TZ=UTC -e PIWIGO_UID=1000 -e PIWIGO_GID=1000 \
   piwigo/piwigo:16.4.0 >/dev/null
