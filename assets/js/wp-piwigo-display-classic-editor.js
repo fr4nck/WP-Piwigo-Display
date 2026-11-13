@@ -8,6 +8,41 @@
         var editingLegacyHeight = '';
         var initialValues = {};
 
+        function ensurePhotoTextControls() {
+            var $type = $dialog.find('[data-wpd="type"]');
+            if ($type.length && !$type.find('option[value="photo-text"]').length) {
+                $type.append($('<option value="photo-text">Texte rempli de photos</option>'));
+            }
+            if (!$dialog.find('[data-wpd="photo_text"]').length) {
+                var $anchor = $dialog.find('.wpd-collage-options').last();
+                var $controls = $(
+                    '<div class="wpd-photo-text-options">' +
+                    '<label>Texte<textarea data-wpd="photo_text" rows="3">PÊLE-MÊLE</textarea><span class="description">Jusqu’à quatre lignes.</span></label>' +
+                    '<label>Graine<input type="text" data-wpd="photo_text_seed" value="0"></label>' +
+                    '<label>Police<select data-wpd="photo_text_font"><option value="inherit">Police du thème</option><option value="system">Système</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label>' +
+                    '<label>Graisse<input type="number" min="100" max="900" step="100" data-wpd="photo_text_weight" value="800"></label>' +
+                    '<label>Taille du texte<input type="number" min="120" max="300" data-wpd="photo_text_size" value="230"></label>' +
+                    '<label>Interlettrage<input type="number" min="-20" max="80" data-wpd="photo_text_letter_spacing" value="0"></label>' +
+                    '<label>Hauteur de ligne (%)<input type="number" min="70" max="160" step="5" data-wpd="photo_text_line_height" value="100"></label>' +
+                    '<label>Largeur maximale (%)<input type="number" min="20" max="100" data-wpd="photo_text_max_width" value="100"></label>' +
+                    '<label>Alignement<select data-wpd="photo_text_align"><option value="left">Gauche</option><option value="center" selected>Centre</option><option value="right">Droite</option></select></label>' +
+                    '<label>Remplissage<select data-wpd="photo_text_fill_mode"><option value="grid">Grille</option><option value="masonry">Masonry</option><option value="collage">Pêle-mêle</option></select></label>' +
+                    '<label>Densité (%)<input type="number" min="50" max="200" step="10" data-wpd="photo_text_density" value="100"></label>' +
+                    '<label class="wpd-photo-text-collage-option">Rotation pêle-mêle (°)<input type="number" min="0" max="15" data-wpd="photo_text_rotation" value="6"></label>' +
+                    '<label class="wpd-photo-text-collage-option">Dispersion pêle-mêle<input type="number" min="0" max="50" data-wpd="photo_text_spread" value="18"></label>' +
+                    '<label>Nombre maximal de photos<input type="number" min="1" max="40" data-wpd="photo_text_max_images" value="20"></label>' +
+                    '<label><input type="checkbox" data-wpd="photo_text_outline" checked> Afficher un contour</label>' +
+                    '<label class="wpd-photo-text-outline-option">Épaisseur du contour<input type="number" min="0" max="12" data-wpd="photo_text_outline_width" value="3"></label>' +
+                    '<label class="wpd-photo-text-outline-option">Couleur du contour<input type="text" data-wpd="photo_text_outline_color" value="#ffffff"></label>' +
+                    '<label>Fond<input type="text" data-wpd="photo_text_background" value="transparent" placeholder="transparent ou #ffffff"></label>' +
+                    '</div>'
+                );
+                if ($anchor.length) $controls.insertAfter($anchor); else $dialog.find('.wpd-builder-grid').append($controls);
+            }
+        }
+
+        ensurePhotoTextControls();
+
         if (window.WPDAlbumPicker) {
             window.WPDAlbumPicker.attach($dialog.find('.wpd-album-field'), $dialog.find('[data-wpd="album"]'));
         }
@@ -26,9 +61,7 @@
             return $dialog.find('[data-wpd="' + name + '"]').is(':checked');
         }
 
-        function escapeValue(input) {
-            return String(input).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        }
+        function escapeValue(input) { return String(input).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/"/g, '\\"'); }
 
         function add(parts, key, item, allowZero) {
             if (item === undefined || item === null || item === '') return;
@@ -84,6 +117,7 @@
                     $field.val(parseInt(attributes[name], 10));
                     return;
                 }
+                if (name === 'photo_text') { $field.val(attributes[name].replace(/\\n/g, '\n')); return; }
                 $field.val(attributes[name]);
             });
         }
@@ -171,6 +205,30 @@
                 add(parts, 'collage_variation', bounded('collage_variation', 0, 50, 20), true);
             }
 
+            if (type === 'photo-text') {
+                add(parts, 'photo_text', value('photo_text') || 'PÊLE-MÊLE', true);
+                add(parts, 'photo_text_seed', value('photo_text_seed') || '0', true);
+                add(parts, 'photo_text_font', value('photo_text_font') || 'inherit', true);
+                add(parts, 'photo_text_weight', bounded('photo_text_weight', 100, 900, 800), true);
+                add(parts, 'photo_text_size', bounded('photo_text_size', 120, 300, 230), true);
+                add(parts, 'photo_text_letter_spacing', bounded('photo_text_letter_spacing', -20, 80, 0), true);
+                add(parts, 'photo_text_line_height', bounded('photo_text_line_height', 70, 160, 100), true);
+                add(parts, 'photo_text_max_width', bounded('photo_text_max_width', 20, 100, 100), true);
+                add(parts, 'photo_text_align', value('photo_text_align') || 'center', true);
+                add(parts, 'photo_text_fill_mode', value('photo_text_fill_mode') || 'grid', true);
+                add(parts, 'photo_text_density', bounded('photo_text_density', 50, 200, 100), true);
+                if ((value('photo_text_fill_mode') || 'grid') === 'collage') {
+                    add(parts, 'photo_text_rotation', bounded('photo_text_rotation', 0, 15, 6), true);
+                    add(parts, 'photo_text_spread', bounded('photo_text_spread', 0, 50, 18), true);
+                }
+                add(parts, 'photo_text_max_images', bounded('photo_text_max_images', 1, 40, 20), true);
+                parts.push('photo_text_outline="' + (checked('photo_text_outline') ? 'true' : 'false') + '"');
+                if (checked('photo_text_outline')) {
+                    add(parts, 'photo_text_outline_width', bounded('photo_text_outline_width', 0, 12, 3), true);
+                    add(parts, 'photo_text_outline_color', value('photo_text_outline_color') || '#ffffff', true);
+                }
+                add(parts, 'photo_text_background', value('photo_text_background') || 'transparent', true);
+            }
             return '[piwigo ' + parts.join(' ') + ']';
         }
 
@@ -182,6 +240,9 @@
             $dialog.find('.wpd-masonry-options').toggle(masonry);
             $dialog.find('.wpd-justified-options').toggle(type === 'justified');
             $dialog.find('.wpd-collage-options').attr('aria-label', 'Collage / Pêle-mêle').toggle(type === 'collage');
+            $dialog.find('.wpd-photo-text-options').toggle(type === 'photo-text');
+            $dialog.find('.wpd-photo-text-collage-option').toggle(type === 'photo-text' && (value('photo_text_fill_mode') || 'grid') === 'collage');
+            $dialog.find('.wpd-photo-text-outline-option').toggle(type === 'photo-text' && checked('photo_text_outline'));
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded');
             syncShapePicker();
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));

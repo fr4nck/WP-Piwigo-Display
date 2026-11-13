@@ -63,6 +63,8 @@ $wp_piwigo_display_loaded_classes = array(
 	'WPD_Shapes',
 	'WPD_SVG_Mask_Sanitizer',
 	'WPD_Custom_SVG_Masks',
+	'WPD_User_Fonts',
+	'WPD_Photo_Text',
 	'WPD_Piwigo_Response_Compat',
 );
 
@@ -95,6 +97,8 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-gutenberg-parity.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-shapes.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-svg-mask-sanitizer.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-custom-svg-masks.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-user-fonts.php';
+require_once WPD_PLUGIN_DIR . 'includes/class-wpd-photo-text.php';
 require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
 
 /**
@@ -122,6 +126,7 @@ add_action(
 		WPD_Gutenberg_Parity::register();
 		WPD_Shapes::register();
 		WPD_Custom_SVG_Masks::register();
+		WPD_Photo_Text::register();
 		WPD_Piwigo_Response_Compat::register();
 	}
 );
