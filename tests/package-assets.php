@@ -53,6 +53,30 @@ foreach ( array_keys( $references ) as $reference ) {
 	}
 }
 
+// Bundled WOFF2 faces are referenced dynamically in PHP, so static CSS/JS
+// path extraction above cannot detect a missing font in either distribution.
+if ( is_file( $root . '/includes/class-wpd-bundled-fonts.php' ) ) {
+	$bundled_assets = array(
+		'assets/fonts/bebas-neue/BebasNeue-Regular.woff2',
+		'assets/fonts/bebas-neue/OFL.txt',
+		'assets/fonts/bungee/Bungee-Regular.woff2',
+		'assets/fonts/bungee/OFL.txt',
+	);
+	foreach ( $bundled_assets as $relative ) {
+		$path = $root . DIRECTORY_SEPARATOR . str_replace( '/', DIRECTORY_SEPARATOR, $relative );
+		if ( ! is_file( $path ) ) {
+			$missing[] = $relative;
+			continue;
+		}
+		if ( str_ends_with( $relative, '.woff2' ) ) {
+			$magic = file_get_contents( $path, false, null, 0, 4 );
+			if ( 'wOF2' !== $magic ) {
+				$missing[] = $relative . ' (signature WOFF2 invalide)';
+			}
+		}
+	}
+}
+
 if ( ! empty( $missing ) ) {
 	fwrite( STDERR, 'Packaged asset check failed: missing ' . implode( ', ', $missing ) . PHP_EOL );
 	exit( 1 );
