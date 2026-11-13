@@ -21,8 +21,8 @@ function cleanup_migration( string $directory ): void {
 	rmdir( $directory );
 }
 register_shutdown_function( static function () use ( $root ): void { cleanup_migration( $root ); } );
-$short = array( 'plugin', 'settings', 'service-account', 'service-api', 'api-metrics', 'api', 'cache', 'diagnostic', 'renderer', 'shortcode', 'block', 'classic-editor', 'slider-transitions', 'masonry', 'composer-parity', 'gutenberg-parity', 'shapes', 'piwigo-response-compat' );
-$names = array( 'WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api_Metrics', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor', 'WPD_Slider_Transitions', 'WPD_Masonry', 'WPD_Composer_Parity', 'WPD_Gutenberg_Parity', 'WPD_Shapes', 'WPD_Piwigo_Response_Compat' );
+$short = array( 'plugin', 'settings', 'service-account', 'service-api', 'api-metrics', 'api', 'cache', 'diagnostic', 'renderer', 'shortcode', 'block', 'classic-editor', 'slider-transitions', 'masonry', 'justified', 'composer-parity', 'gutenberg-parity', 'shapes', 'piwigo-response-compat' );
+$names = array( 'WPD_Plugin', 'WPD_Settings', 'WPD_Service_Account', 'WPD_Service_Api', 'WPD_Api_Metrics', 'WPD_Api', 'WPD_Cache', 'WPD_Diagnostic', 'WPD_Renderer', 'WPD_Shortcode', 'WPD_Block', 'WPD_Classic_Editor', 'WPD_Slider_Transitions', 'WPD_Masonry', 'WPD_Justified', 'WPD_Composer_Parity', 'WPD_Gutenberg_Parity', 'WPD_Shapes', 'WPD_Piwigo_Response_Compat' );
 foreach ( array( $legacy_path, $new_path ) as $folder ) {
 	mkdir( $folder . '/includes', 0700, true );
 	foreach ( $short as $i => $stub ) {

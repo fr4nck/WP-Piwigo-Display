@@ -22,6 +22,8 @@
             var displayType = attributes.displayType || 'gallery';
             var columns = Math.min(6, Math.max(2, parseInt(attributes.masonryColumns || 4, 10)));
             var gap = Math.min(64, Math.max(0, parseInt(attributes.masonryGap || 16, 10)));
+            var rowHeight = Math.min(600, Math.max(100, parseInt(attributes.justifiedRowHeight || 220, 10)));
+            var justifiedGap = Math.min(64, Math.max(0, parseInt(attributes.justifiedGap || 8, 10)));
 
             return el(
                 Fragment,
@@ -32,14 +34,15 @@
                     null,
                     el(
                         PanelBody,
-                        { title: __('Disposition Masonry', 'wp-piwigo-display'), initialOpen: displayType === 'masonry' },
+                        { title: __('Disposition de la galerie', 'wp-piwigo-display'), initialOpen: displayType === 'masonry' || displayType === 'justified' },
                         el(SelectControl, {
                             label: __('Mode d’affichage', 'wp-piwigo-display'),
                             value: displayType,
                             options: [
                                 { label: __('Galerie', 'wp-piwigo-display'), value: 'gallery' },
                                 { label: __('Diaporama', 'wp-piwigo-display'), value: 'slider' },
-                                { label: __('Masonry', 'wp-piwigo-display'), value: 'masonry' }
+                                { label: __('Masonry', 'wp-piwigo-display'), value: 'masonry' },
+                                { label: __('Galerie justifiée', 'wp-piwigo-display'), value: 'justified' }
                             ],
                             onChange: function (value) { setAttributes({ displayType: value }); }
                         }),
@@ -57,6 +60,20 @@
                             max: 64,
                             help: __('Valeur en pixels.', 'wp-piwigo-display'),
                             onChange: function (value) { setAttributes({ masonryGap: value }); }
+                        }),
+                        displayType === 'justified' && el(RangeControl, {
+                            label: __('Hauteur cible des lignes', 'wp-piwigo-display'),
+                            value: rowHeight,
+                            min: 100,
+                            max: 600,
+                            onChange: function (value) { setAttributes({ justifiedRowHeight: value }); }
+                        }),
+                        displayType === 'justified' && el(RangeControl, {
+                            label: __('Espacement entre les images', 'wp-piwigo-display'),
+                            value: justifiedGap,
+                            min: 0,
+                            max: 64,
+                            onChange: function (value) { setAttributes({ justifiedGap: value }); }
                         })
                     )
                 )

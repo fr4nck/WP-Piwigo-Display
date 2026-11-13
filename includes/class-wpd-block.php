@@ -107,6 +107,10 @@ final class WPD_Block {
 			),
 			array(
 				'transparentBackground' => 'transparent_background',
+			),
+			array(
+				'justifiedRowHeight' => 'justified_row_height',
+				'justifiedGap'       => 'justified_gap',
 			)
 		);
 		$atts = array();

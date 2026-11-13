@@ -131,6 +131,10 @@
                 add(parts, 'masonry_columns', bounded('masonry_columns', 2, 6, 4), true);
                 add(parts, 'masonry_gap', bounded('masonry_gap', 0, 64, 16), true);
             }
+            if (type === 'justified') {
+                add(parts, 'justified_row_height', bounded('justified_row_height', 100, 600, 220), true);
+                add(parts, 'justified_gap', bounded('justified_gap', 0, 64, 8), true);
+            }
 
             return '[piwigo ' + parts.join(' ') + ']';
         }
@@ -141,6 +145,7 @@
             var masonry = type === 'masonry';
             $dialog.find('.wpd-slider-options, .wpd-slider-layout-option').toggle(slider);
             $dialog.find('.wpd-masonry-options').toggle(masonry);
+            $dialog.find('.wpd-justified-options').toggle(type === 'justified');
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded');
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             $dialog.find('[data-wpd-preview]').val(buildShortcode());

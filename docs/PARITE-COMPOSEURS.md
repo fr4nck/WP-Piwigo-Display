@@ -10,6 +10,7 @@ Cette matrice décrit le socle fonctionnel non régressable du shortcode `[piwig
 | Galerie | Oui | Oui | Oui | Oui |
 | Diaporama | Oui | Oui | Oui | Oui |
 | Masonry | Oui | Oui | Oui | Oui |
+| Justified (candidate 3.1, non publiée) | Oui | Oui | Oui | Oui |
 | Presets | Oui | Oui | Oui | Oui |
 | Limite, maximum, dernières, aléatoires | Oui | Oui | Oui | Oui |
 | Tri et ordre | Oui | Oui | Oui | Oui |
