@@ -15,6 +15,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Resolves a small allowlist of native, no-network font stacks. */
 final class WPD_User_Fonts {
 	/**
+	 * Lists imported fonts. Uploads are not enabled in this candidate.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	public static function ui_fonts(): array {
+		return array();
+	}
+
+	/**
 	 * Returns a CSS-safe font stack without interpolating arbitrary input.
 	 *
 	 * @param string $font Requested font identifier.

@@ -35,6 +35,7 @@
       "node --check assets/js/wp-piwigo-display-custom-masks-ui.js",
       "node --check blocks/piwigo/shapes.js",
       "node --check blocks/piwigo/masonry-controls.js",
+      "node --check assets/js/wp-piwigo-display-user-fonts-ui.js",
       "node --check assets/js/wp-piwigo-display-classic-editor.js",
       "node --check assets/js/wp-piwigo-display-composer-parity.js",
       "node --check blocks/piwigo/gutenberg-parity.js",

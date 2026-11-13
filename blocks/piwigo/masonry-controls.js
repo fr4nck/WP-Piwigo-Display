@@ -37,6 +37,20 @@
                 return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
             };
             var photoFill = attributes.photoTextFillMode || 'grid';
+            var fontChoices = [
+                { label: __('Police du thème', 'wp-piwigo-display'), value: 'inherit' },
+                { label: __('Système', 'wp-piwigo-display'), value: 'system' },
+                { label: __('Serif', 'wp-piwigo-display'), value: 'serif' },
+                { label: __('Monospace', 'wp-piwigo-display'), value: 'mono' }
+            ];
+            var packagedFonts = Array.isArray(window.WPDUserFonts) ? window.WPDUserFonts : [];
+            packagedFonts.forEach(function (font) {
+                if (font && font.source === 'bundled'
+                    && ['bundled-bebas-neue', 'bundled-bungee'].indexOf(font.value) !== -1
+                    && typeof font.name === 'string') {
+                    fontChoices.push({ label: font.name, value: font.value });
+                }
+            });
 
             return el(
                 Fragment,
@@ -133,12 +147,7 @@
                         }),
                         displayType === 'photo-text' && el(SelectControl, {
                             label: __('Police locale', 'wp-piwigo-display'), value: attributes.photoTextFont || 'inherit',
-                            options: [
-                                { label: __('Police du thème', 'wp-piwigo-display'), value: 'inherit' },
-                                { label: __('Système', 'wp-piwigo-display'), value: 'system' },
-                                { label: __('Serif', 'wp-piwigo-display'), value: 'serif' },
-                                { label: __('Monospace', 'wp-piwigo-display'), value: 'mono' }
-                            ],
+                            options: fontChoices,
                             onChange: function (value) { setAttributes({ photoTextFont: value }); }
                         }),
                         displayType === 'photo-text' && el(RangeControl, {

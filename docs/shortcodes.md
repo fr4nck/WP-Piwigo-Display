@@ -74,7 +74,7 @@ Le mode `photo-text` affiche un texte sémantique dont les lettres sont remplies
 
 Remplissage disponible : `grid`, `masonry` ou `collage`, reproductible pour une graine et des photos identiques. Réglages : police, graisse, taille, interlettrage, hauteur de ligne, largeur maximale, alignement, densité, contours, arrière-plan, nombre de photos et dispersion en mode collage. La valeur `photo_text_max_images` est limitée à 1–40.
 
-Cette première étape utilise uniquement les polices présentes sur l’appareil ou fournies par le thème : `inherit`, `system`, `serif` et `mono`. Les imports WOFF/WOFF2 et les polices embarquées doivent être qualifiés séparément, sans introduire de service de police distant.
+Les polices système et du thème restent disponibles : `inherit`, `system`, `serif`, `mono`. Deux polices libres, embarquées et servies localement avec leurs licences OFL, sont ajoutées : `bundled-bebas-neue` et `bundled-bungee`. Les imports WOFF/WOFF2 personnalisés restent désactivés ; aucune police distante n'est chargée.
 
 **Navigation vers Piwigo :** contrairement aux galeries photo et aux collages, le texte SVG ne comporte pas de lien individuel vers chaque photographie. Le paramètre `click_action` ne transforme pas encore ce mode en lien cliquable ; pour accéder à l’album complet, ajouter un lien textuel WordPress adjacent. Ce comportement est explicite afin de ne pas prétendre répondre à la demande du forum avec un mécanisme non développé.
 
