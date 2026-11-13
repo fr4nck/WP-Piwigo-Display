@@ -13,7 +13,12 @@ Valeurs acceptées :
 - `pill` : forme pilule ;
 - `star` : étoile ;
 - `hexagon` : hexagone ;
-- `diamond` : losange.
+- `diamond` : losange ;
+- `cloud` : nuage ;
+- `heart` : cœur ;
+- `drop` : goutte ;
+- `triangle`, `pentagon`, `octagon` : polygones ;
+- `card-spade`, `card-heart`, `card-diamond`, `card-club` : symboles de cartes.
 
 Exemples :
 
@@ -35,7 +40,9 @@ L’ancien attribut `rounded="true"` reste pris en charge. Lorsqu’aucun attrib
 
 ## Compatibilité
 
-Les formes simples utilisent `border-radius`. Les formes étoile, hexagone et losange utilisent `clip-path`. Lorsqu’un navigateur ne prend pas en charge `clip-path`, un rectangle propre est affiché.
+Les formes simples utilisent `border-radius`. Les étoiles, polygones, symboles et silhouettes supplémentaires utilisent `clip-path` et, lorsque disponible, les masques CSS natifs. Lorsqu’un navigateur ne prend pas en charge `clip-path`, un rectangle propre est affiché.
+
+La 3.1 candidate étend ces formes aux galeries Justified et Collage. Les anciens shortcodes sans attribut `shape` restent inchangés. Les trois éditeurs proposent une sélection visuelle accessible au clavier. Les masques SVG personnalisés constituent un chantier distinct, à qualifier séparément.
 
 Les réglages sont disponibles dans :
 
@@ -43,4 +50,6 @@ Les réglages sont disponibles dans :
 - Classic Editor ;
 - Gutenberg.
 
-Les légendes, miniatures, commandes du diaporama et la lightbox ne sont pas découpées avec l’image.
+Les légendes, miniatures, commandes du diaporama et la lightbox ne sont pas découpées avec l’image. Les formes ne changent pas les destinations `click_action`.
+
+**Statut :** développement candidat, non publié dans la 3.0.1.

@@ -88,6 +88,33 @@
             });
         }
 
+        function buildShapePicker() {
+            var $select = $dialog.find('[data-wpd="shape"]');
+            var $picker = $dialog.find('[data-wpd-shape-picker]');
+            if (!$select.length) return;
+            if (!$picker.length) {
+                $picker = $('<div class="wpd-shape-picker-grid" data-wpd-shape-picker></div>').insertAfter($select.closest('label'));
+            }
+            if ($picker.children().length) return;
+            $picker.attr('role', 'group').attr('aria-label', 'Choisir une forme');
+            $select.find('option').each(function () {
+                var shapeValue = String($(this).val());
+                var label = String($(this).text());
+                var $button = $('<button type="button" class="wpd-shape-picker-button" aria-pressed="false"></button>');
+                $button.attr('data-wpd-shape-value', shapeValue).attr('aria-label', label).attr('title', label);
+                $button.append($('<span aria-hidden="true"></span>').addClass('wpd-shape-picker-preview wpd-shape-preview-' + shapeValue));
+                $button.append($('<span></span>').text(label));
+                $picker.append($button);
+            });
+        }
+
+        function syncShapePicker() {
+            var current = String(value('shape') || 'rectangle');
+            $dialog.find('[data-wpd-shape-value]').each(function () {
+                $(this).attr('aria-pressed', String($(this).attr('data-wpd-shape-value')) === current ? 'true' : 'false');
+            });
+        }
+
         function buildShortcode() {
             var type = value('type');
             var shape = value('shape') || 'rectangle';
@@ -156,6 +183,7 @@
             $dialog.find('.wpd-justified-options').toggle(type === 'justified');
             $dialog.find('.wpd-collage-options').attr('aria-label', 'Collage / Pêle-mêle').toggle(type === 'collage');
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded');
+            syncShapePicker();
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             $dialog.find('[data-wpd-preview]').val(buildShortcode());
         }
@@ -185,6 +213,8 @@
         function setPrimaryButtonLabel(label) {
             $dialog.parent().find('.ui-dialog-buttonpane .button-primary').text(label);
         }
+
+        buildShapePicker();
 
         $dialog.dialog({
             autoOpen: false,
@@ -222,5 +252,8 @@
 
         $dialog.on('input', '[data-wpd="height"]', function () { editingLegacyHeight = ''; });
         $dialog.on('change input', 'input, select', refresh);
+        $dialog.on('click', '[data-wpd-shape-value]', function () {
+            $dialog.find('[data-wpd="shape"]').val($(this).attr('data-wpd-shape-value')).trigger('change');
+        });
     });
 })(jQuery);
