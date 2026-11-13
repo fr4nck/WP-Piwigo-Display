@@ -16,6 +16,15 @@ docker exec wpd-310-piwigo \
   chmod -R a+rX /var/www/html/piwigo/plugins/piwigo-openstreetmap
 docker exec wpd-310-piwigo sh -c \
   'test "$(stat -c %a /var/www/html/piwigo/plugins/piwigo-openstreetmap/main.inc.php)" = 644'
+# The real upstream installer writes PHPWG_ROOT_PATH/osmmap.php again on
+# web requests (maintain.class.php:164). The container's PHP-FPM user cannot
+# create a new file in the Piwigo root. Grant write access ONLY to this
+# generated entrypoint inside the disposable, loopback-only CI container.
+# Do not chmod the web root and never apply this on a real Piwigo site.
+docker exec -u 0 wpd-310-piwigo touch /var/www/html/piwigo/osmmap.php
+docker exec -u 0 wpd-310-piwigo chmod 0666 /var/www/html/piwigo/osmmap.php
+docker exec wpd-310-piwigo test -f /var/www/html/piwigo/osmmap.php
+echo "OSM_DISPOSABLE_ENTRYPOINT_WRITABLE=PASS"
 docker cp tests/e2e/activate-osm.php wpd-310-piwigo:/var/www/html/piwigo/ci-activate-osm.php
 docker exec -w /var/www/html/piwigo wpd-310-piwigo php84 ci-activate-osm.php
 docker exec wpd-310-piwigo rm -f /var/www/html/piwigo/ci-activate-osm.php
