@@ -133,6 +133,9 @@ async function run() {
               { timeout: 20000 }),
             page.locator('.wp-piwigo-display a[href]').first().click()
           ]);
+          const clickResponse = await page.request.get(page.url());
+          assert.equal(clickResponse.status(), 200,
+            'clicked Piwigo photo/album destination is not HTTP 200');
           assert.ok((await page.locator('body').innerText()).length > 20,
             'clicked Piwigo page did not render');
           console.log('REAL_PIWIGO_' + slug.toUpperCase() + '_CLICK=PASS');
