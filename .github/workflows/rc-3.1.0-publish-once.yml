@@ -1,0 +1,154 @@
+name: Publish Piwigo Display 3.1.0-rc.1 (explicit one-shot)
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches:
+      - candidate/3.1.0-consolidation-20261113
+    paths:
+      - '.github/RC-3.1.0-rc.1-PUBLISH.txt'
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: piwigo-display-3.1.0-rc.1-first-publication
+  cancel-in-progress: false
+
+jobs:
+  publish-rc:
+    if: >-
+      github.event.pull_request.number == 147 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'candidate/3.1.0-rc.1-from-146-20261113'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the exact reviewed branch commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Guard repository, explicit approval, source ancestry and green CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          QUALIFIED_SHA: c993bdc9e7c0bb1990c6ec547e49e37f91b1f136
+          TAG: v3.1.0-rc.1
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REPOSITORY" == 'fr4nck/WP-Piwigo-Display' ]] || exit 2
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]] || exit 2
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/pulls/147" --jq '.head.sha')" == "$HEAD_SHA" ]] || exit 2
+          grep -Fxq 'approved=publish-only-v3.1.0-rc.1' .github/RC-3.1.0-rc.1-PUBLISH.txt
+          git merge-base --is-ancestor "$QUALIFIED_SHA" "$HEAD_SHA"
+          mapfile -t changes < <(git diff --name-only "$QUALIFIED_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          [[ "${#changes[@]}" -eq 2 ]] || { printf 'Unexpected changes: %s\n' "${changes[*]}" >&2; exit 2; }
+          [[ "${changes[0]}" == '.github/RC-3.1.0-rc.1-PUBLISH.txt' ]] || exit 2
+          [[ "${changes[1]}" == '.github/workflows/rc-3.1.0-publish-once.yml' ]] || exit 2
+          for run in 43452414401 43452414131; do
+            got="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" --jq '[.status,.conclusion,.head_sha] | join(" ")')"
+            [[ "$got" == "completed success $QUALIFIED_SHA" ]] ||
+              { echo "Required prior CI run failed or changed: $run ($got)" >&2; exit 2; }
+          done
+          grep -Fxq ' * Version: 3.1.0-rc.1' wp-piwigo-display.php
+          grep -Fq "define( 'WPD_VERSION', '3.1.0-rc.1' );" wp-piwigo-display.php
+          grep -Fq '"version": "3.1.0-rc.1"' blocks/piwigo/block.json
+          grep -Fq 'Stable tag: 3.1.0-rc.1' readme.txt
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/v3.0.1" --jq '.tag_name' | grep -Fxq 'v3.0.1'
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo 'Refusing to touch an existing RC tag' >&2; exit 3
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo 'Refusing to replace any existing RC release' >&2; exit 3
+          fi
+          echo "RC_PREFLIGHT=PASS SHA=$HEAD_SHA"
+
+      - name: Retrieve fully qualified 3.1.0-rc.1 ZIPs from PR CI
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 43452414401
+          name: piwigo-display-3.1.0-rc.1-07b5e17f3d4f67917e6cf2d5e2b60d1563e75f93
+          path: ${{ runner.temp }}/verified-rc
+          github-token: ${{ github.token }}
+
+      - name: Verify SHA256, ZIP structure, provenance and exact distributable tree
+        shell: bash
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          QUALIFIED_SHA: c993bdc9e7c0bb1990c6ec547e49e37f91b1f136
+          ZIP: piwigo-display-3.1.0-rc.1.zip
+          EXPECTED_SHA256: 2e81c426ad1a14658b3c3e013f9f20af32376cb51de7575d615f7fec388fd41f
+        run: |
+          set -Eeuo pipefail
+          cd "$RUNNER_TEMP/verified-rc"
+          sha256sum --check SHA256SUMS
+          echo "$EXPECTED_SHA256  $ZIP" | sha256sum --check
+          grep -Fxq "PR head commit: $QUALIFIED_SHA" PROVENANCE.txt
+          grep -Fxq 'Checkout commit: 07b5e17f3d4f67917e6cf2d5e2b60d1563e75f93' PROVENANCE.txt
+          grep -Fxq 'Version: 3.1.0-rc.1' PROVENANCE.txt
+          unzip -tq "$ZIP"
+          test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
+          unzip -Z1 "$ZIP" | grep -Fxq 'wp-piwigo-display/wp-piwigo-display.php'
+          unzip -Z1 "$ZIP" | grep -Fxq 'wp-piwigo-display/includes/class-wpd-migration-guard.php'
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fxq ' * Version: 3.1.0-rc.1'
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          mkdir -p "$RUNNER_TEMP/rc-unpack" "$RUNNER_TEMP/rc-current/wp-piwigo-display"
+          unzip -q "$ZIP" -d "$RUNNER_TEMP/rc-unpack"
+          rsync -a "$GITHUB_WORKSPACE/" "$RUNNER_TEMP/rc-current/wp-piwigo-display/" \
+            --exclude '.git' --exclude '.github' --exclude 'build' --exclude '/vendor/' \
+            --exclude 'tests' --exclude 'composer.json' --exclude 'composer.lock' \
+            --exclude 'phpcs.xml.dist' --exclude 'AGENTS.md' --exclude 'ROADMAP.md' \
+            --exclude 'ARCHITECTURE.md' --exclude 'AUDIT.md' --exclude 'CODEX.md' \
+            --exclude 'README.en.md' --exclude '*.zip'
+          diff -qr "$RUNNER_TEMP/rc-unpack/wp-piwigo-display" "$RUNNER_TEMP/rc-current/wp-piwigo-display"
+          mkdir -p "$GITHUB_WORKSPACE/release-upload"
+          cp "$ZIP" "$GITHUB_WORKSPACE/release-upload/"
+          awk -v n="$ZIP" '$2 == n { print; count++ } END { if (count != 1) exit 2 }' \
+            SHA256SUMS > "$GITHUB_WORKSPACE/release-upload/SHA256SUMS"
+          cp PROVENANCE.txt "$GITHUB_WORKSPACE/release-upload/PROVENANCE.txt"
+          printf 'Release tag target: %s\n' "$HEAD_SHA" >> "$GITHUB_WORKSPACE/release-upload/PROVENANCE.txt"
+          cd "$GITHUB_WORKSPACE/release-upload"
+          sha256sum --check SHA256SUMS
+          echo 'RC_PACKAGE=VERIFIED'
+
+      - name: Create immutable annotated RC tag and publish GitHub prerelease with assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          TAG: v3.1.0-rc.1
+        run: |
+          set -Eeuo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1 ||
+              gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo 'RC tag or release appeared after preflight; refusing overwrite' >&2
+            exit 3
+          fi
+          annotated="$(gh api -X POST "repos/$GITHUB_REPOSITORY/git/tags" \
+            -f tag="$TAG" -f message="Piwigo Display 3.1.0-rc.1 - qualified $HEAD_SHA" \
+            -f object="$HEAD_SHA" -f type=commit --jq '.sha')"
+          [[ "$annotated" =~ ^[a-f0-9]{40}$ ]] || exit 3
+          gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$TAG" -f sha="$annotated" >/dev/null
+          gh release create "$TAG" \
+            release-upload/piwigo-display-3.1.0-rc.1.zip \
+            release-upload/SHA256SUMS release-upload/PROVENANCE.txt \
+            --verify-tag --prerelease --title "Piwigo Display 3.1.0-rc.1 (tests)" \
+            --notes-file docs/RELEASE-3.1.0-rc.1.md
+          meta="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" \
+            --jq '[.draft,.prerelease,([.assets[].name] | sort | join(","))] | join(" ")')"
+          [[ "$meta" == 'false true PROVENANCE.txt,SHA256SUMS,piwigo-display-3.1.0-rc.1.zip' ]] ||
+            { echo "Released metadata mismatch: $meta" >&2; exit 3; }
+          mkdir -p "$RUNNER_TEMP/rc-download"
+          gh release download "$TAG" --pattern 'piwigo-display-3.1.0-rc.1.zip' \
+            --dir "$RUNNER_TEMP/rc-download"
+          (cd "$RUNNER_TEMP/rc-download" && \
+            echo '2e81c426ad1a14658b3c3e013f9f20af32376cb51de7575d615f7fec388fd41f  piwigo-display-3.1.0-rc.1.zip' | sha256sum --check)
+          gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name' | grep -Fxq 'v3.0.1'
+          echo "RC_PUBLICATION=PASS tag=$TAG" >> "$GITHUB_STEP_SUMMARY"
