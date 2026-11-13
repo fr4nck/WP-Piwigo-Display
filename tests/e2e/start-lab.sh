@@ -128,7 +128,7 @@ for i in 1 2 3 4 5 6; do
   '
   read -r ACTUAL_W ACTUAL_H < <(php -r '
     [$w, $h] = getimagesize(getenv("CI_FIXTURE_PATH"));
-    printf("%d %d\\n", $w, $h);
+    printf("%d %d\n", $w, $h);
   ')
   case "$i" in
     1) [[ "$ACTUAL_W:$ACTUAL_H" == "900:600" ]] ;;
