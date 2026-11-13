@@ -1,0 +1,83 @@
+name: Piwigo 16.4 - disposable browser integration
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/piwigo-browser.yml'
+      - 'tests/e2e/**'
+      - 'includes/**'
+      - 'assets/**'
+      - 'blocks/**'
+      - 'wp-piwigo-display.php'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: piwigo-real-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-piwigo:
+    name: WordPress + real Piwigo + OpenStreetMap + Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout candidate only
+        uses: actions/checkout@v4
+
+      - name: PHP 8.3 for disposable WordPress
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli, gd, mbstring, curl, xml, zip
+          coverage: none
+
+      - name: Install pinned browser test engine
+        run: |
+          set -Eeuo pipefail
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Start disposable Piwigo 16.4.0, MariaDB and WordPress 6.9
+        shell: bash
+        run: bash tests/e2e/start-lab.sh
+
+      - name: Baseline browser gallery and navigation on genuine Piwigo
+        shell: bash
+        run: node tests/e2e/browser.cjs baseline
+
+      - name: Activate upstream OpenStreetMap plugin on test Piwigo only
+        shell: bash
+        run: bash tests/e2e/enable-osm.sh
+
+      - name: Browser regressions with real OpenStreetMap enabled
+        shell: bash
+        run: node tests/e2e/browser.cjs osm
+
+      - name: Test Gutenberg block registration and admin composer
+        shell: bash
+        run: node tests/e2e/browser.cjs gutenberg
+
+      - name: Save synthetic test screenshots and assertions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: piwigo-3.1.0-disposable-browser-proof
+          path: ${{ runner.temp }}/piwigo-310-e2e/reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Tear down disposable services
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          LAB="${{ runner.temp }}/piwigo-310-e2e"
+          if [ -f "$LAB/wp-server.pid" ]; then
+            kill "$(cat "$LAB/wp-server.pid")" 2>/dev/null
+          fi
+          docker rm -f wpd-310-piwigo wpd-310-db 2>/dev/null
+          docker network rm wpd-310-e2e 2>/dev/null
+          echo 'DISPOSABLE_LAB_STOPPED=YES'
