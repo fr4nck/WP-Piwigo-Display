@@ -33,25 +33,26 @@ final class WPD_Shortcode {
 		$atts     = is_array( $atts ) ? $atts : array();
 		$defaults = array_merge(
 			array(
-				'album'       => '',
-				'preset'      => '',
-				'latest'      => '0',
-				'random'      => '0',
-				'max'         => '0',
-				'limit'       => '0',
-				'sort'        => 'manual',
-				'order'       => 'desc',
-				'url'         => '',
-				'recursive'   => 'false',
-				'depth'       => '10',
-				'caption'     => 'default',
-				'style'       => 'default',
-				'orientation' => 'all',
-				'tag'         => '',
-				'tags'        => '',
-				'tag_mode'    => 'any',
-				'width'       => '100%',
-				'align'       => 'center',
+				'album'        => '',
+				'preset'       => '',
+				'latest'       => '0',
+				'random'       => '0',
+				'max'          => '0',
+				'limit'        => '0',
+				'click_action' => 'default',
+				'sort'         => 'manual',
+				'order'        => 'desc',
+				'url'          => '',
+				'recursive'    => 'false',
+				'depth'        => '10',
+				'caption'      => 'default',
+				'style'        => 'default',
+				'orientation'  => 'all',
+				'tag'          => '',
+				'tags'         => '',
+				'tag_mode'     => 'any',
+				'width'        => '100%',
+				'align'        => 'center',
 			),
 			WPD_Settings::get_shortcode_defaults(),
 			array(
@@ -136,7 +137,10 @@ final class WPD_Shortcode {
 			return self::render_error( __( 'Aucune image ne correspond à l’orientation demandée.', 'wp-piwigo-display' ) );
 		}
 
-		$html = WPD_Renderer::render( $images, $atts );
+		// Only the rendering layer uses these resolved values. They are not exposed as shortcode options.
+		$atts['_wpd_album_id']   = absint( $album_id );
+		$atts['_wpd_piwigo_url'] = $piwigo_url;
+		$html                    = WPD_Renderer::render( $images, $atts );
 
 		if ( 'slider' === (string) ( $atts['type'] ?? '' ) ) {
 			$width = (string) ( $atts['width'] ?? '100%' );
@@ -400,18 +404,23 @@ final class WPD_Shortcode {
 		$atts['ratio']  = 1 === preg_match( '/^\d+\/\d+$/', $ratio ) ? $ratio : '16/9';
 		$atts['height'] = 1 === preg_match( '/^\d+(px|rem|em|vh|vw|%)$/', $height ) ? $height : '';
 
-		$atts['autoplay']   = self::sanitize_bool_string( $atts['autoplay'] ?? 'true' );
-		$atts['rounded']    = self::sanitize_bool_string( $atts['rounded'] ?? 'false' );
-		$atts['lightbox']   = self::sanitize_bool_string( $atts['lightbox'] ?? 'true' );
-		$atts['thumbnails'] = self::sanitize_bool_string( $atts['thumbnails'] ?? 'true' );
-		$atts['recursive']  = self::sanitize_bool_string( $atts['recursive'] ?? 'false' );
-		$atts['interval']   = (string) max( 1000, absint( $atts['interval'] ?? 5000 ) );
-		$atts['speed']      = (string) max( 0, absint( $atts['speed'] ?? 500 ) );
-		$atts['limit']      = (string) absint( $atts['limit'] ?? 0 );
-		$atts['max']        = (string) absint( $atts['max'] ?? 0 );
-		$atts['latest']     = (string) absint( $atts['latest'] ?? 0 );
-		$atts['random']     = (string) absint( $atts['random'] ?? 0 );
-		$atts['depth']      = (string) min( 10, absint( $atts['depth'] ?? 10 ) );
+		$atts['autoplay']     = self::sanitize_bool_string( $atts['autoplay'] ?? 'true' );
+		$atts['rounded']      = self::sanitize_bool_string( $atts['rounded'] ?? 'false' );
+		$atts['lightbox']     = self::sanitize_bool_string( $atts['lightbox'] ?? 'true' );
+		$atts['click_action'] = self::sanitize_choice(
+			(string) ( $atts['click_action'] ?? 'default' ),
+			array( 'default', 'piwigo_photo', 'piwigo_album' ),
+			'default'
+		);
+		$atts['thumbnails']   = self::sanitize_bool_string( $atts['thumbnails'] ?? 'true' );
+		$atts['recursive']    = self::sanitize_bool_string( $atts['recursive'] ?? 'false' );
+		$atts['interval']     = (string) max( 1000, absint( $atts['interval'] ?? 5000 ) );
+		$atts['speed']        = (string) max( 0, absint( $atts['speed'] ?? 500 ) );
+		$atts['limit']        = (string) absint( $atts['limit'] ?? 0 );
+		$atts['max']          = (string) absint( $atts['max'] ?? 0 );
+		$atts['latest']       = (string) absint( $atts['latest'] ?? 0 );
+		$atts['random']       = (string) absint( $atts['random'] ?? 0 );
+		$atts['depth']        = (string) min( 10, absint( $atts['depth'] ?? 10 ) );
 
 		if ( isset( $atts['url'] ) && '' !== (string) $atts['url'] ) {
 			$url         = esc_url_raw( (string) $atts['url'] );
