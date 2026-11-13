@@ -137,7 +137,7 @@ final class WPD_Justified {
 				$link_url       = '' !== $navigation_url ? $navigation_url : ( '' !== $large_url ? $large_url : $image_url );
 				?>
 				<figure class="wp-piwigo-display-justified-item" style="--wpd-justified-grow:<?php echo esc_attr( (string) $basis ); ?>;--wpd-justified-ratio:<?php echo esc_attr( (string) $ratio ); ?>;">
-					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( $caption ); ?>">
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( $lightbox && '' === $navigation_url ? 'true' : 'false' ); ?>" data-wpd-title="<?php echo esc_attr( $caption ); ?>">
 						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" width="<?php echo esc_attr( (string) $dimensions['width'] ); ?>" height="<?php echo esc_attr( (string) $dimensions['height'] ); ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped markup. ?>
