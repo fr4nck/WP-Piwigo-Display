@@ -176,6 +176,13 @@ wpqa core install --url=http://127.0.0.1:8088 \
   --title='Piwigo 3.1 disposable E2E' \
   --admin_user=ci_admin --admin_password=ci-only-wordpress \
   --admin_email=ci@example.invalid --skip-email --quiet
+# WP-CLI may infer the containing directory name (/wordpress) for siteurl
+# even when core install receives the desired loopback URL. The PHP server
+# exposes this directory as its document root, so both URLs must be root.
+wpqa option update siteurl 'http://127.0.0.1:8088' --quiet
+wpqa option update home 'http://127.0.0.1:8088' --quiet
+[[ "$(wpqa option get siteurl)" == 'http://127.0.0.1:8088' ]] ||
+  { echo 'CI WordPress siteurl mismatch' >&2; exit 7; }
 
 rsync -a "$GITHUB_WORKSPACE/" "$LAB/stage/wp-piwigo-display/" \
   --exclude .git --exclude .github --exclude tests --exclude vendor \
