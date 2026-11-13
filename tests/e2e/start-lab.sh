@@ -8,7 +8,14 @@ umask 077
 LAB="$RUNNER_TEMP/piwigo-310-e2e"
 mkdir -p "$LAB/reports" "$LAB/wordpress" "$LAB/stage/wp-piwigo-display"
 echo "LAB_WRITE_ROOT=$LAB"
-echo 'PIWIGO=16.4.0; WP=6.9; CI_DATA=DISPOSABLE; PRODUCTION=NONE'
+PIWIGO_TAG="${WPD_PIWIGO_TAG:-16.4.0}"
+MARIADB_TAG="${WPD_MARIADB_TAG:-11.4}"
+DARKROOM="${WPD_ENABLE_DARKROOM:-false}"
+case "$PIWIGO_TAG:$MARIADB_TAG:$DARKROOM" in
+  '16.4.0:11.4:false'|'16.2.0:10.6:true') ;;
+  *) echo 'Unsupported disposable lab combination' >&2; exit 2 ;;
+esac
+echo "PIWIGO=$PIWIGO_TAG; MARIADB=$MARIADB_TAG; WP=6.9; BOOTSTRAP_DARKROOM=$DARKROOM; CI_DATA=DISPOSABLE; PRODUCTION=NONE"
 
 # Published ports are loopback-only. Piwigo and MariaDB communicate on a
 # dedicated Docker bridge; no production network or credentials are used.
@@ -19,7 +26,7 @@ docker run -d --name wpd-310-db --network wpd-310-e2e --network-alias db \
   -e MARIADB_DATABASE=piwigo \
   -e MARIADB_USER=ci \
   -e MARIADB_PASSWORD=ci-only-db \
-  mariadb:11.4 >/dev/null
+  "mariadb:$MARIADB_TAG" >/dev/null
 DB_READY=no
 for i in $(seq 1 80); do
   # mysqladmin ping also succeeds while the bootstrap server is shutting down.
@@ -40,7 +47,7 @@ docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -uroot -e \
   "CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON wordpress.* TO 'ci'@'%';"
 docker run -d --name wpd-310-piwigo --network wpd-310-e2e \
   -p 127.0.0.1:8090:80 -e TZ=UTC -e PIWIGO_UID=1000 -e PIWIGO_GID=1000 \
-  piwigo/piwigo:16.4.0 >/dev/null
+  "piwigo/piwigo:$PIWIGO_TAG" >/dev/null
 for i in $(seq 1 120); do
   if curl --fail --silent http://127.0.0.1:8090/install.php -o /dev/null; then break; fi
   sleep 2
@@ -74,10 +81,28 @@ $conf['lounge_activate_threshold'] = 100000;
 PHP
 docker cp "$LAB/piwigo-ci-config.php" \
   wpd-310-piwigo:/var/www/html/piwigo/local/config/config.inc.php
-[[ "$(docker exec -w /var/www/html/piwigo wpd-310-piwigo php84 -r \
+PIWIGO_PHP=$(docker exec wpd-310-piwigo sh -c 'for cmd in php84 php83 php82 php; do if command -v "$cmd" >/dev/null 2>&1; then echo "$cmd"; exit 0; fi; done; exit 2' | tr -d '\r')
+[[ -n "$PIWIGO_PHP" ]] || { echo 'PIWIGO_PHP_NOT_FOUND' >&2; exit 5; }
+printf 'WPD_PIWIGO_PHP=%s\n' "$PIWIGO_PHP" >> "$GITHUB_ENV"
+[[ "$(docker exec -w /var/www/html/piwigo wpd-310-piwigo "$PIWIGO_PHP" -r \
   'define("PHPWG_ROOT_PATH","./"); include "include/config_default.inc.php"; include "local/config/config.inc.php"; echo $conf["lounge_activate_threshold"];')" == 100000 ]] ||
   { echo 'CI lounge override was not applied' >&2; exit 5; }
 echo "PIWIGO_TEST_LOUNGE_DISABLED=PASS"
+
+if [[ "$DARKROOM" == true ]]; then
+  # Historical compatibility matrix: test the public Bootstrap Darkroom theme
+  # instead of guessing that the generic Piwigo theme reproduces the report.
+  THEME_SHA='a4a67ecbcf22a38fcc610c31c95598586a812285'
+  git clone --quiet https://github.com/Piwigo/piwigo-bootstrap-darkroom.git "$LAB/bootstrap-darkroom"
+  git -C "$LAB/bootstrap-darkroom" checkout --quiet "$THEME_SHA"
+  docker exec wpd-310-piwigo mkdir -p /var/www/html/piwigo/themes/bootstrap_darkroom
+  docker cp "$LAB/bootstrap-darkroom/." wpd-310-piwigo:/var/www/html/piwigo/themes/bootstrap_darkroom/
+  docker exec wpd-310-piwigo chmod -R a+rX /var/www/html/piwigo/themes/bootstrap_darkroom
+  docker cp tests/e2e/activate-darkroom.php wpd-310-piwigo:/var/www/html/piwigo/ci-activate-darkroom.php
+  docker exec -w /var/www/html/piwigo wpd-310-piwigo "$PIWIGO_PHP" ci-activate-darkroom.php
+  docker exec -w /var/www/html/piwigo wpd-310-piwigo rm -f ci-activate-darkroom.php
+  echo "PIWIGO_DARKROOM_SOURCE=$THEME_SHA"
+fi
 
 COOK="$LAB/piwigo-cookies"
 ws() {
