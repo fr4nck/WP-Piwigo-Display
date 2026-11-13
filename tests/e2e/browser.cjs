@@ -21,6 +21,7 @@ const expected = [
   ['collage', '.wp-piwigo-display-collage'],
   ['phototext', '.wp-piwigo-display-photo-text'],
   ['albumlink', '.wp-piwigo-display-gallery'],
+  ['photolink', '.wp-piwigo-display-gallery'],
   ['block', '.wp-piwigo-display-gallery']
 ];
 
@@ -101,15 +102,40 @@ async function run() {
         if (slug === 'phototext') assert.ok(await page.locator('svg.wpd-photo-text-svg').count());
         const href = await page.locator('.wp-piwigo-display a[href]').first()
           .getAttribute('href').catch(() => null);
-        if (slug === 'albumlink') {
+        if (slug === 'albumlink' || slug === 'photolink') {
           assert.ok(href && href.includes('127.0.0.1:8090'), 'not a Piwigo album URL');
           const lightbox = await page.locator('.wp-piwigo-display a[href]').first()
             .getAttribute('data-wpd-lightbox');
           assert.equal(lightbox, 'false', 'Piwigo navigation must bypass local lightbox');
         }
-        observations[slug] = { images: count, href: slug === 'albumlink' ? href : undefined };
+        observations[slug] = { images: count, href: ['albumlink', 'photolink'].includes(slug) ? href : undefined };
         if (['gallery', 'justified', 'collage', 'phototext'].includes(slug)) {
           await page.screenshot({ path: path.join(reportDir, phase + '-' + slug + '.png') });
+        }
+        if (slug === 'gallery') {
+          // Existing shortcodes must still open the WordPress lightbox,
+          // not silently redirect to Piwigo after the new click_action support.
+          const oldLink = page.locator(
+            '.wp-piwigo-display-lightbox-enabled [data-wpd-lightbox="true"]').first();
+          await oldLink.click();
+          await page.locator('.wp-piwigo-display-lightbox.is-open')
+            .waitFor({ state: 'visible', timeout: 10000 });
+          assert.ok(page.url().includes('127.0.0.1:8088'),
+            'historical lightbox redirected to Piwigo');
+          await page.locator('.wp-piwigo-display-lightbox-close').click();
+          console.log('REAL_LEGACY_LIGHTBOX_CLICK=PASS');
+        }
+        if (slug === 'albumlink' || slug === 'photolink') {
+          // Exercise the real click; checking href alone would miss an
+          // obsolete lightbox handler accidentally intercepting navigation.
+          await Promise.all([
+            page.waitForURL(url => url.hostname === '127.0.0.1' && url.port === '8090',
+              { timeout: 20000 }),
+            page.locator('.wp-piwigo-display a[href]').first().click()
+          ]);
+          assert.ok((await page.locator('body').innerText()).length > 20,
+            'clicked Piwigo page did not render');
+          console.log('REAL_PIWIGO_' + slug.toUpperCase() + '_CLICK=PASS');
         }
       }
       const piwigoPage = await page.goto(
