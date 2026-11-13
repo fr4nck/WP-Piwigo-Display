@@ -6,10 +6,12 @@ umask 077
 : "${WP_VERSION:?WP_VERSION required}"
 : "${WP_CLI_PHAR:?WP-CLI required}"
 : "${WPQA_PKG_DIR:?Packages required}"
+: "${WPQA_VERSION:?Candidate version required}"
+[[ "$WPQA_VERSION" == "3.1.0" ]] || exit 2
 [[ -f "$WP_CLI_PHAR" && -d "$WPQA_PKG_DIR" ]] || exit 2
 
-GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.1.zip"
-ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.1-candidate.zip"
+GH_ZIP="$WPQA_PKG_DIR/piwigo-display-${WPQA_VERSION}.zip"
+ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-${WPQA_VERSION}-candidate.zip"
 for f in "$GH_ZIP" "$ORG_ZIP" "$WPQA_PKG_DIR/SHA256SUMS"; do test -f "$f"; done
 (cd "$WPQA_PKG_DIR" && sha256sum --check SHA256SUMS)
 
@@ -17,12 +19,15 @@ WORK="$(mktemp -d "${RUNNER_TEMP%/}/piwigo-wordpress-qa.XXXXXXXX")"
 WP_ROOT="$WORK/wordpress"
 mkdir -p "$WP_ROOT"
 OLD="$WORK/piwigo-display-3.0.0.zip"
+BASE301="$WORK/piwigo-display-3.0.1.zip"
 echo "WRITE_ROOT=$WORK"
 echo "WP_VERSION=$WP_VERSION; production data=NONE"
 curl --fail --location --silent --show-error \
   https://github.com/fr4nck/WP-Piwigo-Display/releases/download/v3.0.0/piwigo-display-3.0.0.zip \
   -o "$OLD"
 echo "50681266437068e425d6504b8f7c7e4d2517403003673f49c8a30b4df28d08c5  $OLD" | sha256sum --check
+curl --fail --location --silent --show-error https://github.com/fr4nck/WP-Piwigo-Display/releases/download/v3.0.1/piwigo-display-3.0.1.zip -o "$BASE301"
+echo "20faab8e598299a7db5d3ace1622f3b8f7c464c27b0ce16778ab93e7c1e59ed4  $BASE301" | sha256sum --check
 
 wpqa() { php "$WP_CLI_PHAR" --path="$WP_ROOT" --allow-root "$@"; }
 fail() { echo "WP_MIGRATION_FAIL: $*" >&2; exit 1; }
@@ -56,13 +61,40 @@ assert_content "old installation"
 assert_identity "old installation"
 
 # Mandatory upgrade IN PLACE: never uninstall the unprotected v3.0.0.
+# Use the actual published 3.0.1 ZIP and verify all historical identities.
+wpqa plugin install "$BASE301" --force
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.1" ]] || fail "Published 3.0.1 baseline version"
+wpqa plugin is-active wp-piwigo-display || fail "3.0.1 baseline disabled"
+assert_options "published GitHub 3.0.1"
+assert_content "published GitHub 3.0.1"
+assert_identity "published GitHub 3.0.1"
+echo "WP_MIGRATION_STAGE=published_3_0_1_pass"
+
+# Upgrade in place to the new 3.1.0 candidate.
 wpqa plugin install "$GH_ZIP" --force
-[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.1" ]] || fail "In-place upgrade version"
-wpqa plugin is-active wp-piwigo-display || fail "In-place upgrade disabled legacy plugin"
-assert_options "GitHub in-place 3.0.1"
-assert_content "GitHub in-place 3.0.1"
-assert_identity "GitHub in-place 3.0.1"
-echo "WP_MIGRATION_STAGE=github_in_place_pass"
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "$WPQA_VERSION" ]] || fail "Candidate upgrade version"
+wpqa plugin is-active wp-piwigo-display || fail "Candidate upgrade disabled plugin"
+assert_options "candidate 3.1.0"
+assert_content "candidate 3.1.0"
+assert_identity "candidate 3.1.0"
+echo "WP_MIGRATION_STAGE=candidate_3_1_0_pass"
+
+# Exercise a real rollback to the published stable 3.0.1 ZIP.
+wpqa plugin install "$BASE301" --force
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.1" ]] || fail "Rollback version"
+wpqa plugin is-active wp-piwigo-display || fail "Rollback deactivated plugin"
+assert_options "rollback to published 3.0.1"
+assert_content "rollback to published 3.0.1"
+assert_identity "rollback to published 3.0.1"
+echo "WP_MIGRATION_STAGE=rollback_to_published_3_0_1_pass"
+
+# Reinstall the candidate before testing coexistence and final uninstall.
+wpqa plugin install "$GH_ZIP" --force
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "$WPQA_VERSION" ]] || fail "Candidate reupgrade"
+assert_options "candidate resumed"
+assert_content "candidate resumed"
+assert_identity "candidate resumed"
+echo "WP_MIGRATION_STAGE=candidate_resumed_pass"
 
 wpqa plugin install "$ORG_ZIP"
 if wpqa plugin activate display4piwigo; then fail "Dual activation allowed"; fi
