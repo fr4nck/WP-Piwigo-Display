@@ -160,6 +160,7 @@ final class WPD_Block {
 		$atts   = self::attributes_to_shortcode( $attributes );
 		$output = WPD_Shortcode::render( $atts );
 		$output = WPD_Shapes::apply_shape( $output, 'piwigo', $atts, array() );
+		$output = WPD_Custom_SVG_Masks::apply_mask( $output, 'piwigo', $atts, array() );
 
 		return WPD_Slider_Transitions::inject_slider_attributes( $output, 'piwigo', $atts, array() );
 	}

@@ -32,6 +32,8 @@
     "test:frontend": [
       "@test:php-regressions",
       "node --check assets/js/wp-piwigo-display-album-picker.js",
+      "node --check assets/js/wp-piwigo-display-custom-masks-ui.js",
+      "node --check blocks/piwigo/shapes.js",
       "node --check blocks/piwigo/gutenberg-parity.js",
       "node tests/tinymce-preview.js",
       "node tests/tinymce-dollar-replacement.js",
