@@ -103,16 +103,42 @@ PRIVATE=$(ws pwg.categories.add \
   jq -er 'select(.stat=="ok") | .result.id')
 echo "PIWIGO_CATEGORIES=PASS"
 
+# Six synthetic pictures with real EXIF-independent pixel dimensions: two
+# landscapes, portrait, square, panorama, tall portrait. Visual guides make
+# cropping/stretching obvious in the Playwright screenshots.
+# Never read photos from an actual Piwigo, WordPress or PMSL installation.
 for i in 1 2 3 4 5 6; do
   export CI_FIXTURE_PATH="$LAB/photo-$i.jpg"
   CI_FIXTURE_INDEX="$i" php -r '
-    $im = imagecreatetruecolor(720, 480);
     $n = (int) getenv("CI_FIXTURE_INDEX");
-    $color = imagecolorallocate($im, ($n*27)%240, ($n*39)%220, ($n*47)%230);
-    imagefilledrectangle($im, 0, 0, 720, 480, $color);
-    imagejpeg($im, getenv("CI_FIXTURE_PATH"), 84);
+    $sizes = [[900,600], [840,560], [540,810], [720,720], [1200,480], [480,960]];
+    [$w, $h] = $sizes[$n - 1];
+    $im = imagecreatetruecolor($w, $h);
+    $background = imagecolorallocate($im, ($n * 27) % 205 + 40, ($n * 39) % 185 + 30, ($n * 47) % 185 + 30);
+    $light = imagecolorallocate($im, 252, 249, 236);
+    $dark = imagecolorallocate($im, 30, 30, 37);
+    imagefilledrectangle($im, 0, 0, $w, $h, $background);
+    imagerectangle($im, 12, 12, $w - 13, $h - 13, $light);
+    imageline($im, 0, 0, $w - 1, $h - 1, $light);
+    imageline($im, $w - 1, 0, 0, $h - 1, $light);
+    imagefilledellipse($im, (int) ($w / 2), (int) ($h / 2), max(50, (int) ($w / 5)), max(50, (int) ($h / 5)), $dark);
+    imagestring($im, 5, 24, 25, "CI PHOTO $n - ".$w."x".$h, $light);
+    imagejpeg($im, getenv("CI_FIXTURE_PATH"), 85);
     imagedestroy($im);
   '
+  read -r ACTUAL_W ACTUAL_H < <(php -r '
+    [$w, $h] = getimagesize(getenv("CI_FIXTURE_PATH"));
+    echo "$w $h";
+  ')
+  case "$i" in
+    1) [[ "$ACTUAL_W:$ACTUAL_H" == "900:600" ]] ;;
+    2) [[ "$ACTUAL_W:$ACTUAL_H" == "840:560" ]] ;;
+    3) [[ "$ACTUAL_W:$ACTUAL_H" == "540:810" ]] ;;
+    4) [[ "$ACTUAL_W:$ACTUAL_H" == "720:720" ]] ;;
+    5) [[ "$ACTUAL_W:$ACTUAL_H" == "1200:480" ]] ;;
+    6) [[ "$ACTUAL_W:$ACTUAL_H" == "480:960" ]] ;;
+  esac || { echo "PIWIGO_FIXTURE_DIMENSIONS_INCORRECT=$i" >&2; exit 5; }
+  printf '%s\t%s\t%s\n' "$i" "$ACTUAL_W" "$ACTUAL_H" >> "$LAB/reports/fixture-dimensions.tsv"
   HTTP_STATUS=$(curl --silent --show-error -b "$COOK" -c "$COOK" \
     --output "$LAB/upload-response.json" --write-out '%{http_code}' \
     --form 'method=pwg.images.addSimple' \
