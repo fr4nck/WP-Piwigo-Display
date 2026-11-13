@@ -41,6 +41,18 @@ foreach ($files as $path) {
 
     foreach ($forbidden as $needle => $reason) {
         if (false !== strpos($contents, $needle)) {
+            // The sole reviewed upload surface is the administrator-only SVG import.
+            // All other $_FILES occurrences, including additional unreviewed calls in
+            // this file, must be rejected.
+            if ('$_FILES' === $needle && 'includes/class-wpd-custom-svg-masks.php' === $relative
+                && 3 === substr_count($contents, '$_FILES[')
+                && false !== strpos($contents, "['wpd_svg_mask']")
+                && false !== strpos($contents, "check_admin_referer( 'wpd_upload_svg_mask' )")
+                && false !== strpos($contents, 'is_uploaded_file(')
+                && false !== strpos($contents, 'WPD_SVG_Mask_Sanitizer::sanitize( $raw )')
+            ) {
+                continue;
+            }
             $failures[] = sprintf('%s in %s: %s', $reason, $relative, $needle);
         }
     }
@@ -82,6 +94,20 @@ $required = array(
         'wp_safe_remote_post(',
         "'sslverify'   => true",
         'sanitize_text_field(',
+    ),
+    'includes/class-wpd-custom-svg-masks.php' => array(
+        "current_user_can( 'manage_options' )",
+        "check_admin_referer( 'wpd_upload_svg_mask' )",
+        "check_admin_referer( 'wpd_delete_svg_mask' )",
+        "is_uploaded_file( \$tmp_name )",
+        "WPD_SVG_Mask_Sanitizer::sanitize( \$raw )",
+        "update_option( self::OPTION_NAME, \$library, false )",
+    ),
+    'includes/class-wpd-svg-mask-sanitizer.php' => array(
+        'LIBXML_NONET',
+        '<!DOCTYPE|<!ENTITY',
+        "'svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'polygon', 'polyline'",
+        "0 === stripos( \$attribute_name, 'on' )",
     ),
 );
 

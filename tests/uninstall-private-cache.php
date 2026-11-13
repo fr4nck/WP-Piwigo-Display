@@ -79,7 +79,7 @@ function delete_transient(string $name): bool { $GLOBALS['deleted_transients'][]
 function is_multisite(): bool { return false; }
 require dirname( __DIR__ ) . '/uninstall.php';
 
-foreach ( array('wp_piwigo_display_options','wp_piwigo_display_service_account') as $key ) {
+foreach ( array('wp_piwigo_display_options','wp_piwigo_display_service_account','wpd_custom_svg_masks') as $key ) {
     if ( ! in_array( $key, $GLOBALS['deleted_options'], true ) ) { fwrite(STDERR, "Option not deleted: $key\n"); exit(1); }
 }
 foreach ( array('wpd_api_health_metrics','wpd_album_abc','wpd_stale_def','wpd_lock_ghi') as $key ) {

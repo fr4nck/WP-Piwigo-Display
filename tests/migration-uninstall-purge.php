@@ -23,7 +23,15 @@ final class WPD_Migration_Db {
 }
 $GLOBALS['wpdb'] = new WPD_Migration_Db();
 require dirname( __DIR__ ) . '/uninstall.php';
-if ( 4 !== count( $GLOBALS['migration_deleted'] ) || 1 !== $GLOBALS['migration_blog'] ) {
+if ( 6 !== count( $GLOBALS['migration_deleted'] ) || 1 !== $GLOBALS['migration_blog'] ) {
 	fwrite( STDERR, "FAIL final multisite cleanup\n" ); exit( 1 );
 }
-echo "PASS final-copy cleanup on each test site\n";
+foreach ( array( 1, 2 ) as $site_id ) {
+	foreach ( array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account', 'wpd_custom_svg_masks' ) as $option_name ) {
+		if ( ! in_array( array( $site_id, $option_name ), $GLOBALS['migration_deleted'], true ) ) {
+			fwrite( STDERR, "FAIL missing final data cleanup on site {$site_id}: {$option_name}\\n" );
+			exit( 1 );
+		}
+	}
+}
+echo "PASS final-copy cleanup on each test site\\n";

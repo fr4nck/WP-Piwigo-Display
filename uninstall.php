@@ -102,6 +102,7 @@ call_user_func(
 
 			delete_option( 'wp_piwigo_display_options' );
 			delete_option( 'wp_piwigo_display_service_account' );
+			delete_option( 'wpd_custom_svg_masks' );
 			delete_transient( 'wpd_api_health_metrics' );
 
 			$wpd_prefixes = array(
