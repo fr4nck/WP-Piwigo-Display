@@ -83,6 +83,7 @@ final class WPD_Block {
 				'orientations'   => 'orientation',
 				'caption'        => 'caption',
 				'lightbox'       => 'lightbox',
+				'clickAction'    => 'click_action',
 				'rounded'        => 'rounded',
 				'style'          => 'style',
 				'shape'          => 'shape',

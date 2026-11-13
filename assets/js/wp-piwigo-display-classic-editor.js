@@ -109,6 +109,7 @@
             add(parts, 'tags', value('tags'), true);
             add(parts, 'tag_mode', value('tag_mode'), true);
             add(parts, 'url', value('url'), true);
+            if (value('click_action') !== 'default') add(parts, 'click_action', value('click_action'), true);
             add(parts, 'height', value('height') ? bounded('height', 160, 1200, 160) + 'px' : editingLegacyHeight, true);
 
             parts.push('recursive="' + (checked('recursive') ? 'true' : 'false') + '"');

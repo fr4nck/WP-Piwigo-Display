@@ -26,6 +26,24 @@ L’identifiant numérique **sans préfixe** est le seul format numérique fiabl
 [piwigo url="https://autre-galerie.example.org" album="154"]
 ```
 
+## Action au clic sur une photo (3.1 en développement)
+
+Le paramètre facultatif `click_action` choisit la destination d’un clic, sans modifier le nombre de photos affichées :
+
+- `default` (comportement par défaut) : lightbox WordPress si elle est activée, sinon image directe ;
+- `piwigo_photo` : ouvrir dans Piwigo **la page de la photo** et utiliser la navigation de son album complet ;
+- `piwigo_album` : ouvrir directement **la page de l’album complet** sur Piwigo.
+
+Exemple : six photos affichées dans WordPress et navigation intégrale dans Piwigo :
+
+```text
+[piwigo album="154" type="gallery" limit="6" click_action="piwigo_photo"]
+```
+
+Si l’API Piwigo ne fournit pas un lien de photo acceptable, le plugin utilise la page de l’album comme destination de repli. Les liens pointent vers le serveur Piwigo configuré et ne transmettent jamais les identifiants du compte de service WordPress. **Les albums privés restent soumis aux autorisations et à la connexion propres à Piwigo** : le visiteur ne pourra pas nécessairement poursuivre sa navigation sur ce serveur.
+
+Le réglage est disponible dans le compositeur d’administration, Classic Editor et Gutenberg. L’ouverture externe remplace la lightbox locale pour les images de cette galerie, mais ne désactive pas le diaporama WordPress.
+
 ## Modes d’affichage
 
 Le paramètre `type` détermine la façon dont les photos sont présentées. Les trois modes utilisent les mêmes sources Piwigo et peuvent partager les filtres, légendes et options générales ; le choix dépend surtout de l’usage éditorial recherché.
