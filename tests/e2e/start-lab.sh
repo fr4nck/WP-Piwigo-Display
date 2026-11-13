@@ -119,6 +119,10 @@ for i in 1 2 3 4 5 6; do
     exit 5
   fi
 done
+echo "PIWIGO_DB_IMAGE_TOTAL=$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -h 127.0.0.1 -uroot -N piwigo -e 'SELECT COUNT(*) FROM piwigo_images')"
+echo "PIWIGO_DB_IMAGE_LINKS=$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -h 127.0.0.1 -uroot -N piwigo -e "SELECT COUNT(*) FROM piwigo_image_category WHERE category_id=$ALBUM")"
+echo "PIWIGO_DB_ALBUM_STATUS=$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -h 127.0.0.1 -uroot -N piwigo -e "SELECT status FROM piwigo_categories WHERE id=$ALBUM")"
+echo "PIWIGO_DB_IMAGE_LEVEL=$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -h 127.0.0.1 -uroot -N piwigo -e "SELECT MIN(level), MAX(level) FROM piwigo_images")"
 ws pwg.categories.getImages --data-urlencode "cat_id=$ALBUM" > "$LAB/image-list.json"
 echo "PIWIGO_IMAGE_LIST_STATUS=$(jq -r '.stat // "missing"' "$LAB/image-list.json")"
 echo "PIWIGO_IMAGE_LIST_TYPE=$(jq -r '.result.images | type' "$LAB/image-list.json")"
