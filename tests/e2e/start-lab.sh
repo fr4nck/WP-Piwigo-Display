@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Disposable WordPress/Piwigo integration lab. Never connects to production.
 set -Eeuo pipefail
+trap 'printf "LAB_FAILURE_LINE=%s STATUS=%s\n" "$LINENO" "$?" >&2' ERR
 umask 077
 : "$RUNNER_TEMP" "$GITHUB_WORKSPACE" "$GITHUB_ENV"
 
@@ -97,15 +98,24 @@ for i in 1 2 3 4 5 6; do
     imagejpeg($im, getenv("CI_FIXTURE_PATH"), 84);
     imagedestroy($im);
   '
-  UPLOAD_RESPONSE=$(curl --fail --silent --show-error -b "$COOK" -c "$COOK" \
+  HTTP_STATUS=$(curl --silent --show-error -b "$COOK" -c "$COOK" \
+    --output "$LAB/upload-response.json" --write-out '%{http_code}' \
     --form 'method=pwg.images.addSimple' \
     --form "image=@$CI_FIXTURE_PATH;type=image/jpeg" \
     --form "category=$ALBUM" \
+    --form 'level=0' \
     --form "name=CI photo $i" \
     'http://127.0.0.1:8090/ws.php?format=json')
-  if ! jq -e '.stat == "ok"' <<< "$UPLOAD_RESPONSE" >/dev/null; then
-    echo "PIWIGO_IMAGE_UPLOAD_REJECTED_INDEX=$i" >&2
-    jq -r '[.stat // "unknown", (.err // "none" | tostring), .message // "none"] | join(" / ")' <<< "$UPLOAD_RESPONSE" >&2
+  if [[ "$HTTP_STATUS" != 200 ]] ||
+    ! jq -e '.stat == "ok"' "$LAB/upload-response.json" >/dev/null 2>&1; then
+    echo "PIWIGO_IMAGE_UPLOAD_REJECTED_INDEX=$i HTTP=$HTTP_STATUS" >&2
+    if jq -e 'type == "object"' "$LAB/upload-response.json" >/dev/null 2>&1; then
+      jq -r '[.stat // "unknown", (.err // "none" | tostring), .message // "none"] | join(" / ")' "$LAB/upload-response.json" >&2
+    else
+      echo "Non-JSON response; first 350 bytes from disposable fixture:" >&2
+      head -c 350 "$LAB/upload-response.json" | tr '\n' ' ' >&2
+      echo >&2
+    fi
     exit 5
   fi
 done
