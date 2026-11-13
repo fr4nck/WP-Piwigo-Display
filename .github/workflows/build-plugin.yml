@@ -6,11 +6,13 @@ on:
     branches:
       - 'release/**'
       - 'audit/**'
+      - 'candidate/**'
     tags:
       - 'v*'
   pull_request:
     paths:
       - '.github/workflows/build-plugin.yml'
+      - '.github/scripts/prepare-org-candidate.php'
       - 'composer.json'
       - 'wp-piwigo-display.php'
       - 'includes/**'
@@ -96,6 +98,7 @@ jobs:
           set -euo pipefail
           ROOT=build/wp-piwigo-display
           test -f "$ROOT/wp-piwigo-display.php"
+          test -f "$ROOT/includes/class-wpd-migration-guard.php"
           test -f "$ROOT/assets/js/wp-piwigo-display-slider.js"
           test -f "$ROOT/assets/vendor/splide/splide.min.js"
           test -f "$ROOT/assets/vendor/splide/splide.min.css"
@@ -112,19 +115,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a build/wp-piwigo-display/ build/plugin-check/piwigo-display/
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a build/wp-piwigo-display/ build/plugin-check/display4piwigo/
+
+      - name: Normalize isolated WordPress.org translation candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          grep -Fq '"name": "wp-piwigo-display/gallery"' build/plugin-check/display4piwigo/blocks/piwigo/block.json
 
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/piwigo-display'
+          build-dir: './build/plugin-check/display4piwigo'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Compatibility exceptions only: historical hooks and text domain stay unchanged.
-          # The WordPress.org candidate is checked under `piwigo-display`, while the actual
-          # GitHub upgrade ZIP stays rooted at `wp-piwigo-display` for existing installations.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
+          # Keep only legacy hook exceptions. Text domains are checked without exclusions.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Build directly installable ZIP
         shell: bash
@@ -140,6 +148,7 @@ jobs:
           ZIP="${{ steps.version.outputs.zip }}"
           test -f "$ZIP"
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/wp-piwigo-display.php$')" -eq 1
+          test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/includes/class-wpd-migration-guard.php$')" -eq 1
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
           ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
 
@@ -148,10 +157,12 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
           ZIP: ${{ steps.version.outputs.zip }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           sha256sum "$ZIP" > SHA256SUMS
-          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
 
       - name: Conserver le ZIP candidat sans publication
         uses: actions/upload-artifact@v4

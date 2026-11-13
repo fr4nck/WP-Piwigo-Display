@@ -11,13 +11,31 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      release_action:
+        description: 'Mode (verifier sans publier par defaut)'
+        type: choice
+        required: true
+        default: verify-only
+        options:
+          - verify-only
+          - publish-3.0.1
+      expected_sha:
+        description: 'SHA complet (40 caracteres) de la candidate approuvee'
+        type: string
+        required: false
+      real_recipe_go:
+        description: 'GO de recette reelle WordPress/Piwigo sur le ZIP qualifie'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: plugin-ci-${{ github.ref }}
+  group: plugin-ci-${{ github.event_name == 'workflow_dispatch' && inputs.release_action == 'publish-3.0.1' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -74,8 +92,8 @@ jobs:
 
       - name: Prepare WordPress.org Plugin Check distribution
         run: |
-          mkdir -p build/plugin-check/piwigo-display
-          rsync -a ./ build/plugin-check/piwigo-display/ \
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a ./ build/plugin-check/display4piwigo/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'build' \
@@ -92,16 +110,21 @@ jobs:
             --exclude 'README.en.md' \
             --exclude '*.zip'
 
+      - name: Normalize candidate gettext domains without editing the GitHub package
+        shell: bash
+        run: |
+          set -euo pipefail
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display' wp-piwigo-display.php
+
       - name: Run WordPress Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './build/plugin-check/piwigo-display'
+          build-dir: './build/plugin-check/display4piwigo'
           exclude-directories: 'vendor,tests,build'
           strict: true
-          # Compatibility exceptions only: the historical public hooks and text domain
-          # stay unchanged so existing integrations/translations keep working. The public
-          # product name and WordPress.org candidate slug are both `Piwigo Display` / `piwigo-display`.
-          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound,WordPress.WP.I18n.TextDomainMismatch,textdomain_mismatch'
+          # Check translation domains strictly on the disposable WordPress.org candidate.
+          ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Configure PHP 8.4
         uses: shivammathur/setup-php@v2
@@ -112,10 +135,16 @@ jobs:
       - name: Check PHP 8.4 syntax
         run: composer lint
 
+      - name: Run frontend and migration regressions under PHP 8.4
+        run: composer test:frontend
+
   package:
     name: Paquet ZIP
     needs: quality
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    # PR artifacts are disposable verification candidates, never public releases.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -152,15 +181,32 @@ jobs:
       - name: Check packaged frontend assets
         run: php tests/package-assets.php build/wp-piwigo-display
 
-      - name: Create ZIP
+      - name: Prepare separate WordPress.org verification tree
+        shell: bash
         run: |
+          set -euo pipefail
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a build/wp-piwigo-display/ build/plugin-check/display4piwigo/
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          php tests/package-assets.php build/plugin-check/display4piwigo
+
+      - name: Create both verification ZIPs (never publish)
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
           cd build
-          zip -r "piwigo-display-${{ steps.version.outputs.version }}.zip" wp-piwigo-display
+          zip -qr "piwigo-display-${VERSION}.zip" wp-piwigo-display
+          cd plugin-check
+          zip -qr "../display4piwigo-wporg-${VERSION}-candidate.zip" display4piwigo
 
       - name: Verify ZIP and record provenance
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           cd build
@@ -168,14 +214,36 @@ jobs:
           unzip -tq "$ZIP"
           test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
           unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/includes/class-wpd-migration-guard.php' > /dev/null
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
           if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
             echo 'Fichiers indésirables dans le ZIP.' >&2
             exit 1
           fi
-          sha256sum "$ZIP" > SHA256SUMS
-          printf 'Commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          ORG_ZIP="display4piwigo-wporg-${VERSION}-candidate.zip"
+          unzip -tq "$ORG_ZIP"
+          test "$(unzip -Z1 "$ORG_ZIP" | cut -d/ -f1 | sort -u)" = 'display4piwigo'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/wp-piwigo-display.php'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/includes/class-wpd-migration-guard.php'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Text Domain: display4piwigo'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Plugin Name: Display4Piwigo'
+          if unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Eq '^ \* Update URI:'; then
+            echo 'Update URI must be absent from WordPress.org candidate.' >&2
+            exit 1
+          fi
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"textdomain": "display4piwigo"'
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Unwanted file in WordPress.org candidate.' >&2
+            exit 1
+          fi
+          sha256sum "$ZIP" "$ORG_ZIP" > SHA256SUMS
+          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
           cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
+          # Also record per-distribution hashes in the durable CI log.
+          cat SHA256SUMS
+          cat PROVENANCE.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -183,7 +251,166 @@ jobs:
           name: piwigo-display-${{ steps.version.outputs.version }}-${{ github.sha }}
           path: |
             build/piwigo-display-${{ steps.version.outputs.version }}.zip
+            build/display4piwigo-wporg-${{ steps.version.outputs.version }}-candidate.zip
             build/SHA256SUMS
             build/PROVENANCE.txt
           if-no-files-found: error
           retention-days: 30
+
+
+  integration:
+    name: WordPress jetable / ${{ matrix.mode }} / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }}
+    needs: package
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.release_action == 'publish-3.0.1' && inputs.real_recipe_go == true)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: single
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: single
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: multisite
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: multisite
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wpqa
+          MYSQL_PASSWORD: wpqa
+          MYSQL_ROOT_PASSWORD: ci_fake_root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci_fake_root_password"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+
+      - name: Configure PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring, zip
+          coverage: none
+
+      - name: Retrieve both independently identified ZIPs
+        uses: actions/download-artifact@v4
+        with:
+          name: piwigo-display-${{ needs.package.outputs.version }}-${{ github.sha }}
+          path: ${{ runner.temp }}/piwigo-zip-candidates
+
+      - name: Install disposable WP-CLI utility
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+            --output "${{ runner.temp }}/wp-cli.phar"
+          php "${{ runner.temp }}/wp-cli.phar" --info
+
+      - name: Exercise published 3.0.0 to 3.0.1 migration on actual WordPress
+        shell: bash
+        env:
+          WP_VERSION: ${{ matrix.wordpress }}
+          WP_CLI_PHAR: ${{ runner.temp }}/wp-cli.phar
+          WPQA_PKG_DIR: ${{ runner.temp }}/piwigo-zip-candidates
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.mode }}" == multisite ]]; then
+            bash tests/ci-wordpress-multisite.sh
+          else
+            bash tests/ci-wordpress-migration.sh
+          fi
+
+  publish-release:
+    name: Publication GitHub 3.0.1 apres recette explicite
+    needs: [quality, package, integration]
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/candidate/3.0.1-qualification' &&
+      inputs.release_action == 'publish-3.0.1' &&
+      inputs.real_recipe_go == true
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the exact candidate commit
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Retrieve ZIPs from this fully qualified run
+        uses: actions/download-artifact@v4
+        with:
+          name: piwigo-display-${{ needs.package.outputs.version }}-${{ github.sha }}
+          path: build
+
+      - name: Verify commit, identity, integrity and immutable release target
+        shell: bash
+        env:
+          VERSION: ${{ needs.package.outputs.version }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+          ZIP: piwigo-display-${{ needs.package.outputs.version }}.zip
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$VERSION" == '3.0.1' ]] || { echo 'Only 3.0.1 is authorized.' >&2; exit 1; }
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'Full expected SHA required.' >&2; exit 1; }
+          [[ "$GITHUB_SHA" == "$EXPECTED_SHA" ]] || { echo 'Candidate SHA has changed.' >&2; exit 1; }
+          [[ "$GITHUB_REF" == 'refs/heads/candidate/3.0.1-qualification' ]] || exit 1
+          test -f "build/$ZIP"
+          test -f build/display4piwigo-wporg-3.0.1-candidate.zip
+          test -f build/SHA256SUMS
+          test -f build/PROVENANCE.txt
+          (cd build && sha256sum --check SHA256SUMS)
+          grep -Fxq "Checkout commit: $GITHUB_SHA" build/PROVENANCE.txt
+          grep -Fxq "Version: $VERSION" build/PROVENANCE.txt
+          unzip -tq "build/$ZIP"
+          unzip -p "build/$ZIP" wp-piwigo-display/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
+          unzip -p "build/$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          if git ls-remote --tags origin "refs/tags/v$VERSION" | grep -q .; then
+            echo 'Release tag already exists; refusing to change it.' >&2
+            exit 1
+          fi
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo 'GitHub release already exists; refusing to replace it.' >&2
+            exit 1
+          fi
+          # The WordPress.org ZIP remains an isolated candidate, not a public release.
+          mkdir -p release-upload
+          cp "build/$ZIP" release-upload/
+          awk -v n="$ZIP" '$2 == n { print; count++ } END { if (count != 1) exit 1 }' build/SHA256SUMS > release-upload/SHA256SUMS
+          cp build/PROVENANCE.txt release-upload/
+          (cd release-upload && sha256sum --check SHA256SUMS)
+
+      - name: Create a new annotated tag and publish the GitHub distribution
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.package.outputs.version }}
+          ZIP: piwigo-display-${{ needs.package.outputs.version }}.zip
+        run: |
+          set -Eeuo pipefail
+          TAG="v$VERSION"
+          TAG_OBJECT="$(gh api -X POST "repos/$GITHUB_REPOSITORY/git/tags" \
+            -f tag="$TAG" \
+            -f message="Piwigo Display $VERSION - verified $GITHUB_SHA" \
+            -f object="$GITHUB_SHA" -f type=commit --jq '.sha')"
+          [[ "$TAG_OBJECT" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          # POST creates only a new ref: it cannot rewrite v3.0.0 or an existing v3.0.1.
+          gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$TAG" -f sha="$TAG_OBJECT" >/dev/null
+          gh release create "$TAG" \
+            "release-upload/$ZIP" release-upload/SHA256SUMS release-upload/PROVENANCE.txt \
+            --verify-tag --title "Piwigo Display $VERSION" --generate-notes

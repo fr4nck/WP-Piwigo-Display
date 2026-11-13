@@ -6,6 +6,7 @@
     var createElement = element.createElement;
     var Fragment = element.Fragment;
     var useState = element.useState;
+    var useEffect = element.useEffect;
     var InspectorControls = blockEditor.InspectorControls;
     var PanelBody = components.PanelBody;
     var SelectControl = components.SelectControl;
@@ -17,8 +18,14 @@
 
     var albumCache = null;
     var albumRequest = null;
+    var albumRequestGeneration = 0;
 
-    function loadAlbums() {
+    function loadAlbums(forceReload) {
+        if (forceReload) {
+            albumCache = null;
+            albumRequest = null;
+            albumRequestGeneration += 1;
+        }
         if (albumCache) {
             return Promise.resolve(albumCache);
         }
@@ -33,7 +40,8 @@
         data.append('action', 'wpd_get_albums');
         data.append('nonce', window.WPDAlbumPickerConfig.nonce);
 
-        albumRequest = window.fetch(window.WPDAlbumPickerConfig.ajaxUrl, {
+        var generation = albumRequestGeneration;
+        var request = window.fetch(window.WPDAlbumPickerConfig.ajaxUrl, {
             method: 'POST',
             credentials: 'same-origin',
             body: data
@@ -52,13 +60,36 @@
             })) {
                 throw new Error(__('Liste des albums Piwigo invalide.', 'wp-piwigo-display'));
             }
-            albumCache = albums;
-            return albumCache;
+            if (generation === albumRequestGeneration) albumCache = albums;
+            return albums;
         }).finally(function () {
-            albumRequest = null;
+            if (albumRequest === request) albumRequest = null;
         });
 
-        return albumRequest;
+        albumRequest = request;
+        return request;
+    }
+
+    function selectedAlbumId(value, albums) {
+        var entered = String(value || '').trim();
+        if (/^[0-9]+$/.test(entered)) return entered;
+        if (!entered) return '';
+
+        // PHP resolves names and paths case-insensitively, but uses Piwigo's
+        // category order. The picker may display a different sorted order:
+        // never highlight an arbitrary album when several names match.
+        var wantedPath = entered.replace(/^\/+|\/+$/g, '').toLocaleLowerCase();
+        var matchingIds = {};
+        albums.forEach(function (album) {
+            var id = String(album.id || '');
+            var name = String(album.name || '').toLocaleLowerCase();
+            var path = String(album.path || '').replace(/^\/+|\/+$/g, '').toLocaleLowerCase();
+            if (name === entered.toLocaleLowerCase() || (path && path === wantedPath)) {
+                if (id) matchingIds[id] = true;
+            }
+        });
+        var ids = Object.keys(matchingIds);
+        return ids.length === 1 ? ids[0] : '';
     }
 
     function AlbumPicker(props) {
@@ -83,25 +114,48 @@
         var selectedState = useState(String(props.value || ''));
         var selectedId = selectedState[0];
         var setSelectedId = selectedState[1];
+        var latestRequest = element.useRef(0);
+
+        // Undo/redo and manual edits can update albumId outside this picker.
+        useEffect(function () {
+            setSelectedId(String(props.value || ''));
+        }, [props.value]);
+
+        function requestAlbums(forceReload) {
+            var requestId = ++latestRequest.current;
+            setLoading(true);
+            setError('');
+            loadAlbums(forceReload).then(function (items) {
+                if (latestRequest.current === requestId) setAlbums(items);
+            }).catch(function (exception) {
+                if (latestRequest.current === requestId) {
+                    setError(exception.message || __('Impossible de charger les albums.', 'wp-piwigo-display'));
+                }
+            }).finally(function () {
+                if (latestRequest.current === requestId) setLoading(false);
+            });
+        }
 
         function togglePicker() {
             if (open) {
+                latestRequest.current += 1;
+                setLoading(false);
+                setError('');
                 setOpen(false);
                 return;
             }
             setOpen(true);
-            if (albums.length) {
+            setError('');
+            if (albumCache) {
+                setAlbums(albumCache);
+                setLoading(false);
                 return;
             }
-            setLoading(true);
-            setError('');
-            loadAlbums().then(function (items) {
-                setAlbums(items);
-            }).catch(function (exception) {
-                setError(exception.message || __('Impossible de charger les albums.', 'wp-piwigo-display'));
-            }).finally(function () {
+            if (albums.length) {
                 setLoading(false);
-            });
+                return;
+            }
+            requestAlbums(false);
         }
 
         var query = String(search || '').toLocaleLowerCase();
@@ -165,6 +219,13 @@
         ];
 
         if (open) {
+            children.push(createElement(Button, {
+                key: 'refresh',
+                variant: 'secondary',
+                disabled: loading,
+                onClick: function () { requestAlbums(true); }
+            }, __('Actualiser la liste des albums', 'wp-piwigo-display')));
+
             if (loading) {
                 children.push(createElement('div', { key: 'loading', style: { marginTop: '12px' } }, createElement(Spinner)));
             } else if (error) {
@@ -185,7 +246,7 @@
                     var id = String(album.id);
                     var hasChildren = !!(childrenByParent[id] && childrenByParent[id].length);
                     var isExpanded = query ? true : !!expanded[id];
-                    var isSelected = selectedId === id;
+                    var isSelected = selectedAlbumId(selectedId, albums) === id;
 
                     return createElement('div', {
                         key: id,

@@ -1,14 +1,16 @@
 <?php
 /**
  * Plugin Name: Piwigo Display
+ * Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display
  * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
- * Version: 3.0.0
+ * Version: 3.0.1
  * Requires at least: 6.0
  * Requires PHP: 8.1
  * Author: Franck Bellardie
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: wp-piwigo-display
+ * Update URI: https://github.com/fr4nck/WP-Piwigo-Display
  *
  * @package WP_Piwigo_Display
  */
@@ -18,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'WPD_VERSION' ) ) {
-	define( 'WPD_VERSION', '3.0.0' );
+	define( 'WPD_VERSION', '3.0.1' );
 }
 
 if ( ! defined( 'WPD_PLUGIN_FILE' ) ) {
@@ -32,6 +34,12 @@ if ( ! defined( 'WPD_PLUGIN_DIR' ) ) {
 if ( ! defined( 'WPD_PLUGIN_URL' ) ) {
 	define( 'WPD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
+// This guard must load before the legacy-class early return: activation may be
+// attempted while the old GitHub copy is already active.
+if ( ! class_exists( 'WPD_Migration_Guard', false ) ) {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpd-migration-guard.php';
+}
+WPD_Migration_Guard::register( __FILE__ );
 
 $wp_piwigo_display_loaded_classes = array(
 	'WPD_Plugin',
@@ -86,22 +94,23 @@ require_once WPD_PLUGIN_DIR . 'includes/class-wpd-piwigo-response-compat.php';
  *
  * @return void
  */
-function wp_piwigo_display_bootstrap_plugin(): void {
-	WPD_Api_Metrics::register();
-	WPD_Plugin::init();
-	WPD_Service_Account::register();
+add_action(
+	'plugins_loaded',
+	static function (): void {
+		WPD_Api_Metrics::register();
+		WPD_Plugin::init();
+		WPD_Service_Account::register();
 
-	if ( ! WPD_Service_Account::is_configured() ) {
-		remove_action( 'wp_ajax_wpd_get_albums', array( WPD_Service_Account::class, 'ajax_get_albums' ), 1 );
+		if ( ! WPD_Service_Account::is_configured() ) {
+			remove_action( 'wp_ajax_wpd_get_albums', array( WPD_Service_Account::class, 'ajax_get_albums' ), 1 );
+		}
+
+		WPD_Classic_Editor::register();
+		WPD_Slider_Transitions::register();
+		WPD_Masonry::register();
+		WPD_Composer_Parity::register();
+		WPD_Gutenberg_Parity::register();
+		WPD_Shapes::register();
+		WPD_Piwigo_Response_Compat::register();
 	}
-
-	WPD_Classic_Editor::register();
-	WPD_Slider_Transitions::register();
-	WPD_Masonry::register();
-	WPD_Composer_Parity::register();
-	WPD_Gutenberg_Parity::register();
-	WPD_Shapes::register();
-	WPD_Piwigo_Response_Compat::register();
-}
-
-add_action( 'plugins_loaded', 'wp_piwigo_display_bootstrap_plugin' );
+);

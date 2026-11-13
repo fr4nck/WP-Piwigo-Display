@@ -152,6 +152,7 @@ final class WPD_Plugin {
 					'error'         => __( 'Impossible de charger les albums. La saisie manuelle reste disponible.', 'wp-piwigo-display' ),
 					'empty'         => __( 'Aucun album trouvé.', 'wp-piwigo-display' ),
 					'search'        => __( 'Rechercher un album…', 'wp-piwigo-display' ),
+					'refresh'       => __( 'Actualiser la liste des albums', 'wp-piwigo-display' ),
 					'picker'        => __( 'Sélecteur d’albums Piwigo', 'wp-piwigo-display' ),
 					'results'       => __( 'Résultats des albums', 'wp-piwigo-display' ),
 					'choose'        => __( 'Choisir cet album', 'wp-piwigo-display' ),
