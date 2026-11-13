@@ -75,7 +75,7 @@ PHP
 docker cp "$LAB/piwigo-ci-config.php" \
   wpd-310-piwigo:/var/www/html/piwigo/local/config/config.inc.php
 [[ "$(docker exec -w /var/www/html/piwigo wpd-310-piwigo php84 -r \
-  'include "include/config_default.inc.php"; include "local/config/config.inc.php"; echo $conf["lounge_activate_threshold"];')" == 100000 ]] ||
+  'define("PHPWG_ROOT_PATH","./"); include "include/config_default.inc.php"; include "local/config/config.inc.php"; echo $conf["lounge_activate_threshold"];')" == 100000 ]] ||
   { echo 'CI lounge override was not applied' >&2; exit 5; }
 echo "PIWIGO_TEST_LOUNGE_DISABLED=PASS"
 
