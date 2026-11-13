@@ -103,7 +103,7 @@ $GLOBALS['catalogue_uri'] = 'https://elsewhere.invalid/unrelated';
 unlink( $old . '/wp-piwigo-display.php' );
 require $new . '/uninstall.php';
 sort( $GLOBALS['deleted'] );
-$expected = array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account' );
+$expected = array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account', 'wpd_custom_svg_masks' );
 sort( $expected );
 if ( $expected !== $GLOBALS['deleted'] ) {
 	fwrite( STDERR, "FAIL R2-01 final renamed distribution did not clean shared secrets\n" );

@@ -69,7 +69,7 @@ if ( array() !== $GLOBALS['deleted'] ) {
 unlink( $old . '/wp-piwigo-display.php' );
 require $new . '/uninstall.php';
 sort( $GLOBALS['deleted'] );
-$expected = array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account' );
+$expected = array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account', 'wpd_custom_svg_masks' );
 sort( $expected );
 if ( $expected !== $GLOBALS['deleted'] ) {
 	fwrite( STDERR, "FAIL second uninstall did not clean credentials\n" );
