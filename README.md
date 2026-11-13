@@ -8,20 +8,20 @@ Plugin WordPress pour construire et afficher des galeries Piwigo directement dan
 
 ## État du projet
 
-**Version stable : 3.0.0.**
+**Dernière version stable publiée : 3.0.1 (13 novembre 2026).**
 
 La dernière version stable disponible dans les releases GitHub avant la V3 est **1.10.0** (15 juillet 2026). La branche de développement **2.0.0 n’a jamais été distribuée comme release publique** : ses travaux ont été repris et consolidés dans la V3.
 
 La 3.0.0 est la première version stable de la V3, publiée le 10 novembre 2026. Les candidates 3.0.0-rc.1 à 3.0.0-rc.4 étaient des versions de test ; la 3.0.0-rc.4 n’a jamais été publiée.
 
-**Maintenance en préparation : 3.0.1**, non publiée. Les correctifs du sélecteur et de la migration sont intégrés dans la [PR #138](https://github.com/fr4nck/WP-Piwigo-Display/pull/138), en cours de qualification. La 3.0.0 reste la dernière version publique tant qu’aucune nouvelle release n’est créée. Consulter la [procédure de mise à jour 3.0.0 → 3.0.1](docs/MISE-A-JOUR-3.0.1.md) avant toute installation.
+La [3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1) corrige le sélecteur d'albums et sécurise la migration. **3.1.0 est une candidate non publiée** : navigation Piwigo, Justified, Collage, formes, SVG, texte-photo et polices locales. Voir [migration 3.0.1 → 3.1.0](docs/MIGRATION-3.1.0.md).
 
 ## Distribution
 
-- [Télécharger la version stable 3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) : le ZIP s'installe depuis l'administration WordPress.
+- [Télécharger la version stable 3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1) : le ZIP s'installe depuis l'administration WordPress.
 - Le référencement sur WordPress.org est **en préparation** ; l'extension n'y est pas encore disponible. Une publication GitHub ne déclenche pas les mises à jour automatiques du répertoire WordPress.org.
 - La préparation de la soumission et des visuels est décrite dans [Distribution WordPress.org](docs/WORDPRESS-ORG.md).
-- Le ZIP GitHub déjà publié et le tag `v3.0.0` ne doivent pas être remplacés pour corriger la documentation.
+- Ne jamais remplacer les tags et ZIP publics `v3.0.0` et `v3.0.1`.
 
 ## Une interface visuelle avant tout
 
