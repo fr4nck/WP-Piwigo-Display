@@ -23,6 +23,15 @@
 		type.appendChild( option );
 	}
 
+	[ [ 'collage', 'Collage / Pêle-mêle' ] ].forEach( ( entry ) => {
+		if ( ! type.querySelector( 'option[value="' + entry[0] + '"]' ) ) {
+			const option = document.createElement( 'option' );
+			option.value = entry[0];
+			option.textContent = entry[1];
+			type.appendChild( option );
+		}
+	} );
+
 	const sliderRow = root.querySelector( '.wpd-c-slider' );
 	if ( sliderRow && ! document.getElementById( 'wpd-c-transition' ) ) {
 		const transition = document.createElement( 'label' );
@@ -58,6 +67,14 @@
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
 
+	if ( ! document.getElementById( 'wpd-c-collage-seed' ) ) {
+		const row = document.createElement( 'tr' );
+		row.className = 'wpd-c-collage';
+		row.innerHTML = '<th>Collage / Pêle-mêle</th><td><label>Graine <input id="wpd-c-collage-seed" type="text" value="0"></label> <label>Rotation <input id="wpd-c-collage-rotation" type="number" min="0" max="15" value="6"></label> <label>Dispersion <input id="wpd-c-collage-spread" type="number" min="0" max="50" value="18"></label> <label>Chevauchement <input id="wpd-c-collage-overlap" type="number" min="0" max="40" value="12"></label> <label>Taille <input id="wpd-c-collage-size" type="number" min="120" max="420" value="220"></label> <label>Variation <input id="wpd-c-collage-variation" type="number" min="0" max="50" value="20"></label></td>';
+		const outputRow = output.closest( 'tr' );
+		outputRow.parentNode.insertBefore( row, outputRow );
+	}
+
 	const escapeValue = ( value ) => String( value ).replace( /\\/g, '\\\\' ).replace( /"/g, '\\"' );
 	const removeAttribute = ( shortcode, key ) => shortcode.replace( new RegExp( '\\s+' + key + '="(?:\\\\.|[^"])*"', 'g' ), '' );
 	const appendAttribute = ( shortcode, key, value ) => shortcode.replace( /\]$/, ' ' + key + '="' + escapeValue( value ) + '"]' );
@@ -75,11 +92,15 @@
 			row.style.display = type.value === 'justified' ? 'table-row' : 'none';
 		} );
 
+		document.querySelectorAll( '.wpd-c-collage' ).forEach( ( row ) => {
+			row.style.display = type.value === 'collage' ? 'table-row' : 'none';
+		} );
+
 		const shape = document.getElementById( 'wpd-c-shape' ).value;
 		document.getElementById( 'wpd-c-radius-wrap' ).style.display = shape === 'rounded' ? 'inline' : 'none';
 
 		let shortcode = output.value;
-		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'justified_row_height', 'justified_gap', 'shape', 'radius' ].forEach( ( key ) => {
+		[ 'transition', 'direction', 'masonry_columns', 'masonry_gap', 'justified_row_height', 'justified_gap', 'collage_seed', 'collage_rotation', 'collage_spread', 'collage_overlap', 'collage_size', 'collage_variation', 'shape', 'radius' ].forEach( ( key ) => {
 			shortcode = removeAttribute( shortcode, key );
 		} );
 
@@ -101,6 +122,15 @@
 		if ( type.value === 'justified' ) {
 			shortcode = appendAttribute( shortcode, 'justified_row_height', clamp( document.getElementById( 'wpd-c-justified-row-height' ).value, 100, 600, 220 ) );
 			shortcode = appendAttribute( shortcode, 'justified_gap', clamp( document.getElementById( 'wpd-c-justified-gap' ).value, 0, 64, 8 ) );
+		}
+
+		if ( type.value === 'collage' ) {
+			shortcode = appendAttribute( shortcode, 'collage_seed', document.getElementById( 'wpd-c-collage-seed' ).value );
+			shortcode = appendAttribute( shortcode, 'collage_rotation', clamp( document.getElementById( 'wpd-c-collage-rotation' ).value, 0, 15, 6 ) );
+			shortcode = appendAttribute( shortcode, 'collage_spread', clamp( document.getElementById( 'wpd-c-collage-spread' ).value, 0, 50, 18 ) );
+			shortcode = appendAttribute( shortcode, 'collage_overlap', clamp( document.getElementById( 'wpd-c-collage-overlap' ).value, 0, 40, 12 ) );
+			shortcode = appendAttribute( shortcode, 'collage_size', clamp( document.getElementById( 'wpd-c-collage-size' ).value, 120, 420, 220 ) );
+			shortcode = appendAttribute( shortcode, 'collage_variation', clamp( document.getElementById( 'wpd-c-collage-variation' ).value, 0, 50, 20 ) );
 		}
 
 		output.value = shortcode;

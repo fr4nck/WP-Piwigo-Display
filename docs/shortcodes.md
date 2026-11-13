@@ -54,6 +54,16 @@ Le mode `justified` aligne les photos en rangées à hauteur cohérente, sans mo
 
 La hauteur est bornée à 100–600 px et l’espacement à 0–64 px. Le paramètre facultatif `click_action` reste disponible pour ouvrir l’album complet dans Piwigo. Ce mode est en cours de qualification, il n’est pas livré dans la 3.0.1 publique.
 
+## Collage / Pêle-mêle (candidate 3.1)
+
+Le mode `collage` crée une composition reproductible de photographies inclinées et dispersées.
+
+```text
+[piwigo album="154" type="collage" collage_seed="2026" collage_rotation="6" collage_spread="18" collage_overlap="12" collage_size="220" collage_variation="20"]
+```
+
+Le collage conserve le nombre de photos demandé et accepte `click_action="piwigo_photo"` ou `click_action="piwigo_album"` pour rejoindre Piwigo. Les limites techniques sont rotation 0–15°, dispersion 0–50, chevauchement 0–40, taille 120–420 et variation 0–50 %. Cette candidate n’est pas publiée.
+
 ## Modes d’affichage
 
 Le paramètre `type` détermine la façon dont les photos sont présentées. Les trois modes utilisent les mêmes sources Piwigo et peuvent partager les filtres, légendes et options générales ; le choix dépend surtout de l’usage éditorial recherché.

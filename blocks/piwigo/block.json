@@ -20,6 +20,7 @@
     "autoplay":{"type":"boolean"}, "interval":{"type":"number"}, "speed":{"type":"number"}, "transition":{"type":"string","default":"slide"}, "direction":{"type":"string","default":"ltr"}, "ratio":{"type":"string"}, "width":{"type":"string","default":"100%"}, "height":{"type":"string"}, "align":{"type":"string"}, "fit":{"type":"string"}, "navigation":{"type":"string"},
     "masonryColumns":{"type":"number","default":4}, "masonryGap":{"type":"number","default":16},
     "justifiedRowHeight":{"type":"number","default":220}, "justifiedGap":{"type":"number","default":8},
+    "collageSeed":{"type":"string","default":"0"}, "collageRotation":{"type":"number","default":6}, "collageSpread":{"type":"number","default":18}, "collageOverlap":{"type":"number","default":12}, "collageSize":{"type":"number","default":220}, "collageVariation":{"type":"number","default":20},
     "tag":{"type":"string"}, "tags":{"type":"string"}, "tagMode":{"type":"string"}
   },
   "supports":{"html":false}

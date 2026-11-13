@@ -111,6 +111,14 @@ final class WPD_Block {
 			array(
 				'justifiedRowHeight' => 'justified_row_height',
 				'justifiedGap'       => 'justified_gap',
+			),
+			array(
+				'collageSeed'      => 'collage_seed',
+				'collageRotation'  => 'collage_rotation',
+				'collageSpread'    => 'collage_spread',
+				'collageOverlap'   => 'collage_overlap',
+				'collageSize'      => 'collage_size',
+				'collageVariation' => 'collage_variation',
 			)
 		);
 		$atts = array();
