@@ -99,6 +99,20 @@ async function run() {
         assert.ok(await page.locator(selector).count(), slug + ' has no rendered layout');
         const count = await page.locator('.wp-piwigo-display img').count();
         if (slug !== 'phototext') assert.ok(count > 0, slug + ' has no real images');
+        if (slug === 'justified') {
+          const cells = await page.locator('.wp-piwigo-display-justified-item')
+            .evaluateAll(items => items.map(item => {
+              const b = item.getBoundingClientRect();
+              return { top: b.top, left: b.left, right: b.right, width: b.width };
+            }));
+          assert.ok(cells.length >= 2, 'justified gallery lacks real photo cells');
+          assert.ok(Math.abs(cells[0].top - cells[1].top) <= 3,
+            'justified near-fit images incorrectly wrapped into separate full-width rows');
+          assert.ok(cells[0].right <= cells[1].left + 1,
+            'justified photo cells overlap horizontally');
+          observations.justifiedFirstRow = 2;
+          console.log('REAL_JUSTIFIED_MULTI_IMAGE_ROW=PASS');
+        }
         if (slug === 'phototext') assert.ok(await page.locator('svg.wpd-photo-text-svg').count());
         const href = await page.locator('.wp-piwigo-display a[href]').first()
           .getAttribute('href').catch(() => null);
@@ -141,6 +155,29 @@ async function run() {
           console.log('REAL_PIWIGO_' + slug.toUpperCase() + '_CLICK=PASS');
         }
       }
+      // Capture four genuinely narrow mobile layouts, without mutating the
+      // desktop assertion context. These are inspected separately from PASS.
+      await page.setViewportSize({ width: 390, height: 844 });
+      for (const slug of ['gallery', 'justified', 'collage', 'phototext']) {
+        const id = pages[slug];
+        const response = await page.goto(
+          'http://127.0.0.1:8088/?page_id=' + id, { waitUntil: 'networkidle' });
+        assert.equal(response.status(), 200, slug + ' mobile page status');
+        assert.ok(await page.locator('.wp-piwigo-display').first().isVisible(),
+          slug + ' mobile gallery is hidden');
+        const bounds = await page.locator('.wp-piwigo-display').first()
+          .evaluate(element => {
+            const rect = element.getBoundingClientRect();
+            return { left: rect.left, right: rect.right };
+          });
+        assert.ok(bounds.left >= -4 && bounds.right <= 394,
+          slug + ' gallery exceeds the mobile viewport');
+        await page.screenshot({
+          path: path.join(reportDir, phase + '-mobile-' + slug + '.png')
+        });
+      }
+      console.log('REAL_MOBILE_LAYOUTS=PASS');
+      await page.setViewportSize({ width: 1280, height: 900 });
       const piwigoPage = await page.goto(
         'http://127.0.0.1:8090/index.php?/category/' + process.env.WPD_ALBUM,
         { waitUntil: 'domcontentloaded' });
@@ -156,6 +193,7 @@ async function run() {
         assert.ok(await page.locator('script[src*="leaflet"]').count(),
           'OpenStreetMap did not enqueue its real Leaflet assets');
         observations.osmMap = 'VISIBLE';
+        await map.screenshot({ path: path.join(reportDir, phase + '-piwigo-map.png') });
         console.log('REAL_PIWIGO_OPENSTREETMAP_VISIBLE=PASS');
       }
       console.log('REAL_PIWIGO_BROWSER_' + phase.toUpperCase() + '=PASS');
