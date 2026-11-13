@@ -105,13 +105,34 @@ async function run() {
               const b = item.getBoundingClientRect();
               return { top: b.top, left: b.left, right: b.right, width: b.width };
             }));
-          assert.ok(cells.length >= 2, 'justified gallery lacks real photo cells');
-          assert.ok(Math.abs(cells[0].top - cells[1].top) <= 3,
-            'justified near-fit images incorrectly wrapped into separate full-width rows');
-          assert.ok(cells[0].right <= cells[1].left + 1,
-            'justified photo cells overlap horizontally');
-          observations.justifiedFirstRow = 2;
-          console.log('REAL_JUSTIFIED_MULTI_IMAGE_ROW=PASS');
+          assert.ok(cells.length >= 6, 'justified gallery lacks six image cells');
+          const widthsAndHeights = await page.locator('.wp-piwigo-display-justified-item img')
+            .evaluateAll(images => images.map(img => ({
+              width: Number(img.getAttribute('width')),
+              height: Number(img.getAttribute('height'))
+            })));
+          assert.ok(widthsAndHeights.every(dim => dim.width > 0 && dim.height > 0),
+            'Piwigo image metadata has missing dimensions');
+          const ratios = widthsAndHeights.map(dim => Math.round(100 * dim.width / dim.height));
+          assert.ok(new Set(ratios).size >= 4,
+            'mixed portrait, square, panorama and landscape aspect ratios were not preserved');
+          const sharedRowPairs = [];
+          for (let i = 0; i < cells.length; ++i) {
+            for (let j = i + 1; j < cells.length; ++j) {
+              if (Math.abs(cells[i].top - cells[j].top) <= 3) {
+                sharedRowPairs.push([cells[i], cells[j]]);
+              }
+            }
+          }
+          assert.ok(sharedRowPairs.length > 0,
+            'justified layout put every mixed-ratio photo on a separate row');
+          for (const [left, right] of sharedRowPairs) {
+            assert.ok(left.right <= right.left + 1,
+              'justified photo cells overlap horizontally');
+          }
+          observations.justifiedAspectRatios = ratios;
+          observations.justifiedSharedRowPairs = sharedRowPairs.length;
+          console.log('REAL_JUSTIFIED_MIXED_RATIO_ROWS=PASS');
         }
         if (slug === 'phototext') assert.ok(await page.locator('svg.wpd-photo-text-svg').count());
         const href = await page.locator('.wp-piwigo-display a[href]').first()
@@ -192,8 +213,24 @@ async function run() {
         assert.ok(await map.isVisible(), 'real Piwigo OpenStreetMap container is hidden');
         assert.ok(await page.locator('script[src*="leaflet"]').count(),
           'OpenStreetMap did not enqueue its real Leaflet assets');
+        // A visible basemap alone is not sufficient: assert that Piwigo's
+        // upstream plugin created a marker from the synthetic GPS photo.
+        await page.waitForFunction(() =>
+          Array.isArray(window.MarkerClusterList) &&
+          window.MarkerClusterList.some(marker => {
+            if (typeof marker.getLatLng !== 'function') return false;
+            const gps = marker.getLatLng();
+            return Math.abs(gps.lat - 48.107) < 0.001 &&
+              Math.abs(gps.lng + 1.679) < 0.001;
+          }), null, { timeout: 15000 });
+        await map.locator('.leaflet-marker-icon').first()
+          .waitFor({ state: 'visible', timeout: 15000 });
+        const markerCount = await map.locator('.leaflet-marker-icon:visible').count();
+        assert.ok(markerCount >= 1, 'the geotagged Piwigo photo has no visible Leaflet marker');
         observations.osmMap = 'VISIBLE';
+        observations.geoMarkers = markerCount;
         await map.screenshot({ path: path.join(reportDir, phase + '-piwigo-map.png') });
+        console.log('REAL_PIWIGO_OSM_GPS_MARKER=PASS count=' + markerCount);
         console.log('REAL_PIWIGO_OPENSTREETMAP_VISIBLE=PASS');
       }
       console.log('REAL_PIWIGO_BROWSER_' + phase.toUpperCase() + '=PASS');
