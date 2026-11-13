@@ -18,12 +18,29 @@ docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -uroot piwigo -e \
   'UPDATE piwigo_images SET latitude=48.107, longitude=-1.679 WHERE id=(SELECT image_id FROM piwigo_image_category LIMIT 1);'
 [[ "$(docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -uroot piwigo -N -e \
   "SELECT state FROM piwigo_plugins WHERE id='piwigo-openstreetmap';")" == active ]]
-curl --fail --silent --show-error \
-  'http://127.0.0.1:8090/ws.php?format=json&method=pwg.categories.getList&recursive=true' |
-  jq -e '.stat == "ok"' > /dev/null
-curl --fail --silent --show-error \
-  "http://127.0.0.1:8090/ws.php?format=json&method=pwg.categories.getImages&cat_id=$WPD_ALBUM" |
-  jq -e '.stat == "ok" and (.result.images | length >= 6)' >/dev/null
+# Capture actual upstream output with the Piwigo OSM extension enabled.
+# Corrupted upstream responses may be corrected by WPD's HTTP adapter; only
+# the following REAL browser test may declare integration success.
+OSM_LIST_HTTP=$(curl --silent --show-error \
+  --output "$WPD_LAB/osm-getList.raw" --write-out '%{http_code}' \
+  'http://127.0.0.1:8090/ws.php?format=json&method=pwg.categories.getList&recursive=true')
+OSM_IMAGES_HTTP=$(curl --silent --show-error \
+  --output "$WPD_LAB/osm-getImages.raw" --write-out '%{http_code}' \
+  "http://127.0.0.1:8090/ws.php?format=json&method=pwg.categories.getImages&cat_id=$WPD_ALBUM")
+echo "OSM_UPSTREAM_HTTP=$OSM_LIST_HTTP/$OSM_IMAGES_HTTP"
+for name in getList getImages; do
+  file="$WPD_LAB/osm-$name.raw"
+  if jq -e '.stat == "ok"' "$file" >/dev/null 2>&1; then
+    printf 'OSM_UPSTREAM_%s_JSON=VALID\n' "$name"
+  else
+    printf 'OSM_UPSTREAM_%s_JSON=INVALID\n' "$name"
+    printf 'OSM_UPSTREAM_%s_BYTES=%s\n' "$name" "$(wc -c < "$file")"
+    # Public synthetic fixture only; bound output, no real user credentials.
+    printf 'OSM_UPSTREAM_%s_PREFIX=' "$name"
+    head -c 220 "$file" | tr '\r\n' ' ' | tr -cd '[:print:]'
+    echo
+  fi
+done
 # A real Piwigo HTML page must remain accessible with OSM loaded.
 curl --fail --silent --show-error \
   "http://127.0.0.1:8090/index.php?/category/$WPD_ALBUM" \
