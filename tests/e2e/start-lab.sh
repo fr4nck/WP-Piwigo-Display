@@ -119,8 +119,15 @@ for i in 1 2 3 4 5 6; do
     exit 5
   fi
 done
-ws pwg.categories.getImages --data-urlencode "cat_id=$ALBUM" |
-  jq -e '.stat == "ok" and (.result.images | length >= 6)' >/dev/null
+ws pwg.categories.getImages --data-urlencode "cat_id=$ALBUM" > "$LAB/image-list.json"
+echo "PIWIGO_IMAGE_LIST_STATUS=$(jq -r '.stat // "missing"' "$LAB/image-list.json")"
+echo "PIWIGO_IMAGE_LIST_TYPE=$(jq -r '.result.images | type' "$LAB/image-list.json")"
+echo "PIWIGO_IMAGE_LIST_KEYS=$(jq -r '(.result.images // {}) | if type=="object" then keys | join(",") else "array" end' "$LAB/image-list.json")"
+echo "PIWIGO_IMAGE_LIST_COUNT=$(jq -r '(.result.images // []) | if type=="array" then length elif type=="object" then (.image // [] | length) else 0 end' "$LAB/image-list.json")"
+jq -e '.stat == "ok" and (
+ (.result.images | type) == "array" and (.result.images | length >= 6)
+ or (.result.images | type) == "object" and (.result.images.image | length >= 6)
+)' "$LAB/image-list.json" >/dev/null
 # Public alias and private category must both exist, but the guest must not
 # be granted access to the private one by the integration.
 echo "PIWIGO_REAL_IMAGES=PASS"
