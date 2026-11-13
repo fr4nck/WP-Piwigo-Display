@@ -225,10 +225,36 @@ async function run() {
           }), null, { timeout: 15000 });
         await map.locator('.leaflet-marker-icon').first()
           .waitFor({ state: 'visible', timeout: 15000 });
+        // The upstream map schedules fitBounds 200 ms after Leaflet is ready.
+        // isVisible() alone does NOT prove that the icon is inside the
+        // clipped map viewport: wait for native recentering and geometry.
+        await page.waitForFunction(() => {
+          if (!window.map || !Array.isArray(window.MarkerClusterList)) return false;
+          const pin = window.MarkerClusterList.find(item =>
+            typeof item.getLatLng === 'function' &&
+            Math.abs(item.getLatLng().lat - 48.107) < 0.001 &&
+            Math.abs(item.getLatLng().lng + 1.679) < 0.001);
+          return !!pin && window.map.getBounds().contains(pin.getLatLng());
+        }, null, { timeout: 15000 });
         const markerCount = await map.locator('.leaflet-marker-icon:visible').count();
-        assert.ok(markerCount >= 1, 'the geotagged Piwigo photo has no visible Leaflet marker');
+        assert.ok(markerCount >= 1, 'the geotagged Piwigo photo has no Leaflet marker icon');
+        const iconBounds = await map.locator('.leaflet-marker-icon').first()
+          .evaluate(element => {
+            const icon = element.getBoundingClientRect();
+            const parent = element.closest('#map').getBoundingClientRect();
+            return {
+              x: icon.left + icon.width / 2 - parent.left,
+              y: icon.top + icon.height / 2 - parent.top,
+              mapWidth: parent.width,
+              mapHeight: parent.height
+            };
+          });
+        assert.ok(iconBounds.x >= 0 && iconBounds.x <= iconBounds.mapWidth &&
+          iconBounds.y >= 0 && iconBounds.y <= iconBounds.mapHeight,
+        'upstream OSM GPS marker exists but lies outside the visible map');
         observations.osmMap = 'VISIBLE';
         observations.geoMarkers = markerCount;
+        observations.gpsMarkerInViewport = true;
         await map.screenshot({ path: path.join(reportDir, phase + '-piwigo-map.png') });
         console.log('REAL_PIWIGO_OSM_GPS_MARKER=PASS count=' + markerCount);
         console.log('REAL_PIWIGO_OPENSTREETMAP_VISIBLE=PASS');
