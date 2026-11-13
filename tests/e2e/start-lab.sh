@@ -19,10 +19,22 @@ docker run -d --name wpd-310-db --network wpd-310-e2e --network-alias db \
   -e MARIADB_USER=ci \
   -e MARIADB_PASSWORD=ci-only-db \
   mariadb:11.4 >/dev/null
+DB_READY=no
 for i in $(seq 1 80); do
-  if docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb-admin -uroot ping --silent >/dev/null 2>&1; then break; fi
+  # mysqladmin ping also succeeds while the bootstrap server is shutting down.
+  # Use an actual TCP SQL query to wait for the final MariaDB server.
+  if docker exec -e MYSQL_PWD=ci-only-root wpd-310-db \
+      mariadb -h 127.0.0.1 -uroot -N -e 'SELECT 1' >/dev/null 2>&1; then
+    DB_READY=yes
+    break
+  fi
   sleep 2
 done
+if [[ "$DB_READY" != yes ]]; then
+  echo 'DISPOSABLE_MARIADB_NOT_READY' >&2
+  docker logs --tail 40 wpd-310-db >&2
+  exit 3
+fi
 docker exec -e MYSQL_PWD=ci-only-root wpd-310-db mariadb -uroot -e \
   "CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON wordpress.* TO 'ci'@'%';"
 docker run -d --name wpd-310-piwigo --network wpd-310-e2e \
