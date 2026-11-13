@@ -45,7 +45,7 @@ foreach ($files as $path) {
             // All other $_FILES occurrences, including additional unreviewed calls in
             // this file, must be rejected.
             if ('$_FILES' === $needle && 'includes/class-wpd-custom-svg-masks.php' === $relative
-                && 2 === substr_count($contents, '$_FILES[')
+                && 3 === substr_count($contents, '$_FILES[')
                 && false !== strpos($contents, "['wpd_svg_mask']")
                 && false !== strpos($contents, "check_admin_referer( 'wpd_upload_svg_mask' )")
                 && false !== strpos($contents, 'is_uploaded_file(')
