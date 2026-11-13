@@ -103,12 +103,14 @@ final class WPD_Block {
 				'tags'           => 'tags',
 				'tagMode'        => 'tag_mode',
 				'masonryColumns' => 'masonry_columns',
-				'masonryGap'        => 'masonry_gap',
-				'justifiedRowHeight' => 'justified_row_height',
-				'justifiedGap'       => 'justified_gap',
+				'masonryGap'     => 'masonry_gap',
 			),
 			array(
 				'transparentBackground' => 'transparent_background',
+			),
+			array(
+				'justifiedRowHeight' => 'justified_row_height',
+				'justifiedGap'       => 'justified_gap',
 			)
 		);
 		$atts = array();
