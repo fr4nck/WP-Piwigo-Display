@@ -9,8 +9,13 @@ Cette feuille de route décrit l’état public réel de **Piwigo Display pour W
 - **3.0.0-rc.3** : version candidate publiée, touchée par un incident de remplacement de tag/ZIP (voir le journal d'audit).
 - **3.0.0-rc.4** : candidate de maintenance jamais publiée, intégrée à la 3.0.0.
 - **3.0.0** : première version stable de la V3, publiée sur GitHub le 10 novembre 2026.
+- **3.0.1** : version de maintenance publiée le 13 novembre 2026.
 
 Les développements initialement préparés sous le numéro 2.0.0 ont été repris, consolidés et largement étendus dans la V3.
+
+## 3.1.0 — consolidation en cours (non publiée)
+
+PR #139 à #145 empilées depuis la version 3.0.1 officielle. Navigation au clic, Justified, Collage, 18 formes, masques SVG, texte-photo et deux polices libres locales ; imports personnels désactivés. Recette réelle WordPress/Piwigo et OpenStreetMap encore ouvertes.
 
 ## V3 — version stable 3.0.0
 
