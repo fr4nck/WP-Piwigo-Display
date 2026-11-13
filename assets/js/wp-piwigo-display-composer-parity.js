@@ -46,7 +46,7 @@
 	if ( ! document.getElementById( 'wpd-c-shape' ) ) {
 		const row = document.createElement( 'tr' );
 		row.className = 'wpd-c-shape';
-		row.innerHTML = '<th>Forme</th><td><label>Forme <select id="wpd-c-shape"><option value="rectangle">Rectangle</option><option value="rounded">Rectangle arrondi</option><option value="circle">Cercle</option><option value="oval">Ovale</option><option value="pill">Pilule</option><option value="star">Étoile</option><option value="hexagon">Hexagone</option><option value="diamond">Losange</option></select></label> <label id="wpd-c-radius-wrap">Arrondi <input id="wpd-c-radius" class="small-text" type="number" min="0" max="50" value="8"> %</label></td>';
+		row.innerHTML = '<th>Forme</th><td><label>Forme <select id="wpd-c-shape"><option value="rectangle">Rectangle</option><option value="rounded">Rectangle arrondi</option><option value="circle">Cercle</option><option value="oval">Ovale</option><option value="pill">Pilule</option><option value="star">Étoile</option><option value="hexagon">Hexagone</option><option value="diamond">Losange</option><option value="cloud">Nuage</option><option value="heart">Cœur</option><option value="drop">Goutte</option><option value="triangle">Triangle</option><option value="pentagon">Pentagone</option><option value="octagon">Octogone</option><option value="card-spade">Pique</option><option value="card-heart">Cœur de carte</option><option value="card-diamond">Carreau</option><option value="card-club">Trèfle</option></select></label> <label id="wpd-c-radius-wrap">Arrondi <input id="wpd-c-radius" class="small-text" type="number" min="0" max="50" value="8"> %</label></td>';
 		const outputRow = output.closest( 'tr' );
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
@@ -75,6 +75,31 @@
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
 
+	const shapeSelect = document.getElementById( 'wpd-c-shape' );
+	if ( shapeSelect && ! root.querySelector( '.wpd-shape-picker-grid' ) ) {
+		const picker = document.createElement( 'div' );
+		picker.className = 'wpd-shape-picker-grid';
+		picker.setAttribute( 'role', 'group' );
+		picker.setAttribute( 'aria-label', 'Choisir une forme' );
+		Array.from( shapeSelect.options ).forEach( ( option ) => {
+			const button = document.createElement( 'button' );
+			button.type = 'button';
+			button.className = 'wpd-shape-picker-button';
+			button.dataset.wpdShapeValue = option.value;
+			button.setAttribute( 'aria-pressed', 'false' );
+			button.setAttribute( 'aria-label', option.textContent );
+			const preview = document.createElement( 'span' );
+			preview.className = 'wpd-shape-picker-preview wpd-shape-preview-' + option.value;
+			preview.setAttribute( 'aria-hidden', 'true' );
+			button.appendChild( preview );
+			const caption = document.createElement( 'span' );
+			caption.textContent = option.textContent;
+			button.appendChild( caption );
+			picker.appendChild( button );
+		} );
+		shapeSelect.closest( 'label' ).insertAdjacentElement( 'afterend', picker );
+	}
+
 	const escapeValue = ( value ) => String( value ).replace( /\\/g, '\\\\' ).replace( /"/g, '\\"' );
 	const removeAttribute = ( shortcode, key ) => shortcode.replace( new RegExp( '\\s+' + key + '="(?:\\\\.|[^"])*"', 'g' ), '' );
 	const appendAttribute = ( shortcode, key, value ) => shortcode.replace( /\]$/, ' ' + key + '="' + escapeValue( value ) + '"]' );
@@ -97,6 +122,10 @@
 		} );
 
 		const shape = document.getElementById( 'wpd-c-shape' ).value;
+		root.querySelectorAll( '[data-wpd-shape-value]' ).forEach( ( button ) => {
+			button.setAttribute( 'aria-pressed', button.dataset.wpdShapeValue === shape ? 'true' : 'false' );
+		} );
+
 		document.getElementById( 'wpd-c-radius-wrap' ).style.display = shape === 'rounded' ? 'inline' : 'none';
 
 		let shortcode = output.value;
@@ -136,6 +165,13 @@
 		output.value = shortcode;
 	}
 
+	root.addEventListener( 'click', ( event ) => {
+		const button = event.target.closest( '[data-wpd-shape-value]' );
+		if ( ! button || ! root.contains( button ) ) return;
+		const selected = document.getElementById( 'wpd-c-shape' );
+		selected.value = button.dataset.wpdShapeValue;
+		selected.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	} );
 	root.addEventListener( 'input', () => window.setTimeout( syncParity, 0 ) );
 	root.addEventListener( 'change', () => window.setTimeout( syncParity, 0 ) );
 	window.setTimeout( syncParity, 0 );
