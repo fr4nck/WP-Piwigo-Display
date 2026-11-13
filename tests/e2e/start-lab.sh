@@ -116,6 +116,20 @@ rsync -a "$GITHUB_WORKSPACE/" "$LAB/stage/wp-piwigo-display/" \
   --exclude .git --exclude .github --exclude tests --exclude vendor \
   --exclude node_modules --exclude build --exclude '*.zip'
 (cd "$LAB/stage" && zip -qr "$LAB/candidate-3.1.0.zip" wp-piwigo-display)
+# WordPress protects public sites against SSRF/loopback URLs. This filter is
+# only installed inside the CI disposable WordPress, NEVER packaged in Piwigo
+# Display. It allows exactly the local Piwigo fixture port and nothing else.
+mkdir -p "$WP/wp-content/mu-plugins"
+cat > "$WP/wp-content/mu-plugins/ci-piwigo-loopback-only.php" <<'PHP'
+<?php
+add_filter('http_request_host_is_external', static function ($allowed, $host, $url) {
+  return ($host === '127.0.0.1' && parse_url($url, PHP_URL_PORT) === 8090) ? true : $allowed;
+}, 10, 3);
+add_filter('http_allowed_safe_ports', static function ($ports, $host) {
+  if ($host === '127.0.0.1') { $ports[] = 8090; }
+  return $ports;
+}, 10, 2);
+PHP
 wpqa plugin install "$LAB/candidate-3.1.0.zip" --activate --quiet
 wpqa eval '
   $opt = get_option("wp_piwigo_display_options", []);
