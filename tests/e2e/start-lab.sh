@@ -64,6 +64,21 @@ curl --fail --silent --show-error \
   jq -e '.stat == "ok"' >/dev/null
 echo "PIWIGO_INSTALL=PASS"
 
+# Piwigo 16.4.0 defaults to lounge_activate_threshold=1: all uploaded
+# pictures would land in the pending-review lounge and never be attached to
+# the requested album. The disposable fixture has no moderation workflow:
+# raise this threshold BEFORE uploading its six synthetic public photos.
+cat > "$LAB/piwigo-ci-config.php" <<'PHP'
+<?php
+$conf['lounge_activate_threshold'] = 100000;
+PHP
+docker cp "$LAB/piwigo-ci-config.php" \
+  wpd-310-piwigo:/var/www/html/piwigo/local/config/config.inc.php
+[[ "$(docker exec -w /var/www/html/piwigo wpd-310-piwigo php84 -r \
+  'include "include/config_default.inc.php"; include "local/config/config.inc.php"; echo $conf["lounge_activate_threshold"];')" == 100000 ]] ||
+  { echo 'CI lounge override was not applied' >&2; exit 5; }
+echo "PIWIGO_TEST_LOUNGE_DISABLED=PASS"
+
 COOK="$LAB/piwigo-cookies"
 ws() {
   local method="$1"
