@@ -126,7 +126,7 @@ final class WPD_Classic_Editor {
 		<div id="wpd-classic-builder" title="<?php echo esc_attr__( 'Galerie Piwigo', 'wp-piwigo-display' ); ?>" style="display:none;">
 			<div class="wpd-builder-grid">
 				<div class="wpd-album-field"><label><?php esc_html_e( 'Album Piwigo', 'wp-piwigo-display' ); ?><input type="text" data-wpd="album" placeholder="154, nom ou chemin"></label><button type="button" class="button wpd-browse-albums"><?php esc_html_e( 'Choisir dans Piwigo', 'wp-piwigo-display' ); ?></button><div class="wpd-album-picker" hidden></div></div>
-				<label><?php esc_html_e( 'Affichage', 'wp-piwigo-display' ); ?><select data-wpd="type"><option value="gallery">Galerie</option><option value="slider">Diaporama</option><option value="masonry">Masonry</option><option value="justified">Galerie justifiée</option></select></label>
+				<label><?php esc_html_e( 'Affichage', 'wp-piwigo-display' ); ?><select data-wpd="type"><option value="gallery">Galerie</option><option value="slider">Diaporama</option><option value="masonry">Masonry</option><option value="justified">Galerie justifiée</option><option value="collage">Collage / Pêle-mêle</option></select></label>
 				<label><?php esc_html_e( 'Preset', 'wp-piwigo-display' ); ?><select data-wpd="preset"><option value="">Aucun</option><option value="slider">Slider</option><option value="actualites">Actualités</option></select></label>
 				<label><?php esc_html_e( 'Tri', 'wp-piwigo-display' ); ?><select data-wpd="sort"><option value="manual">Ordre Piwigo</option><option value="date">Date</option><option value="name">Nom</option><option value="id">Identifiant</option><option value="random">Aléatoire</option></select></label>
 				<label><?php esc_html_e( 'Ordre', 'wp-piwigo-display' ); ?><select data-wpd="order"><option value="desc">Décroissant</option><option value="asc">Croissant</option></select></label>
@@ -152,6 +152,12 @@ final class WPD_Classic_Editor {
 				<label class="wpd-masonry-options"><?php esc_html_e( 'Espacement Masonry (px)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="64" data-wpd="masonry_gap" value="16"></label>
 				<label class="wpd-justified-options"><?php esc_html_e( 'Hauteur cible (px)', 'wp-piwigo-display' ); ?><input type="number" min="100" max="600" data-wpd="justified_row_height" value="220"></label>
 				<label class="wpd-justified-options"><?php esc_html_e( 'Espacement justifié (px)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="64" data-wpd="justified_gap" value="8"></label>
+				<label class="wpd-collage-options"><?php esc_html_e( 'Graine Collage', 'wp-piwigo-display' ); ?><input type="text" data-wpd="collage_seed" value="0"></label>
+				<label class="wpd-collage-options"><?php esc_html_e( 'Rotation (°)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="15" data-wpd="collage_rotation" value="6"></label>
+				<label class="wpd-collage-options"><?php esc_html_e( 'Dispersion (px)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="50" data-wpd="collage_spread" value="18"></label>
+				<label class="wpd-collage-options"><?php esc_html_e( 'Chevauchement (px)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="40" data-wpd="collage_overlap" value="12"></label>
+				<label class="wpd-collage-options"><?php esc_html_e( 'Taille (px)', 'wp-piwigo-display' ); ?><input type="number" min="120" max="420" data-wpd="collage_size" value="220"></label>
+				<label class="wpd-collage-options"><?php esc_html_e( 'Variation (%)', 'wp-piwigo-display' ); ?><input type="number" min="0" max="50" data-wpd="collage_variation" value="20"></label>
 			</div>
 			<fieldset class="wpd-builder-checks">
 				<label><input type="checkbox" data-wpd="recursive"> <?php esc_html_e( 'Inclure les sous-albums', 'wp-piwigo-display' ); ?></label>

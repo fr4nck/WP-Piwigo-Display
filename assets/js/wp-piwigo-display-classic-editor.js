@@ -135,6 +135,14 @@
                 add(parts, 'justified_row_height', bounded('justified_row_height', 100, 600, 220), true);
                 add(parts, 'justified_gap', bounded('justified_gap', 0, 64, 8), true);
             }
+            if (type === 'collage') {
+                add(parts, 'collage_seed', value('collage_seed'), true);
+                add(parts, 'collage_rotation', bounded('collage_rotation', 0, 15, 6), true);
+                add(parts, 'collage_spread', bounded('collage_spread', 0, 50, 18), true);
+                add(parts, 'collage_overlap', bounded('collage_overlap', 0, 40, 12), true);
+                add(parts, 'collage_size', bounded('collage_size', 120, 420, 220), true);
+                add(parts, 'collage_variation', bounded('collage_variation', 0, 50, 20), true);
+            }
 
             return '[piwigo ' + parts.join(' ') + ']';
         }
@@ -146,6 +154,7 @@
             $dialog.find('.wpd-slider-options, .wpd-slider-layout-option').toggle(slider);
             $dialog.find('.wpd-masonry-options').toggle(masonry);
             $dialog.find('.wpd-justified-options').toggle(type === 'justified');
+            $dialog.find('.wpd-collage-options').attr('aria-label', 'Collage / Pêle-mêle').toggle(type === 'collage');
             $dialog.find('.wpd-radius-option').toggle(value('shape') === 'rounded');
             $dialog.find('.wpd-depth-option').toggle(checked('recursive'));
             $dialog.find('[data-wpd-preview]').val(buildShortcode());
