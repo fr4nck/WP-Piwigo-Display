@@ -9,8 +9,6 @@
  *
  * @package WP_Piwigo_Display
  */
-declare(strict_types=1);
-
 if ( PHP_SAPI !== 'cli' || ! defined( 'ABSPATH' ) || ! defined( 'WP_CLI' ) ) {
     fwrite( STDERR, "Only permitted from WP-CLI in disposable lab\n" );
     exit( 2 );
