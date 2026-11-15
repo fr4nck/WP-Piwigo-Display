@@ -1,0 +1,5 @@
+approved=publish-only-v3.1.0-rc.2
+qualified-source=038955b8029d82eb2c45c810bc358ecc42b968f3
+requested-release=github-prerelease-only
+stable-v3.0.1=immutable
+rc1-v3.1.0-rc.1=immutable
