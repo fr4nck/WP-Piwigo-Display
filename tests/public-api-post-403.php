@@ -1,6 +1,6 @@
 <?php
 /**
- * Real PHP regression for the RC1 public Piwigo HTTP 403 handling.
+ * Real PHP regression for the RC2 public Piwigo HTTP 403 handling.
  * All HTTP and WordPress functions are stubbed; no network or secrets.
  *
  * @package WP_Piwigo_Display
@@ -8,7 +8,7 @@
 declare(strict_types=1);
 
 define( 'ABSPATH', __DIR__ . '/' );
-define( 'WPD_VERSION', '3.1.0-rc.1' );
+define( 'WPD_VERSION', '3.1.0-rc.2' );
 
 class WP_Error {
     private string $code;
@@ -55,7 +55,7 @@ require_once dirname( __DIR__ ) . '/includes/class-wpd-api.php';
 
 function expect( bool $condition, string $message ): void {
     if ( ! $condition ) {
-        fwrite( STDERR, "RC1 HTTP 403 regression: $message\n" );
+        fwrite( STDERR, "RC2 HTTP 403 regression: $message\n" );
         exit( 1 );
     }
 }
@@ -142,4 +142,4 @@ $service_code = file_get_contents( dirname( __DIR__ ) . '/includes/class-wpd-ser
 expect( is_string( $service_code ) && str_contains( $service_code, 'wp_safe_remote_post(' ), 'service account client must still use POST' );
 expect( ! str_contains( (string) $service_code, 'wp_safe_remote_get(' ), 'service account must never put credentials in GET' );
 
-echo "RC1 public Piwigo POST 403 -> safe guest GET regression: PASS\n";
+echo "RC2 public Piwigo POST 403 -> safe guest GET regression: PASS\n";
