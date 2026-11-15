@@ -68,6 +68,16 @@ jobs:
         shell: bash
         run: bash tests/e2e/enable-osm.sh
 
+      - name: Replay public HTTP 403 POST against real Piwigo and verify safe GET
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          test -f tests/e2e/real-post403-get-recovery.php
+          WPD_TEST_ALBUM="$WPD_ALBUM" php "$WP_CLI" --path="$WP_ROOT" --allow-root \
+            eval-file tests/e2e/real-post403-get-recovery.php
+
       - name: Browser regressions with real OpenStreetMap enabled
         shell: bash
         run: node tests/e2e/browser.cjs osm
