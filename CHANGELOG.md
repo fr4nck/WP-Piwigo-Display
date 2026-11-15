@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 3.1.0-rc.2 — correction expérimentale du HTTP 403 (15 novembre 2026)
+
+- Repli GET unique pour `pwg.categories.getList` et `pwg.categories.getImages` publics lorsque le serveur refuse POST avec HTTP 403.
+- Liste stricte des méthodes et paramètres autorisés ; aucun compte, cookie ni identifiant de service dans les requêtes GET.
+- Si GET échoue également, le refus HTTP 403 demeure une erreur, sans contournement des droits Piwigo.
+- Tests PHP de non-régression et essais d'intégration avec pare-feu simulé sur Piwigo 16.2 + Bootstrap Darkroom et Piwigo 16.4 + OpenStreetMap.
+- L'incident d'origine n'est pas encore confirmé résolu sur le serveur de l'utilisatrice ; cette version est destinée à la recette.
+
 ## 3.1.0-rc.1 — première préversion GitHub (pour les essais)
 
 - Paquet ZIP pour préproduction sans remplacement de la 3.0.1 stable.
