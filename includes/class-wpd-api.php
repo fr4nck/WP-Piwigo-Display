@@ -426,6 +426,14 @@ final class WPD_Api {
 			)
 		);
 
+		// Some hosts allow the public Piwigo API via GET but reject POST
+		// with HTTP 403. Retry only known guest-readable methods/arguments.
+		// Authenticated service-account requests have a different client
+		// and must never expose credentials or cookies in a query string.
+		if ( ! is_wp_error( $response ) && 403 === wp_remote_retrieve_response_code( $response ) ) {
+			$response = $this->retry_public_read_as_get( $body, $response );
+		}
+
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error(
 				'wpd_http_error',
@@ -468,6 +476,56 @@ final class WPD_Api {
 
 		self::$request_cache[ $cache_key ] = $data;
 		return $data;
+	}
+
+	/**
+	 * Retries a refused public read using the equivalent Piwigo GET API.
+	 *
+	 * Never retry authentication, mutation, unknown methods, unexpected
+	 * parameters or non-scalar values. A failed GET preserves the original
+	 * POST response (HTTP 403) instead of concealing the access failure.
+	 *
+	 * @param array<string, mixed> $body     Public API request parameters.
+	 * @param array<string, mixed> $original Original HTTP 403 response.
+	 * @return array<string, mixed>
+	 */
+	private function retry_public_read_as_get( array $body, array $original ): array {
+		$allowed = array(
+			'pwg.categories.getList'   => array( 'method', 'cat_id', 'recursive' ),
+			'pwg.categories.getImages' => array( 'method', 'cat_id', 'recursive', 'per_page', 'page' ),
+		);
+		$method  = $body['method'] ?? null;
+
+		if ( ! is_string( $method ) || ! isset( $allowed[ $method ] ) ) {
+			return $original;
+		}
+
+		foreach ( $body as $key => $value ) {
+			if ( ! is_string( $key ) || ! in_array( $key, $allowed[ $method ], true ) || ! is_scalar( $value ) ) {
+				return $original;
+			}
+		}
+
+		$query = http_build_query( $body, '', '&', PHP_QUERY_RFC3986 );
+		if ( '' === $query || 2048 < strlen( $query ) ) {
+			return $original;
+		}
+
+		$response = wp_safe_remote_get(
+			$this->base_url . '/ws.php?format=json&' . $query,
+			array(
+				'timeout'     => 10,
+				'redirection' => 3,
+				'user-agent'  => 'Piwigo Display/' . WPD_VERSION,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $original;
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		return 200 <= $status && 300 > $status ? $response : $original;
 	}
 
 	/**
