@@ -101,6 +101,15 @@ async function main() {
     assert.equal(json.stat,'ok',method + ': ' + JSON.stringify(json));
     return json.result;
   };
+  const createVisibleAlbum = async name => {
+    const album = await api('pwg.categories.add',{name,status:'public'});
+    // Piwigo masque les albums vides au lecteur normal : la fixture doit
+    // contenir une vraie image, comme un nouvel album utilisable.
+    await api('pwg.images.setInfo',{
+      image_id:fixture.publicImage,categories:String(album.id),multiple_value_mode:'append'
+    });
+    return album;
+  };
   try {
     // Vraie lecture anonyme WordPress avec service actif, contrôle positif privé.
     for (const kind of ['ambiguous','public','private']) {
@@ -145,6 +154,10 @@ async function main() {
       const hold = gateNext;
       gateNext = false;
       const response = await route.fetch();
+      const body = await response.json();
+      console.log('REAL_PICKER_RESPONSE ' + JSON.stringify({
+        status:response.status(),albums:body.data?.albums?.map(a=>({id:a.id,name:a.name}))
+      }));
       if (hold) {
         await new Promise(resolve => held.push({route,response,resolve}));
       } else {
@@ -174,7 +187,7 @@ async function main() {
     await a.getByRole('tree').waitFor();
     await b.getByRole('tree').waitFor();
 
-    const first = await api('pwg.categories.add',{name:'CI Refresh 1',status:'public'});
+    const first = await createVisibleAlbum('CI Refresh 1');
     await refresh(a).click();
     await row(a,'CI Refresh 1').waitFor();
     await row(b,'CI Refresh 1').waitFor();
@@ -182,11 +195,11 @@ async function main() {
     assert.deepEqual(await blockValues(page),[String(fixture.public),String(fixture.public)]);
 
     // La vieille réponse contient réellement un instantané antérieur de Piwigo.
-    await api('pwg.categories.add',{name:'CI Refresh Old',status:'public'});
+    await createVisibleAlbum('CI Refresh Old');
     gateNext = true;
     await refresh(a).click();
     const old = await waitHeld();
-    await api('pwg.categories.add',{name:'CI Refresh New',status:'public'});
+    await createVisibleAlbum('CI Refresh New');
     await refresh(b).click();
     await row(a,'CI Refresh New').waitFor();
     await row(b,'CI Refresh New').waitFor();
@@ -299,6 +312,11 @@ async function main() {
     assert.ok(!albums.some(album=>album.id===fixture.private));
     await contributor.close();
     console.log('REAL_CONTRIBUTOR_PICKER_PUBLIC_ONLY=PASS');
+  } catch (error) {
+    console.error('FOCUSED_DOM_STATE ' + JSON.stringify(
+      await page.locator('#wpd-ci-inspectors').allTextContents().catch(()=>[])
+    ));
+    throw error;
   } finally {
     await pwg.dispose();
     await anonymous.close();
