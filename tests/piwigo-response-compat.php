@@ -108,6 +108,22 @@ $assert(
     'An unclosed brace in the polluted prefix must not conceal the actual Piwigo JSON.'
 );
 
+$orphan_quote = array( 'body' => '<script>var broken = {"msg":"unterminated </script>{"stat":"ok","result":{"id":43}}' );
+$quote_recovered = WPD_Piwigo_Response_Compat::clean_response( $orphan_quote, $args, $url );
+$assert(
+    '{"stat":"ok","result":{"id":43}}' === ( $quote_recovered['body'] ?? '' ),
+    'An unclosed quote in the polluted prefix must not conceal the actual Piwigo JSON.'
+);
+
+$deep_orphans = array( 'body' => str_repeat( '{', 35000 ) . '{"stat":"ok","result":{"id":44}}' );
+$start_orphans = microtime( true );
+$deep_recovered = WPD_Piwigo_Response_Compat::clean_response( $deep_orphans, $args, $url );
+$assert(
+    '{"stat":"ok","result":{"id":44}}' === ( $deep_recovered['body'] ?? '' ),
+    'Deep unmatched braces preceding a Piwigo response must be recoverable.'
+);
+$assert( microtime( true ) - $start_orphans < 2.0, 'Orphaned-prefix recovery exceeded the bounded time budget.' );
+
 // Prior implementation performed a fresh nested scan from every opening
 // brace (quadratic CPU on hostile bodies). Verify linear behavior and that
 // scanning remains correct when a malformed object precedes valid Piwigo JSON.
