@@ -125,6 +125,7 @@ Shortcodes remain available for manual integrations, templates, generated conten
 
 - Installation: `docs/installation.md`
 - Configuration: `docs/configuration.md`
+- Troubleshooting (French): `docs/DEPANNAGE.md`
 - Shortcodes: `docs/shortcodes.md`
 - Service account: `docs/COMPTE-DE-SERVICE.md`
 - Shapes: `docs/FORMES.md`
