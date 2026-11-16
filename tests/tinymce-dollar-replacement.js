@@ -50,4 +50,20 @@ const original = '<p>AVANT</p><span class="wpd-tinymce-shortcode" data-wpd-short
 const event = { get: true, content: original };
 handlers.PostProcess(event);
 assert.strictEqual(event.content, '<p>AVANT</p>' + shortcode + '<p>APRES</p>');
+
+// S-05: a closing bracket inside a quoted attribute is not the closing
+// delimiter of the Piwigo shortcode. TinyMCE must not save a truncated token.
+assert.strictEqual(typeof handlers.BeforeSetContent, 'function');
+const complexShortcode = String.raw`[piwigo album="La [Roche] aux Fées" tag="O\"Hara"]`;
+const complexHtml = '<p>AVANT</p>' + complexShortcode + '<p>APRES</p>';
+const complexBefore = { content: complexHtml };
+handlers.BeforeSetContent(complexBefore);
+assert.ok(
+    complexBefore.content.includes('data-wpd-shortcode="' + encodeURIComponent(complexShortcode) + '"'),
+    'TinyMCE preview must retain the complete shortcode when a quoted attribute contains ].'
+);
+const complexAfter = { get: true, content: complexBefore.content };
+handlers.PostProcess(complexAfter);
+assert.strictEqual(complexAfter.content, complexHtml, 'TinyMCE before/after serialization must round-trip the shortcode.');
+
 console.log('TinyMCE : préservation littérale des $ dans les shortcodes : OK.');
