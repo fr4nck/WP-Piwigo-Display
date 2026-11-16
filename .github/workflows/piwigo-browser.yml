@@ -79,6 +79,15 @@ jobs:
           test -f tests/e2e/s05-editor-attributes.php
           php "$WP_CLI" --path="$WP_ROOT" --allow-root eval-file tests/e2e/s05-editor-attributes.php
 
+      - name: S-09/S-12 real WordPress credential-autoload and admin-validation regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          test -f tests/e2e/s09-s12-admin-options.php
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval-file tests/e2e/s09-s12-admin-options.php
+
       - name: Baseline browser gallery and navigation on genuine Piwigo
         shell: bash
         run: node tests/e2e/browser.cjs baseline
