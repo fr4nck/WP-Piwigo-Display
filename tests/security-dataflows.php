@@ -92,7 +92,7 @@ $required = array(
     ),
     'includes/class-wpd-service-api.php' => array(
         'wp_safe_remote_post(',
-        "'sslverify'   => true",
+        "'sslverify'",
         'sanitize_text_field(',
     ),
     'includes/class-wpd-custom-svg-masks.php' => array(
@@ -123,6 +123,12 @@ foreach ($required as $relative => $needles) {
             $failures[] = sprintf('Missing data-flow invariant in %s: %s', $relative, $needle);
         }
     }
+}
+
+// Check the SSL invariant semantically, independently of WPCS alignment.
+$service_source = file_get_contents($root . '/includes/class-wpd-service-api.php');
+if (!is_string($service_source) || 1 !== preg_match('/\x27sslverify\x27\s*=>\s*true\b/', $service_source)) {
+    $failures[] = 'Service-account HTTPS certificate verification must remain enabled.';
 }
 
 if (array() !== $failures) {

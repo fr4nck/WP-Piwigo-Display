@@ -42,4 +42,14 @@ if (event.content.indexOf('data-wpd-shortcode="[piwigo album="') !== -1) {
     throw new Error('Un shortcode brut ne doit jamais être injecté dans un attribut HTML.');
 }
 
+const encodedAlbum = 'La "Roche" [aux Fées]';
+const codecPreview = { content: '[piwigo wpd_codec="uri" album="' + encodeURIComponent(encodedAlbum) + '"]' };
+handlers.BeforeSetContent(codecPreview);
+if (codecPreview.content.indexOf(' — ' + encodedAlbum) === -1) {
+    throw new Error('TinyMCE doit afficher un nom d’album lisible avec le codec URI.');
+}
+if (codecPreview.content.indexOf('data-wpd-shortcode="' + encodeURIComponent('[piwigo wpd_codec="uri" album="' + encodeURIComponent(encodedAlbum) + '"]') + '"') === -1) {
+    throw new Error('Le titre lisible ne doit jamais corrompre la copie encodée du shortcode.');
+}
+
 console.log('TinyMCE shortcode preview encoding: OK');

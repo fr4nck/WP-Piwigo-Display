@@ -60,6 +60,25 @@ jobs:
         shell: bash
         run: bash tests/e2e/start-lab.sh
 
+      - name: S-01 security regression in real WordPress content pipeline
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          test -f tests/e2e/real-caption-shortcode-safety.php
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root \
+            eval-file tests/e2e/real-caption-shortcode-safety.php
+
+      - name: S-05 shortcode parser and editor encoding under real WordPress
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          test -f tests/e2e/s05-editor-attributes.php
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval-file tests/e2e/s05-editor-attributes.php
+
       - name: Baseline browser gallery and navigation on genuine Piwigo
         shell: bash
         run: node tests/e2e/browser.cjs baseline

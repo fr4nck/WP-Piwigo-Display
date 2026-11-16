@@ -42,6 +42,21 @@ final class WPD_Block {
 
 		wp_enqueue_style( 'wpd-splide', WPD_PLUGIN_URL . 'assets/vendor/splide/splide.min.css', array(), '4.1.4' );
 		wp_enqueue_style( 'wp-piwigo-display', WPD_PLUGIN_URL . 'assets/css/wp-piwigo-display.css', array( 'wpd-splide' ), WPD_VERSION );
+
+		// ServerSideRender may enqueue these styles in a separate AJAX
+		// request, where they do not reach the Gutenberg canvas or iframe.
+		// Use the same handles as the public renderers for CSS parity.
+		$layout_styles = array(
+			'wp-piwigo-display-masonry'    => 'assets/css/wp-piwigo-display-masonry.css',
+			'wp-piwigo-display-justified'  => 'assets/css/wp-piwigo-display-justified.css',
+			'wp-piwigo-display-collage'    => 'assets/css/wp-piwigo-display-collage.css',
+			'wp-piwigo-display-photo-text' => 'assets/css/wp-piwigo-display-photo-text.css',
+			'wpd-shapes'                   => 'assets/css/wp-piwigo-display-shapes.css',
+			'wpd-custom-masks'             => 'assets/css/wp-piwigo-display-custom-masks.css',
+		);
+		foreach ( $layout_styles as $handle => $asset ) {
+			wp_enqueue_style( $handle, WPD_PLUGIN_URL . $asset, array( 'wp-piwigo-display' ), WPD_VERSION );
+		}
 	}
 
 	/**

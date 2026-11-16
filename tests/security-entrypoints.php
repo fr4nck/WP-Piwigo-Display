@@ -41,15 +41,29 @@ $checks = array(
         'wp_http_validate_url(',
         'wp_safe_remote_post(',
         "array( 'http', 'https' )",
-        "'timeout'     => 10",
-        "'redirection' => 3",
+        'reserve_http_call(',
+        'WPD_Request_Budget::MAX_RESPONSE_BYTES',
     ),
     'includes/class-wpd-service-api.php' => array(
         'wp_safe_remote_post(',
         "'https' !== wp_parse_url( \$url, PHP_URL_SCHEME )",
-        "'timeout'     => 10",
-        "'redirection' => 0",
-        "'sslverify'   => true",
+        'reserve_http_call(',
+        'WPD_Request_Budget::MAX_RESPONSE_BYTES',
+    ),
+);
+
+// Match the actual HTTP option values regardless of WPCS alignment.
+$http_option_patterns = array(
+    'includes/class-wpd-api.php' => array(
+        '/\x27timeout\x27\s*=>\s*\$timeout/',
+        '/\x27redirection\x27\s*=>\s*3\b/',
+        '/\x27limit_response_size\x27\s*=>\s*WPD_Request_Budget::MAX_RESPONSE_BYTES/',
+    ),
+    'includes/class-wpd-service-api.php' => array(
+        '/\x27timeout\x27\s*=>\s*\$timeout/',
+        '/\x27redirection\x27\s*=>\s*0\b/',
+        '/\x27sslverify\x27\s*=>\s*true\b/',
+        '/\x27cookies\x27\s*=>\s*\$this->cookies/',
     ),
 );
 
@@ -75,6 +89,25 @@ foreach ($checks as $relativePath => $needles) {
             $failures[] = sprintf('Missing security invariant in %s: %s', $relativePath, $needle);
         }
     }
+}
+
+foreach ($http_option_patterns as $relativePath => $patterns) {
+    $contents = file_get_contents($root . '/' . $relativePath);
+    if (false === $contents) {
+        $failures[] = sprintf('Unreadable HTTP implementation: %s', $relativePath);
+        continue;
+    }
+
+    foreach ($patterns as $pattern) {
+        if (1 !== preg_match($pattern, $contents)) {
+            $failures[] = sprintf('Missing HTTP security option in %s: %s', $relativePath, $pattern);
+        }
+    }
+}
+
+$service_source = file_get_contents($root . '/includes/class-wpd-service-api.php');
+if (is_string($service_source) && false !== strpos($service_source, 'wp_safe_remote_get(')) {
+    $failures[] = 'Authenticated service-account requests must never use GET.';
 }
 
 foreach ($forbidden as $relativePath => $needles) {

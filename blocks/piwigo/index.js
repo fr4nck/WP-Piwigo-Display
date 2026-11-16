@@ -13,15 +13,46 @@
         navigation: 'thumbnails', tag: '', tags: '', tagMode: 'any'
     };
 
-    var shortcodeMap = {albumId:'album',displayType:'type',tagMode:'tag_mode',orientations:'orientation',clickAction:'click_action',transparentBackground:'transparent_background'};
-    var booleanKeys = ['recursive','lightbox','rounded','transparentBackground','autoplay'];
+    // Mirror WPD_Block::attributes_to_shortcode() for copy and import parity.
+    var shortcodeMap = {
+        albumId:'album', displayType:'type', piwigoUrl:'url', tagMode:'tag_mode',
+        orientations:'orientation', clickAction:'click_action',
+        transparentBackground:'transparent_background',
+        masonryColumns:'masonry_columns', masonryGap:'masonry_gap',
+        justifiedRowHeight:'justified_row_height', justifiedGap:'justified_gap',
+        collageSeed:'collage_seed', collageRotation:'collage_rotation',
+        collageSpread:'collage_spread', collageOverlap:'collage_overlap',
+        collageSize:'collage_size', collageVariation:'collage_variation',
+        photoText:'photo_text', photoTextSeed:'photo_text_seed',
+        photoTextFont:'photo_text_font', photoTextWeight:'photo_text_weight',
+        photoTextSize:'photo_text_size', photoTextLetterSpacing:'photo_text_letter_spacing',
+        photoTextLineHeight:'photo_text_line_height', photoTextMaxWidth:'photo_text_max_width',
+        photoTextAlign:'photo_text_align', photoTextFillMode:'photo_text_fill_mode',
+        photoTextDensity:'photo_text_density', photoTextRotation:'photo_text_rotation',
+        photoTextSpread:'photo_text_spread', photoTextMaxImages:'photo_text_max_images',
+        photoTextOutline:'photo_text_outline', photoTextOutlineWidth:'photo_text_outline_width',
+        photoTextOutlineColor:'photo_text_outline_color',
+        photoTextBackground:'photo_text_background'
+    };
+    var booleanKeys = ['recursive','lightbox','rounded','transparentBackground','autoplay','photoTextOutline'];
+    var numberKeys = [
+        'depth','limit','max','latest','random','interval','speed','radius',
+        'masonryColumns','masonryGap','justifiedRowHeight','justifiedGap',
+        'collageRotation','collageSpread','collageOverlap','collageSize','collageVariation',
+        'photoTextWeight','photoTextSize','photoTextLetterSpacing','photoTextLineHeight',
+        'photoTextMaxWidth','photoTextDensity','photoTextRotation','photoTextSpread',
+        'photoTextMaxImages','photoTextOutlineWidth'
+    ];
 
+    // PHP's editor codec decodes only shortcodes carrying this explicit
+    // marker. Percent-encoding protects quotes/brackets without changing
+    // existing author-written shortcodes or Gutenberg block attributes.
     var escapeShortcodeValue = function(value) {
-        return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\[/g, '&#91;').replace(/\]/g, '&#93;');
+        return encodeURIComponent(String(value));
     };
 
     var buildShortcode = function(attributes) {
-        var parts = [];
+        var parts = ['wpd_codec="uri"'];
         Object.keys(attributes).forEach(function(key) {
             var value = attributes[key];
             if (typeof value === 'undefined' || value === null || value === '') return;
@@ -196,27 +227,35 @@
             tag: 'piwigo',
             transform: function (attrs) {
                 var named = attrs && attrs.named ? attrs.named : {};
+                var codecUri = named.wpd_codec === 'uri';
                 var result = {};
-                Object.keys(uiDefaults).forEach(function (key) {
+                // Convert all block-supported attributes, including the
+                // newer layout and photo-text fields, with their schema types.
+                var handled = {};
+                Object.keys(uiDefaults).concat(Object.keys(shortcodeMap), ['preset','shape','radius','align']).forEach(function (key) {
+                    if (handled[key]) return;
+                    handled[key] = true;
                     var shortcodeKey = shortcodeMap[key] || key;
                     if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
                     var value = named[shortcodeKey];
+                    if (codecUri && typeof value === 'string') {
+                        try {
+                            value = decodeURIComponent(value);
+                        } catch (error) {
+                            // Leave malformed manually written values literal.
+                        }
+                    }
                     if (booleanKeys.indexOf(key) !== -1) {
                         value = /^(true|1|yes)$/i.test(String(value));
                     } else if (key === 'orientations') {
                         value = String(value).split(',').map(function (item) { return item.trim(); }).filter(Boolean);
-                    } else if (['depth', 'limit', 'max', 'latest', 'random', 'interval', 'speed'].indexOf(key) !== -1) {
+                    } else if (numberKeys.indexOf(key) !== -1) {
                         value = parseInt(value, 10);
                         if (!Number.isFinite(value)) return;
+                    } else {
+                        value = String(value);
                     }
                     result[key] = value;
-                });
-                ['preset', 'piwigoUrl', 'align', 'shape', 'radius', 'masonryColumns', 'masonryGap'].forEach(function (key) {
-                    var shortcodeKey = { piwigoUrl: 'url', masonryColumns: 'masonry_columns', masonryGap: 'masonry_gap' }[key] || key;
-                    if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
-                    var value = named[shortcodeKey];
-                    result[key] = ['radius', 'masonryColumns', 'masonryGap'].indexOf(key) === -1
-                        ? String(value) : Math.max(0, parseInt(value, 10) || 0);
                 });
                 return blocks.createBlock('wp-piwigo-display/gallery', result);
             }
