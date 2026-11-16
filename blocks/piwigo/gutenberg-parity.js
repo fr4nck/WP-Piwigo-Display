@@ -142,7 +142,13 @@
         useEffect(function () {
             var active = true;
             var onAlbums = function (items) {
-                if (active) setAlbums(items);
+                if (!active) return;
+                // A newer refresh in another block supersedes this picker's
+                // pending request, spinner and previously displayed errors.
+                latestRequest.current += 1;
+                setAlbums(items);
+                setLoading(false);
+                setError('');
             };
             var subscription = { owner: latestRequest, notify: onAlbums };
             albumSubscribers.push(subscription);
