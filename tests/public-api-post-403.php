@@ -177,4 +177,18 @@ expect( is_wp_error( $retry_limit ) && 'wpd_api_budget_exceeded' === $retry_limi
 expect( 32 === count( $GLOBALS['requests'] ), 'POST and GET must share one 32-call budget.' );
 expect( array( 'POST', 'GET' ) === array_slice( request_methods(), 0, 2 ), 'A public 403 may retry once using guest GET.' );
 
+// S-04: thirty-three shortcode traversals of the same Piwigo endpoint
+// must share one request-wide HTTP budget, even with separate API clients.
+$small_page = response( 200, array( 'stat' => 'ok', 'result' => array(
+    'images' => array( array( 'id' => 900, 'name' => 'One photo' ) ),
+) ) );
+prepare_case( $small_page );
+for ( $album = 1001; $album <= 1032; ++$album ) {
+    $ok = new_api( 's04-shared-page' )->get_images_from_album( $album, 1 );
+    expect( is_array( $ok ) && 1 === count( $ok ), 'One photo in each of the first 32 same-site galleries must render.' );
+}
+$over_budget = new_api( 's04-shared-page' )->get_images_from_album( 1033, 1 );
+expect( is_wp_error( $over_budget ) && 'wpd_api_budget_exceeded' === $over_budget->get_error_code(), 'The 33rd gallery on the same endpoint must exhaust a shared HTTP budget.' );
+expect( 32 === count( $GLOBALS['requests'] ), 'Multiple gallery shortcodes must share at most 32 outbound calls.' );
+
 echo "RC2 public Piwigo POST 403 -> safe guest GET regression: PASS\n";
