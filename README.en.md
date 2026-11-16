@@ -8,7 +8,7 @@ WordPress plugin for building and displaying Piwigo galleries directly inside Wo
 
 ## Project status
 
-**Stable version: 3.0.0.**
+**Stable version: 3.0.1.**
 
 The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026). The **2.0.0** development line was never distributed as a public release; its work was consolidated into V3.
 
@@ -16,10 +16,10 @@ The latest non-prerelease GitHub release before V3 was **1.10.0** (July 15, 2026
 
 ## Distribution
 
-- [Download stable 3.0.0](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.0) and install its ZIP using the WordPress plugin uploader.
+- [Download stable 3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1) and install its ZIP using the WordPress plugin uploader.
 - WordPress.org listing is **being prepared**, not yet available. Publishing to GitHub does not enable WordPress.org directory updates.
 - See [WordPress.org distribution preparation](docs/WORDPRESS-ORG.md) for submission, compatibility and visual assets.
-- The published GitHub `v3.0.0` tag and release ZIP are not to be replaced for documentation changes.
+- The published GitHub `v3.0.0` and `v3.0.1` releases and tags must not be overwritten to update documentation.
 
 ## Visual tools first
 
@@ -73,7 +73,7 @@ Metrics are aggregated without storing credentials, passwords or request bodies.
 
 ## Installation
 
-1. Download `piwigo-display-3.0.0.zip` from the GitHub 3.0.0 release and check its SHA-256 checksum.
+1. Download `piwigo-display-3.0.1.zip` from the GitHub 3.0.1 release and check its SHA-256 checksum.
 2. In WordPress, open **Plugins → Add New Plugin → Upload Plugin**.
 3. Activate **Piwigo Display**.
 4. Enter the Piwigo HTTPS URL in the plugin settings.
@@ -125,6 +125,7 @@ Shortcodes remain available for manual integrations, templates, generated conten
 
 - Installation: `docs/installation.md`
 - Configuration: `docs/configuration.md`
+- Troubleshooting (French): `docs/DEPANNAGE.md`
 - Shortcodes: `docs/shortcodes.md`
 - Service account: `docs/COMPTE-DE-SERVICE.md`
 - Shapes: `docs/FORMES.md`
