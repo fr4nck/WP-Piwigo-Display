@@ -112,6 +112,13 @@ try {
 		$fail( 'Clearing credentials must invalidate private caches exactly once.' );
 	}
 
+	$disabled_input = WPD_Service_Account::sanitize_options(
+		array( 'enabled' => 'true', 'password' => '' )
+	);
+	if ( 'service-user' !== $disabled_input['username'] ) {
+		$fail( 'An omitted disabled username input must retain its saved value.' );
+	}
+
 	$replacement = WPD_Service_Account::sanitize_options(
 		array( 'enabled' => 'true', 'username' => 'service-user', 'password' => 'new-secret', 'clear_password' => 'true' )
 	);
