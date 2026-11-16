@@ -52,7 +52,7 @@ final class WPD_Api {
 			return new WP_Error( 'wpd_invalid_album', __( 'Identifiant d\'album invalide.', 'wp-piwigo-display' ) );
 		}
 
-		$budget            = $budget ?? new WPD_Request_Budget();
+		$budget            = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
 		$images            = array();
 		$page              = 0;
 		$per_page          = 0 < $max ? min( 500, $max ) : 500;
@@ -115,7 +115,7 @@ final class WPD_Api {
 			return array();
 		}
 
-		$budget            = $budget ?? new WPD_Request_Budget();
+		$budget            = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
 		$images            = array();
 		$page              = 0;
 		$per_page          = 500;
@@ -176,7 +176,7 @@ final class WPD_Api {
 			return $this->get_images_from_album( $album_id, $max, true );
 		}
 
-		$budget    = new WPD_Request_Budget();
+		$budget    = WPD_Request_Budget::for_endpoint( $this->base_url );
 		$album_ids = $this->get_descendant_album_ids( $album_id, $depth, $budget );
 		if ( is_wp_error( $album_ids ) ) {
 			return $album_ids;
@@ -437,7 +437,7 @@ final class WPD_Api {
 			return self::$request_cache[ $cache_key ];
 		}
 
-		$budget  = $budget ?? new WPD_Request_Budget();
+		$budget  = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
 		$timeout = $budget->reserve_http_call();
 		if ( is_wp_error( $timeout ) ) {
 			return $timeout;
