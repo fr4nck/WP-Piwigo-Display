@@ -309,28 +309,28 @@ final class WPD_Settings {
 		$options   = is_array( $options ) ? $options : array();
 		$sanitized = self::default_options();
 		if ( isset( $options['piwigo_url'] ) ) {
-			$url                     = esc_url_raw( trim( (string) $options['piwigo_url'] ) );
+			$url                     = esc_url_raw( trim( self::scalar_option( $options['piwigo_url'] ) ) );
 			$scheme                  = '' !== $url ? wp_parse_url( $url, PHP_URL_SCHEME ) : '';
 			$sanitized['piwigo_url'] = in_array( $scheme, array( 'http', 'https' ), true ) ? trailingslashit( $url ) : '';
 		}
 		if ( isset( $options['cache_duration'] ) ) {
-			$sanitized['cache_duration'] = max( 60, absint( $options['cache_duration'] ) );
+			$sanitized['cache_duration'] = max( 60, absint( self::scalar_option( $options['cache_duration'] ) ) );
 		}
 		$sanitized['default_type']       = self::sanitize_choice( $options['default_type'] ?? 'gallery', array( 'gallery', 'slider' ), 'gallery' );
 		$sanitized['default_fit']        = self::sanitize_choice( $options['default_fit'] ?? 'contain', array( 'cover', 'contain', 'auto', 'raw' ), 'contain' );
-		$sanitized['default_ratio']      = self::sanitize_ratio( (string) ( $options['default_ratio'] ?? '16/9' ) );
-		$sanitized['default_height']     = self::sanitize_height( (string) ( $options['default_height'] ?? '' ) );
+		$sanitized['default_ratio']      = self::sanitize_ratio( self::scalar_option( $options['default_ratio'] ?? '16/9', '16/9' ) );
+		$sanitized['default_height']     = self::sanitize_height( self::scalar_option( $options['default_height'] ?? '' ) );
 		$sanitized['default_autoplay']   = self::sanitize_bool( $options['default_autoplay'] ?? 'true' );
-		$sanitized['default_interval']   = max( 1000, absint( $options['default_interval'] ?? 5000 ) );
-		$sanitized['default_speed']      = max( 0, absint( $options['default_speed'] ?? 500 ) );
+		$sanitized['default_interval']   = max( 1000, absint( self::scalar_option( $options['default_interval'] ?? 5000, '5000' ) ) );
+		$sanitized['default_speed']      = max( 0, absint( self::scalar_option( $options['default_speed'] ?? 500, '500' ) ) );
 		$sanitized['default_lightbox']   = self::sanitize_bool( $options['default_lightbox'] ?? 'true' );
 		$sanitized['default_caption']    = self::sanitize_choice(
-			(string) ( $options['default_caption'] ?? 'title' ),
+			$options['default_caption'] ?? 'title',
 			array( 'none', 'title', 'description', 'title-description' ),
 			'title'
 		);
 		$sanitized['default_style']      = self::sanitize_choice(
-			(string) ( $options['default_style'] ?? 'theme' ),
+			$options['default_style'] ?? 'theme',
 			array( 'default', 'theme', 'minimal', 'none' ),
 			'theme'
 		);
@@ -338,7 +338,7 @@ final class WPD_Settings {
 		$sanitized['default_rounded']    = self::sanitize_bool( $options['default_rounded'] ?? 'false' );
 		$sanitized['default_sort']       = self::sanitize_choice( $options['default_sort'] ?? 'manual', array( 'manual', 'date', 'name', 'id', 'random' ), 'manual' );
 		$sanitized['default_order']      = self::sanitize_choice( $options['default_order'] ?? 'desc', array( 'asc', 'desc' ), 'desc' );
-		$sanitized['default_limit']      = absint( $options['default_limit'] ?? 0 );
+		$sanitized['default_limit']      = absint( self::scalar_option( $options['default_limit'] ?? 0 ) );
 		$sanitized['debug_mode']         = self::sanitize_bool( $options['debug_mode'] ?? 'false' );
 		return $sanitized;
 	}
@@ -770,14 +770,26 @@ final class WPD_Settings {
 	}
 
 	/**
+	 * Normalizes scalar settings without converting malformed arrays/objects.
+	 *
+	 * @param mixed  $value    Raw submitted setting.
+	 * @param string $fallback Fallback for non-scalar input.
+	 * @return string Safe scalar.
+	 */
+	private static function scalar_option( $value, string $fallback = '' ): string {
+		return is_scalar( $value ) ? (string) $value : $fallback;
+	}
+
+	/**
 	 * Sanitizes a value against allowed choices.
 	 *
-	 * @param string $value    Input value.
+	 * @param mixed  $value    Input value.
 	 * @param array  $allowed  Allowed values.
 	 * @param string $fallback Fallback value.
 	 * @return string Sanitized value.
 	 */
-	private static function sanitize_choice( string $value, array $allowed, string $fallback ): string {
+	private static function sanitize_choice( $value, array $allowed, string $fallback ): string {
+		$value = self::scalar_option( $value, $fallback );
 		return in_array( $value, $allowed, true ) ? $value : $fallback;
 	}
 
