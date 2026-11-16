@@ -107,7 +107,7 @@
 		const outputRow = output.closest( 'tr' );
 		outputRow.parentNode.insertBefore( row, outputRow );
 	}
-	const escapeValue = ( value ) => String( value ).replace( /\\/g, '\\\\' ).replace( /\r?\n/g, '\\n' ).replace( /"/g, '\\"' );
+	const escapeValue = ( value ) => encodeURIComponent( String( value ) );
 	const removeAttribute = ( shortcode, key ) => shortcode.replace( new RegExp( '\\s+' + key + '="(?:\\\\.|[^"])*"', 'g' ), '' );
 	const appendAttribute = ( shortcode, key, value ) => shortcode.replace( /\]$/, ' ' + key + '="' + escapeValue( value ) + '"]' );
 	const clamp = ( value, min, max, fallback ) => {
