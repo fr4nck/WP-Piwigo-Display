@@ -156,6 +156,77 @@ final class WPD_Piwigo_Response_Compat {
 			}
 		}
 
+		// A fragment of JavaScript/HTML can contain an unmatched opening
+		// brace or quote before the actual Piwigo response. In that case
+		// the fast scanner never returns to depth zero. Retry only at a
+		// recognizable Piwigo response prefix, with a strict work budget.
+		return self::recover_after_unmatched_prefix( $body );
+	}
+
+	/**
+	 * Recovers a real Piwigo response after unmatched braces or quotes.
+	 *
+	 * A bounded fallback is required because arbitrary HTML/JavaScript can
+	 * precede the JSON. A fresh search from every brace would be quadratic.
+	 * The total characters scanned plus JSON bytes decoded here never exceed
+	 * four times the already size-limited input.
+	 *
+	 * @param string $body Polluted response already limited to 4 MiB.
+	 * @return string|null Recovered Piwigo JSON or null.
+	 */
+	private static function recover_after_unmatched_prefix( string $body ): ?string {
+		$length      = strlen( $body );
+		$offset      = 0;
+		$work_budget = 4 * $length;
+
+		while ( 1 === preg_match( '/\{\s*"stat"\s*:\s*"(?:ok|fail)"/', $body, $matches, PREG_OFFSET_CAPTURE, $offset ) ) {
+			$start       = (int) $matches[0][1];
+			$offset      = $start + 1;
+			$depth       = 0;
+			$quoted      = false;
+			$escaped     = false;
+
+			for ( $position = $start; $position < $length; ++$position ) {
+				--$work_budget;
+				if ( 0 >= $work_budget ) {
+					return null;
+				}
+
+				$character = $body[ $position ];
+				if ( $quoted ) {
+					if ( $escaped ) {
+						$escaped = false;
+					} elseif ( '\\' === $character ) {
+						$escaped = true;
+					} elseif ( '"' === $character ) {
+						$quoted = false;
+					}
+					continue;
+				}
+
+				if ( '"' === $character ) {
+					$quoted = true;
+				} elseif ( '{' === $character ) {
+					++$depth;
+				} elseif ( '}' === $character ) {
+					--$depth;
+					if ( 0 === $depth ) {
+						$candidate    = substr( $body, $start, $position - $start + 1 );
+						$work_budget -= strlen( $candidate );
+						if ( 0 >= $work_budget ) {
+							return null;
+						}
+
+						$decoded = json_decode( $candidate, true );
+						if ( is_array( $decoded ) && in_array( $decoded['stat'] ?? null, array( 'ok', 'fail' ), true ) ) {
+							return $candidate;
+						}
+						break;
+					}
+				}
+			}
+		}
+
 		return null;
 	}
 }
