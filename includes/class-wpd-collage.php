@@ -123,8 +123,8 @@ final class WPD_Collage {
 				$link_url   = '' !== $navigation_url ? $navigation_url : $large;
 				?>
 				<figure class="wp-piwigo-display-collage-item" style="--wpd-collage-rotate:<?php echo esc_attr( (string) $rotate ); ?>deg;--wpd-collage-x:<?php echo esc_attr( (string) $x ); ?>px;--wpd-collage-y:<?php echo esc_attr( (string) $y ); ?>px;--wpd-collage-size:<?php echo esc_attr( (string) $size ); ?>px;--wpd-collage-z:<?php echo esc_attr( (string) ( 1 + ( $hash % 17 ) ) ); ?>;">
-					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( $lightbox ? 'true' : 'false' ); ?>" data-wpd-title="<?php echo esc_attr( WPD_Renderer::encode_shortcode_brackets( $title ) ); ?>">
-						<img src="<?php echo esc_url( $url ); ?>" alt="<?php echo esc_attr( WPD_Renderer::encode_shortcode_brackets( $title ) ); ?>" loading="lazy" decoding="async" />
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( $lightbox ? 'true' : 'false' ); ?>" data-wpd-title="<?php echo WPD_Renderer::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>">
+						<img src="<?php echo esc_url( $url ); ?>" alt="<?php echo WPD_Renderer::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>" loading="lazy" decoding="async" />
 					</a>
 				</figure>
 			<?php endforeach; ?>
