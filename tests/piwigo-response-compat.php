@@ -124,6 +124,15 @@ $assert(
 );
 $assert( microtime( true ) - $start_orphans < 2.0, 'Orphaned-prefix recovery exceeded the bounded time budget.' );
 
+// Valid Piwigo JSON does not require the stat property to appear first.
+// The recovery fallback must preserve this even after an orphaned brace.
+$reordered = array( 'body' => '<script>/* unmatched { */</script>{"result":{"id":45},"stat":"ok"}' );
+$reordered_result = WPD_Piwigo_Response_Compat::clean_response( $reordered, $args, $url );
+$assert(
+    '{"result":{"id":45},"stat":"ok"}' === ( $reordered_result['body'] ?? '' ),
+    'Orphaned prefix must not conceal a valid Piwigo JSON object with stat after result.'
+);
+
 // Prior implementation performed a fresh nested scan from every opening
 // brace (quadratic CPU on hostile bodies). Verify linear behavior and that
 // scanning remains correct when a malformed object precedes valid Piwigo JSON.
