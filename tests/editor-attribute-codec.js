@@ -9,14 +9,18 @@ const assert = require('assert');
 
 const classic = fs.readFileSync(__dirname + '/../assets/js/wp-piwigo-display-classic-editor.js', 'utf8');
 const composer = fs.readFileSync(__dirname + '/../assets/js/wp-piwigo-display-composer-parity.js', 'utf8');
+const settings = fs.readFileSync(__dirname + '/../includes/class-wpd-settings.php', 'utf8');
 
 const classicMatch = classic.match(/(function escapeValue\(input\)\s*\{[^\n]+\})/);
 const composerMatch = composer.match(/const escapeValue\s*=\s*([^\n;]+);/);
+const settingsMatch = settings.match(/const esc=value=>([^\n;]+);/);
 assert.ok(classicMatch, 'Classic Editor encoder must exist.');
 assert.ok(composerMatch, 'Admin composer encoder must exist.');
+assert.ok(settingsMatch, 'Inline composer base encoder must exist.');
 
 const classicEncoder = vm.runInNewContext('(' + classicMatch[1] + ')', { encodeURIComponent });
 const composerEncoder = vm.runInNewContext('(' + composerMatch[1] + ')', { encodeURIComponent });
+const settingsEncoder = vm.runInNewContext('(value => ' + settingsMatch[1] + ')', { encodeURIComponent });
 const cases = [
     'La "Roche" [aux Fées] & la famille',
     'Nom avec apostrophe O\'Hara',
@@ -29,8 +33,9 @@ cases.forEach(function(value) {
     const expected = encodeURIComponent(value);
     assert.strictEqual(classicEncoder(value), expected, 'Classic Editor lost shortcode-safe encoding of ' + value);
     assert.strictEqual(composerEncoder(value), expected, 'Composer lost shortcode-safe encoding of ' + value);
+    assert.strictEqual(settingsEncoder(value), expected, 'Inline composer lost shortcode-safe encoding of ' + value);
     assert.strictEqual(decodeURIComponent(expected), value, 'Codec round-trip failed.');
 });
 assert.ok(classic.includes('wpd_codec'), 'Classic Editor must mark URI-coded shortcodes.');
-assert.ok(composer.includes('wpd_codec'), 'Composer must mark URI-coded shortcodes.');
+assert.ok(settings.includes('wpd_codec="uri"'), 'Admin composer must mark URI-coded shortcodes.');
 console.log('S05_CODEC=PASS exact Classic/Composer generators preserve quotes/brackets/UTF-8.');
