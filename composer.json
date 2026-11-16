@@ -41,6 +41,7 @@
       "node --check blocks/piwigo/gutenberg-parity.js",
       "node tests/tinymce-preview.js",
       "node tests/tinymce-dollar-replacement.js",
+      "node tests/editor-attribute-codec.js",
       "node tests/album-picker-errors.js",
       "node tests/album-picker-lifecycle.js",
       "node tests/album-picker-refresh-sync.js",
