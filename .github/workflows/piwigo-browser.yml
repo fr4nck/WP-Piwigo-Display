@@ -1,6 +1,16 @@
 name: Piwigo 16.2 and 16.4 - disposable browser integration
 
 on:
+  push:
+    branches:
+      - 'integration/3.1.0-rc3-audit-combined-20261116'
+    paths:
+      - '.github/workflows/piwigo-browser.yml'
+      - 'tests/e2e/**'
+      - 'includes/**'
+      - 'assets/**'
+      - 'blocks/**'
+      - 'wp-piwigo-display.php'
   pull_request:
     paths:
       - '.github/workflows/piwigo-browser.yml'
