@@ -146,8 +146,8 @@ final class WPD_Service_Account {
 		$clear    = isset( $options['clear_password'] ) && is_scalar( $options['clear_password'] )
 			&& filter_var( $options['clear_password'], FILTER_VALIDATE_BOOLEAN );
 
-		$enabled  = $options['enabled'] ?? false;
-		$username = $options['username'] ?? '';
+		$enabled  = $options['enabled'] ?? ( defined( self::ENABLED_CONSTANT ) ? ( $previous['enabled'] ?? 'false' ) : false );
+		$username = $options['username'] ?? ( $previous['username'] ?? '' );
 		if ( ! is_scalar( $enabled ) ) {
 			$enabled = $previous['enabled'] ?? 'false';
 		}
