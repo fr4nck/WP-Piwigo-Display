@@ -157,4 +157,5 @@ final class WPD_Piwigo_Response_Compat {
 		}
 
 		return null;
-	}}
+	}
+}
