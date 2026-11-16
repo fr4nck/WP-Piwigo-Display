@@ -132,8 +132,8 @@ final class WPD_Masonry {
 				$caption     = self::caption_text( $title, $description, $caption_mode );
 				?>
 				<figure class="wp-piwigo-display-masonry-item">
-					<a href="<?php echo esc_url( '' !== $large_url ? $large_url : $image_url ); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo esc_attr( $caption ); ?>">
-						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
+					<a href="<?php echo esc_url( '' !== $large_url ? $large_url : $image_url ); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo WPD_Renderer::escape_piwigo_text( $caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>">
+						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo WPD_Renderer::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
 				</figure>
@@ -266,10 +266,10 @@ final class WPD_Masonry {
 
 		$html = '<figcaption class="wp-piwigo-display-caption">';
 		if ( $show_title ) {
-			$html .= '<span class="wp-piwigo-display-caption-title">' . esc_html( $title ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-title">' . WPD_Renderer::escape_piwigo_text( $title ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by WPD_Renderer::escape_piwigo_text().
 		}
 		if ( $show_description ) {
-			$html .= '<span class="wp-piwigo-display-caption-description">' . esc_html( $description ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-description">' . WPD_Renderer::escape_piwigo_text( $description ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by WPD_Renderer::escape_piwigo_text().
 		}
 
 		return $html . '</figcaption>';
