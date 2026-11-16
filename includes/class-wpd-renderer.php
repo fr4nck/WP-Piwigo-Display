@@ -47,6 +47,24 @@ final class WPD_Renderer {
 	}
 
 	/**
+	 * Escapes untrusted Piwigo metadata and defuses second-order shortcodes.
+	 *
+	 * Core WordPress runs do_shortcode after dynamic block rendering. The
+	 * standard HTML escape functions do not encode [ and ], so metadata
+	 * must be HTML-escaped first, then have its delimiters converted to
+	 * numeric HTML entities. The browser still displays the original text.
+	 *
+	 * @param string $value     Piwigo image title, description or caption.
+	 * @param bool   $attribute Whether the target is an HTML attribute.
+	 * @return string Escaped HTML, inert in subsequent shortcode processing.
+	 */
+	public static function escape_piwigo_text( string $value, bool $attribute = false ): string {
+		$escaped = $attribute ? esc_attr( $value ) : esc_html( $value );
+
+		return str_replace( array( '[', ']' ), array( '&#91;', '&#93;' ), $escaped );
+	}
+
+	/**
 	 * Chooses a Piwigo page link, retaining album context for full navigation.
 	 *
 	 * @param array<string, mixed> $image Piwigo image metadata.
@@ -161,8 +179,8 @@ final class WPD_Renderer {
 				$image_fit        = self::get_image_fit( $image, $fit );
 				?>
 				<figure class="wp-piwigo-display-item <?php echo esc_attr( $orientation ); ?>" style="--wpd-current-image-fit: <?php echo esc_attr( $image_fit ); ?>;">
-					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( $lightbox_caption ); ?>">
-						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo self::escape_piwigo_text( $lightbox_caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>">
+						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode, 'figcaption' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
 				</figure>
@@ -238,8 +256,8 @@ final class WPD_Renderer {
 						$link_url         = '' !== $navigation_url ? $navigation_url : $image_url;
 						?>
 						<li class="splide__slide">
-							<a href="<?php echo esc_url( $link_url ); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( $lightbox_caption ); ?>">
-								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
+							<a href="<?php echo esc_url( $link_url ); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo self::escape_piwigo_text( $lightbox_caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>">
+								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>" loading="lazy" decoding="async" />
 							</a>
 							<?php echo self::render_caption( $title, $description, $caption_mode, 'div' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
 						</li>
@@ -259,7 +277,7 @@ final class WPD_Renderer {
 						?>
 						<?php // translators: %d: Image position in the slider. ?>
 						<button type="button" class="wp-piwigo-display-slider-thumbnail<?php echo 0 === $index ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr( (string) $index ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Afficher l’image %d', 'wp-piwigo-display' ), $index + 1 ) ); ?>">
-							<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async" />
+							<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets. */ ?>" loading="lazy" decoding="async" />
 						</button>
 					<?php endforeach; ?>
 				</div>
@@ -528,11 +546,11 @@ final class WPD_Renderer {
 		$html  = '<' . $tag . ' class="' . esc_attr( $class ) . '">';
 
 		if ( $show_title ) {
-			$html .= '<span class="wp-piwigo-display-caption-title">' . esc_html( $title ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-title">' . self::escape_piwigo_text( $title ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets.
 		}
 
 		if ( $show_description ) {
-			$html .= '<span class="wp-piwigo-display-caption-description">' . esc_html( $description ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-description">' . self::escape_piwigo_text( $description ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fully escaped by WPD_Renderer::escape_piwigo_text(), including shortcode brackets.
 		}
 
 		return $html . '</' . $tag . '>';

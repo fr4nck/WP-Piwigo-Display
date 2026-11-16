@@ -61,7 +61,7 @@
             return $dialog.find('[data-wpd="' + name + '"]').is(':checked');
         }
 
-        function escapeValue(input) { return String(input).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/"/g, '\\"'); }
+        function escapeValue(input) { return encodeURIComponent(String(input)); }
 
         function add(parts, key, item, allowZero) {
             if (item === undefined || item === null || item === '') return;
@@ -99,6 +99,16 @@
 
         function populateShortcode(shortcode) {
             var attributes = parseShortcode(shortcode);
+            if (attributes.wpd_codec === 'uri') {
+                Object.keys(attributes).forEach(function (key) {
+                    if (key === 'wpd_codec') return;
+                    try {
+                        attributes[key] = decodeURIComponent(attributes[key]);
+                    } catch (error) {
+                        // Keep malformed manually-entered values unchanged.
+                    }
+                });
+            }
             resetFields();
 
             Object.keys(attributes).forEach(function (name) {
@@ -117,7 +127,7 @@
                     $field.val(parseInt(attributes[name], 10));
                     return;
                 }
-                if (name === 'photo_text') { $field.val(attributes[name].replace(/\\n/g, '\n')); return; }
+                if (name === 'photo_text') { $field.val(attributes.wpd_codec === 'uri' ? attributes[name] : attributes[name].replace(/\\n/g, '\n')); return; }
                 $field.val(attributes[name]);
             });
         }
@@ -153,6 +163,7 @@
             var type = value('type');
             var shape = value('shape') || 'rectangle';
             var parts = [];
+            parts.push('wpd_codec="uri"');
 
             add(parts, 'album', value('album'), true);
             add(parts, 'preset', value('preset'), true);

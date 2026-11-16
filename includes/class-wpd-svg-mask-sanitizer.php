@@ -62,6 +62,12 @@ final class WPD_SVG_Mask_Sanitizer {
 			return new WP_Error( 'wpd_svg_too_large', __( 'Le masque SVG dépasse la taille maximale autorisée.', 'wp-piwigo-display' ) );
 		}
 
+		// Reject non-UTF-8 and UTF-16 with embedded NUL before looking for
+		// forbidden XML declarations; byte-wise checks alone miss UTF-16 DOCTYPE.
+		if ( false !== strpos( $svg, "\0" ) || 1 !== preg_match( '//u', $svg ) ) {
+			return new WP_Error( 'wpd_svg_invalid_encoding', __( 'Le masque SVG doit être encodé en UTF-8.', 'wp-piwigo-display' ) );
+		}
+
 		if ( ! class_exists( 'DOMDocument' ) ) {
 			return new WP_Error( 'wpd_svg_dom_missing', __( 'Le serveur ne fournit pas le parseur XML requis pour sécuriser les SVG.', 'wp-piwigo-display' ) );
 		}
@@ -133,13 +139,16 @@ final class WPD_SVG_Mask_Sanitizer {
 				return false;
 			}
 
-			if ( ! in_array( $attribute_name, self::ALLOWED_ATTRIBUTES, true ) || self::contains_external_reference( $attribute_value ) ) {
-				$attributes_to_remove[] = $attribute_name;
+			// A qualified attribute such as xlink:href or xml:base cannot
+			// survive via a namespaced DOM attribute even if its local name
+			// resembles a harmless geometry property.
+			if ( '' !== (string) $attribute->namespaceURI || ! in_array( $attribute_name, self::ALLOWED_ATTRIBUTES, true ) || self::contains_external_reference( $attribute_value ) ) {
+				$attributes_to_remove[] = $attribute;
 			}
 		}
 
-		foreach ( $attributes_to_remove as $attribute_name ) {
-			$element->removeAttribute( $attribute_name );
+		foreach ( $attributes_to_remove as $attribute ) {
+			$element->removeAttributeNode( $attribute );
 		}
 
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase

@@ -20,13 +20,73 @@
             var album = shortcode.match(/\balbum="([^"]*)"/);
             var slider = /\btype="slider"/.test(shortcode);
             var label = slider ? 'Diaporama Piwigo' : 'Galerie Piwigo';
-            if (album && album[1]) label += ' — ' + album[1];
+            if (album && album[1]) {
+                var albumLabel = album[1];
+                if (/\bwpd_codec="uri"/.test(shortcode)) {
+                    try {
+                        albumLabel = decodeURIComponent(albumLabel);
+                    } catch (error) {
+                        // Keep a malformed manually-entered value literal.
+                    }
+                }
+                label += ' — ' + albumLabel;
+            }
 
             return '<span class="wpd-tinymce-shortcode" contenteditable="false" role="button" tabindex="0" title="Double-cliquez pour modifier" data-wpd-shortcode="' +
                 encodeShortcode(shortcode) +
                 '" style="display:inline-block;padding:8px 12px;border:1px solid #8c8f94;border-radius:3px;background:#f6f7f7;">' +
                 editor.dom.encode(label) +
                 '</span>';
+        }
+
+        // Preserve shortcode values containing literal brackets, quotes, or
+        // backslash-escaped quotes. A regular expression ending at the first
+        // ] corrupts shortcodes when that bracket occurs inside an attribute.
+        function renderShortcodePreviews(content) {
+            var output = '';
+            var cursor = 0;
+            var index = 0;
+
+            while ((index = content.indexOf('[piwigo', cursor)) !== -1) {
+                var afterName = content.charAt(index + 7);
+                var previous = index > 0 ? content.charAt(index - 1) : '';
+                if (previous === '[' || (afterName !== ']' && !/\s/.test(afterName))) {
+                    output += content.slice(cursor, index + 7);
+                    cursor = index + 7;
+                    continue;
+                }
+
+                var quote = '';
+                var escaped = false;
+                var end = -1;
+
+                for (var position = index + 7; position < content.length; position++) {
+                    var character = content.charAt(position);
+                    if (quote) {
+                        if (escaped) {
+                            escaped = false;
+                        } else if (character === '\\') {
+                            escaped = true;
+                        } else if (character === quote) {
+                            quote = '';
+                        }
+                    } else if (character === '"' || character === "'") {
+                        quote = character;
+                    } else if (character === ']') {
+                        end = position;
+                        break;
+                    }
+                }
+
+                if (end === -1) {
+                    return output + content.slice(cursor);
+                }
+
+                output += content.slice(cursor, index) + preview(content.slice(index, end + 1));
+                cursor = end + 1;
+            }
+
+            return output + content.slice(cursor);
         }
 
         function requestEdit(node) {
@@ -39,7 +99,7 @@
         }
 
         editor.on('BeforeSetContent', function (event) {
-            event.content = event.content.replace(/\[piwigo(?:\s[^\]]*)?\]/g, preview);
+            event.content = renderShortcodePreviews(event.content);
         });
 
         editor.on('PostProcess', function (event) {

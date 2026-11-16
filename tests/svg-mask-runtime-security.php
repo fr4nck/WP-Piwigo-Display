@@ -46,6 +46,21 @@ $malicious_attr = '<svg viewBox="0 0 100 100"><path id="untrusted" d="M0 0Z" fil
 $result = WPD_SVG_Mask_Sanitizer::sanitize( $malicious_attr );
 $assert( is_string( $result ), 'Safe subset rejected along with unapproved attributes' );
 $assert( ! str_contains( $result, 'evil.test' ) && ! str_contains( $result, 'untrusted' ), 'External reference or unknown attribute survived' );
+$namespaced = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100"><g xml:base="https://evil.example/" fill="red"><path d="M0 0Z" xlink:href="https://evil.example/image.svg"/></g></svg>';
+$result = WPD_SVG_Mask_Sanitizer::sanitize( $namespaced );
+$assert( is_string( $result ), 'Namespaced attributes should be stripped without discarding safe geometry' );
+$assert( str_contains( $result, '<path' ) && str_contains( $result, 'fill="red"' ), 'Valid SVG geometry or presentation lost' );
+$assert( ! str_contains( $result, 'evil.example' ) && ! str_contains( $result, 'xlink:href' ) && ! str_contains( $result, 'xml:base' ), 'Namespaced external references survived sanitization' );
+
+$doctype_utf16 = '<!DOCTYPE svg [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><svg viewBox="0 0 100 100"><path d="M0 0Z"/></svg>';
+$utf16_bytes = "\xFF\xFE" . implode( "\0", str_split( $doctype_utf16 ) ) . "\0";
+$result = WPD_SVG_Mask_Sanitizer::sanitize( $utf16_bytes );
+$assert( is_wp_error( $result ) && 'wpd_svg_invalid_encoding' === $result->get_error_code(), 'UTF-16 encoded XML must be rejected before XML parsing' );
+
+$invalid_utf8 = '<svg viewBox="0 0 100 100"><path d="M0 0Z" fill="' . "\xC3\x28" . '"/></svg>';
+$result = WPD_SVG_Mask_Sanitizer::sanitize( $invalid_utf8 );
+$assert( is_wp_error( $result ) && 'wpd_svg_invalid_encoding' === $result->get_error_code(), 'Malformed UTF-8 must be rejected' );
+
 $overflow = '<svg viewBox="0 0 100 100">' . str_repeat( ' ', 262144 ) . '</svg>';
 $assert( is_wp_error( WPD_SVG_Mask_Sanitizer::sanitize( $overflow ) ), '262144 byte payload limit not enforced' );
 $exponent = WPD_SVG_Mask_Sanitizer::sanitize( '<svg viewBox="0 0 1.2e2 100"><path d="M0 0Z"/></svg>' );

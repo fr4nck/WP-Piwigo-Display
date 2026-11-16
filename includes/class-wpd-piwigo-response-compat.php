@@ -19,6 +19,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class WPD_Piwigo_Response_Compat {
 	/**
+	 * Maximum response size inspected by the compatibility recovery parser.
+	 * Normal JSON responses are not truncated by this filter.
+	 */
+	private const MAX_RECOVERY_BYTES = 4 * 1024 * 1024;
+
+	/**
 	 * Registers the HTTP response filter.
 	 *
 	 * @return void
@@ -40,14 +46,17 @@ final class WPD_Piwigo_Response_Compat {
 	 * @return array|WP_Error
 	 */
 	public static function clean_response( $response, array $parsed_args, string $url ) {
-		unset( $parsed_args );
-
-		if ( is_wp_error( $response ) || ! self::is_piwigo_json_request( $url ) ) {
+		// Do not transform another plugin's response merely because the URL
+		// happens to end in ws.php?format=json. Both Piwigo Display clients
+		// explicitly identify themselves in their WordPress HTTP requests.
+		if ( is_wp_error( $response ) || ! self::is_piwigo_json_request( $url ) || ! self::is_own_api_request( $parsed_args ) ) {
 			return $response;
 		}
 
 		$body = wp_remote_retrieve_body( $response );
-		if ( '' === $body || is_array( json_decode( $body, true ) ) ) {
+		// A polluted response may be attacker-controlled. Avoid quadratic work
+		// and unbounded JSON decoding. Clean larger responses are untouched.
+		if ( '' === $body || self::MAX_RECOVERY_BYTES < strlen( $body ) || is_array( json_decode( $body, true ) ) ) {
 			return $response;
 		}
 
@@ -58,6 +67,18 @@ final class WPD_Piwigo_Response_Compat {
 
 		$response['body'] = $json;
 		return $response;
+	}
+
+	/**
+	 * Matches only HTTP requests sent by this plugin's API clients.
+	 *
+	 * @param array<string, mixed> $parsed_args WordPress HTTP request options.
+	 * @return bool Whether the request came from Piwigo Display.
+	 */
+	private static function is_own_api_request( array $parsed_args ): bool {
+		$user_agent = $parsed_args['user-agent'] ?? null;
+
+		return is_string( $user_agent ) && 0 === strpos( $user_agent, 'Piwigo Display/' );
 	}
 
 	/**
@@ -85,45 +106,120 @@ final class WPD_Piwigo_Response_Compat {
 	 * @return string|null
 	 */
 	private static function extract_piwigo_json( string $body ): ?string {
-		$length = strlen( $body );
+		$length  = strlen( $body );
+		$start   = -1;
+		$depth   = 0;
+		$quoted  = false;
+		$escaped = false;
 
-		for ( $start = 0; $start < $length; ++$start ) {
-			if ( '{' !== $body[ $start ] ) {
+		// Scan each input byte once. Decode only complete, disjoint objects.
+		// A nested or malformed object cannot trigger repeated full scans.
+		for ( $position = 0; $position < $length; ++$position ) {
+			$character = $body[ $position ];
+
+			if ( -1 === $start ) {
+				if ( '{' === $character ) {
+					$start = $position;
+					$depth = 1;
+				}
 				continue;
 			}
 
+			if ( $quoted ) {
+				if ( $escaped ) {
+					$escaped = false;
+				} elseif ( '\\' === $character ) {
+					$escaped = true;
+				} elseif ( '"' === $character ) {
+					$quoted = false;
+				}
+				continue;
+			}
+
+			if ( '"' === $character ) {
+				$quoted = true;
+			} elseif ( '{' === $character ) {
+				++$depth;
+			} elseif ( '}' === $character ) {
+				--$depth;
+				if ( 0 === $depth ) {
+					$candidate = substr( $body, $start, $position - $start + 1 );
+					$decoded   = json_decode( $candidate, true );
+					if ( is_array( $decoded ) && in_array( $decoded['stat'] ?? null, array( 'ok', 'fail' ), true ) ) {
+						return $candidate;
+					}
+
+					$start   = -1;
+					$quoted  = false;
+					$escaped = false;
+				}
+			}
+		}
+
+		// A fragment of JavaScript/HTML can contain an unmatched opening
+		// brace or quote before the actual Piwigo response. In that case
+		// the fast scanner never returns to depth zero. Retry only at a
+		// plausible JSON object header, with a strict work budget. JSON
+		// object member order is not significant: stat may follow result.
+		return self::recover_after_unmatched_prefix( $body );
+	}
+
+	/**
+	 * Recovers a real Piwigo response after unmatched braces or quotes.
+	 *
+	 * A bounded fallback is required because arbitrary HTML/JavaScript can
+	 * precede the JSON. A fresh search from every brace would be quadratic.
+	 * The total characters scanned plus JSON bytes decoded here never exceed
+	 * four times the already size-limited input.
+	 *
+	 * @param string $body Polluted response already limited to 4 MiB.
+	 * @return string|null Recovered Piwigo JSON or null.
+	 */
+	private static function recover_after_unmatched_prefix( string $body ): ?string {
+		$length      = strlen( $body );
+		$offset      = 0;
+		$work_budget = 4 * $length;
+
+		while ( 1 === preg_match( '/\{\s*"(?:[^"\\\\]|\\\\.){1,128}"\s*:/', $body, $matches, PREG_OFFSET_CAPTURE, $offset ) ) {
+			$start   = (int) $matches[0][1];
+			$offset  = $start + 1;
 			$depth   = 0;
-			$string  = false;
+			$quoted  = false;
 			$escaped = false;
 
 			for ( $position = $start; $position < $length; ++$position ) {
-				$character = $body[ $position ];
+				--$work_budget;
+				if ( 0 >= $work_budget ) {
+					return null;
+				}
 
-				if ( $string ) {
+				$character = $body[ $position ];
+				if ( $quoted ) {
 					if ( $escaped ) {
 						$escaped = false;
 					} elseif ( '\\' === $character ) {
 						$escaped = true;
 					} elseif ( '"' === $character ) {
-						$string = false;
+						$quoted = false;
 					}
 					continue;
 				}
 
 				if ( '"' === $character ) {
-					$string = true;
-					continue;
-				}
-
-				if ( '{' === $character ) {
+					$quoted = true;
+				} elseif ( '{' === $character ) {
 					++$depth;
 				} elseif ( '}' === $character ) {
 					--$depth;
 					if ( 0 === $depth ) {
-						$candidate = substr( $body, $start, $position - $start + 1 );
-						$decoded   = json_decode( $candidate, true );
+						$candidate    = substr( $body, $start, $position - $start + 1 );
+						$work_budget -= strlen( $candidate );
+						if ( 0 >= $work_budget ) {
+							return null;
+						}
 
-						if ( is_array( $decoded ) && isset( $decoded['stat'] ) ) {
+						$decoded = json_decode( $candidate, true );
+						if ( is_array( $decoded ) && in_array( $decoded['stat'] ?? null, array( 'ok', 'fail' ), true ) ) {
 							return $candidate;
 						}
 						break;

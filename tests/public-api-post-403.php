@@ -142,4 +142,53 @@ $service_code = file_get_contents( dirname( __DIR__ ) . '/includes/class-wpd-ser
 expect( is_string( $service_code ) && str_contains( $service_code, 'wp_safe_remote_post(' ), 'service account client must still use POST' );
 expect( ! str_contains( (string) $service_code, 'wp_safe_remote_get(' ), 'service account must never put credentials in GET' );
 
+
+// S-04: a repeated full page must stop at the global image-volume cap,
+// even when the same image IDs are repeated and deduplicated in the result.
+$bulk_rows = array();
+for ( $i = 0; $i < 500; ++$i ) {
+	$bulk_rows[] = array( 'id' => $i + 1, 'name' => 'Synthetic image' );
+}
+$bulk_reply = response( 200, array( 'stat' => 'ok', 'result' => array( 'images' => $bulk_rows ) ) );
+prepare_case( $bulk_reply );
+$bulk_result = new_api( 's04-bulk-limit' )->get_images_from_album( 154 );
+expect( is_wp_error( $bulk_result ) && 'wpd_api_budget_exceeded' === $bulk_result->get_error_code(), 'Repeated full pages must fail closed at the global image cap.' );
+expect( 21 === count( $GLOBALS['requests'] ), 'The 10000-row limit must stop on the 21st full page.' );
+expect( WPD_Request_Budget::MAX_RESPONSE_BYTES === $GLOBALS['requests'][0][2]['limit_response_size'], 'Public POST must limit HTTP response bytes.' );
+
+// A small explicit max should request only that many rows, not 500.
+prepare_case( $images );
+$limited = new_api( 's04-small-max' )->get_images_from_album( 154, 1 );
+expect( is_array( $limited ) && 1 === count( $limited ), 'Explicit max=1 must still render one image.' );
+expect( 1 === $GLOBALS['requests'][0][2]['body']['per_page'], 'Explicit max=1 must reduce the Piwigo page size.' );
+
+// The budget is checked before network IO.
+prepare_case( $images );
+$expired_budget = new WPD_Request_Budget( microtime( true ) - 30 );
+$expired_result = new_api( 's04-expired-budget' )->get_images_from_album( 154, 0, false, $expired_budget );
+expect( is_wp_error( $expired_result ) && 'wpd_api_budget_exceeded' === $expired_result->get_error_code(), 'Expired traversal must fail before HTTP.' );
+expect( 0 === count( $GLOBALS['requests'] ), 'Expired traversal must perform zero HTTP calls.' );
+
+// On POST=403, public GET fallbacks consume the same HTTP budget.
+// The private service-account API must remain POST-only.
+prepare_case( response( 403 ), $bulk_reply );
+$retry_limit = new_api( 's04-get-budget' )->get_images_from_album( 154 );
+expect( is_wp_error( $retry_limit ) && 'wpd_api_budget_exceeded' === $retry_limit->get_error_code(), 'Repeated 403 fallbacks must stop at the request limit.' );
+expect( 32 === count( $GLOBALS['requests'] ), 'POST and GET must share one 32-call budget.' );
+expect( array( 'POST', 'GET' ) === array_slice( request_methods(), 0, 2 ), 'A public 403 may retry once using guest GET.' );
+
+// S-04: thirty-three shortcode traversals of the same Piwigo endpoint
+// must share one request-wide HTTP budget, even with separate API clients.
+$small_page = response( 200, array( 'stat' => 'ok', 'result' => array(
+    'images' => array( array( 'id' => 900, 'name' => 'One photo' ) ),
+) ) );
+prepare_case( $small_page );
+for ( $album = 1001; $album <= 1032; ++$album ) {
+    $ok = new_api( 's04-shared-page' )->get_images_from_album( $album, 1 );
+    expect( is_array( $ok ) && 1 === count( $ok ), 'One photo in each of the first 32 same-site galleries must render.' );
+}
+$over_budget = new_api( 's04-shared-page' )->get_images_from_album( 1033, 1 );
+expect( is_wp_error( $over_budget ) && 'wpd_api_budget_exceeded' === $over_budget->get_error_code(), 'The 33rd gallery on the same endpoint must exhaust a shared HTTP budget.' );
+expect( 32 === count( $GLOBALS['requests'] ), 'Multiple gallery shortcodes must share at most 32 outbound calls.' );
+
 echo "RC2 public Piwigo POST 403 -> safe guest GET regression: PASS\n";
