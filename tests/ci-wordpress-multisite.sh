@@ -65,3 +65,13 @@ wpqa --url="$B2" eval 'wp_set_current_user(1); do_action("admin_init");'
 [[ "$(network_digest)" == "$ACTIVE_HASH" ]] || fail "Administrator admin_init deactivated Piwigo Display network-wide"
 echo "WP_MULTISITE_STAGE=administrator_cannot_silently_deactivate_network"
 echo "WP_MULTISITE_PASS WP=$WP_VERSION"
+
+# F-02 : chaque sous-site dispose de son propre espace de transients.
+for site in "$B2" "$B3"; do
+  for mode in public service; do
+    for phase in exhaust recover hot upstream upstream-hot; do
+      WPD_F02_SOURCE="$GITHUB_WORKSPACE" WPD_F02_MODE="$mode" WPD_F02_PHASE="$phase" \
+        wpqa --url="$site" --skip-plugins eval-file "$GITHUB_WORKSPACE/tests/e2e/f02-cache-requests.php"
+    done
+  done
+done

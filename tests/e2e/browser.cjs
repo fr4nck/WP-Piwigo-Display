@@ -17,12 +17,14 @@ const pages = Object.fromEntries(
 const expected = [
   ['gallery', '.wp-piwigo-display-gallery'],
   ['slider', '.wp-piwigo-display-slider'],
+  ['masonry', '.wp-piwigo-display-masonry'],
   ['justified', '.wp-piwigo-display-justified'],
   ['collage', '.wp-piwigo-display-collage'],
   ['phototext', '.wp-piwigo-display-photo-text'],
   ['albumlink', '.wp-piwigo-display-gallery'],
   ['photolink', '.wp-piwigo-display-gallery'],
-  ['block', '.wp-piwigo-display-gallery']
+  ['block', '.wp-piwigo-display-gallery'],
+  ['multiple', '.wp-piwigo-display-gallery']
 ];
 
 async function run() {
@@ -99,6 +101,10 @@ async function run() {
         assert.ok(await page.locator(selector).count(), slug + ' has no rendered layout');
         const count = await page.locator('.wp-piwigo-display img').count();
         if (slug !== 'phototext') assert.ok(count > 0, slug + ' has no real images');
+        if (slug === 'multiple') {
+          assert.equal(await page.locator('.wp-piwigo-display').count(), 6,
+            'six galleries must render together without a quota/cache regression');
+        }
         if (slug === 'justified') {
           const cells = await page.locator('.wp-piwigo-display-justified-item')
             .evaluateAll(items => items.map(item => {

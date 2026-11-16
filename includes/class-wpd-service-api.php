@@ -114,8 +114,29 @@ final class WPD_Service_Api {
 			return new WP_Error( 'wpd_invalid_album', __( 'Identifiant d\'album invalide.', 'wp-piwigo-display' ) );
 		}
 
-		$budget   = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
-		$images   = array();
+		$budget = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
+		$images = array();
+		$result = $this->append_album_images( $album_id, $max, $recursive, $budget, $images );
+
+		return is_wp_error( $result ) ? $result : array_values( $images );
+	}
+
+	/**
+	 * Appends album pages until the shared unique-image limit is reached.
+	 *
+	 * Page size stays fixed within an album because Piwigo uses page offsets.
+	 * Images already seen in another album must not consume the remaining max.
+	 * Size by the global max: using only the remaining slot count can spend
+	 * the entire HTTP budget stepping through an album's shared-image prefix.
+	 *
+	 * @param int                $album_id  Album identifier.
+	 * @param int                $max       Global maximum, or zero for unlimited.
+	 * @param bool               $recursive Whether Piwigo should include descendants.
+	 * @param WPD_Request_Budget $budget  Shared request budget.
+	 * @param array              $images    Shared collection indexed by historical keys.
+	 * @return true|WP_Error Success or a fail-closed traversal error.
+	 */
+	private function append_album_images( int $album_id, int $max, bool $recursive, WPD_Request_Budget $budget, array &$images ) {
 		$page     = 0;
 		$per_page = 0 < $max ? min( 500, $max ) : 500;
 
@@ -150,7 +171,7 @@ final class WPD_Service_Api {
 				$this->add_unique_image( $images, $image );
 
 				if ( 0 < $max && count( $images ) >= $max ) {
-					return array_slice( array_values( $images ), 0, $max );
+					return true;
 				}
 			}
 
@@ -158,7 +179,7 @@ final class WPD_Service_Api {
 			$page_image_count = count( $page_images );
 		} while ( $per_page === $page_image_count && 1000 > $page );
 
-		return array_values( $images );
+		return true;
 	}
 
 	/**
@@ -208,17 +229,13 @@ final class WPD_Service_Api {
 
 		$images = array();
 		foreach ( array_unique( $album_ids ) as $current_album_id ) {
-			$current = $this->get_images_from_album( (int) $current_album_id, 0, false, $budget );
-			if ( is_wp_error( $current ) ) {
-				return $current;
+			$result = $this->append_album_images( (int) $current_album_id, $max, false, $budget, $images );
+			if ( is_wp_error( $result ) ) {
+				return $result;
 			}
 
-			foreach ( $current as $image ) {
-				$this->add_unique_image( $images, $image );
-
-				if ( 0 < $max && count( $images ) >= $max ) {
-					return array_slice( array_values( $images ), 0, $max );
-				}
+			if ( 0 < $max && count( $images ) >= $max ) {
+				return array_values( $images );
 			}
 		}
 
@@ -308,6 +325,10 @@ final class WPD_Service_Api {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			if ( 'wpd_api_budget_exceeded' === $response->get_error_code() ) {
+				return $response;
+			}
+
 			return new WP_Error(
 				'wpd_service_login_failed',
 				__( 'Échec de l’authentification du compte de service Piwigo.', 'wp-piwigo-display' )

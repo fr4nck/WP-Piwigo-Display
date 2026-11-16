@@ -19,7 +19,7 @@ final class WPD_Migration_Uninstall_Db {
 $GLOBALS['wpdb'] = new WPD_Migration_Uninstall_Db();
 require dirname( __DIR__ ) . '/uninstall.php';
 sort( $GLOBALS['migration_deleted'] );
-$expected = array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account', 'wpd_custom_svg_masks' );
+$expected = array( 'wp_piwigo_display_options', 'wp_piwigo_display_service_account', 'wp_piwigo_display_cache_generation', 'wpd_custom_svg_masks' );
 sort( $expected );
 if ( $expected !== $GLOBALS['migration_deleted'] ) {
 	fwrite( STDERR, "FAIL last-copy uninstall did not clean credentials\n" );

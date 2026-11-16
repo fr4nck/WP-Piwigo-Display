@@ -279,6 +279,7 @@ make_page() {
 }
 make_page gallery "[piwigo album=\"$ALBUM\" limit=\"6\"]"
 make_page slider "[piwigo album=\"$ALBUM\" type=\"slider\" autoplay=\"false\" limit=\"6\"]"
+make_page masonry "[piwigo album=\"$ALBUM\" layout=\"masonry\" limit=\"6\"]"
 make_page justified "[piwigo album=\"$ALBUM\" type=\"justified\" limit=\"6\"]"
 make_page collage "[piwigo album=\"$ALBUM\" type=\"collage\" limit=\"6\"]"
 make_page phototext "[piwigo album=\"$ALBUM\" type=\"photo-text\" photo_text=\"CI TEST\" limit=\"6\"]"
@@ -286,6 +287,7 @@ make_page albumlink "[piwigo album=\"$ALBUM\" click_action=\"piwigo_album\" limi
 make_page photolink "[piwigo album=\"$ALBUM\" click_action=\"piwigo_photo\" limit=\"6\"]"
 make_page block "<!-- wp:wp-piwigo-display/gallery {\"albumId\":\"$ALBUM\",\"displayType\":\"gallery\"} /-->"
 make_page alias "[piwigo album=\"#2024\" limit=\"6\"]"
+make_page multiple "[piwigo album=\"$ALBUM\" limit=\"2\"] [piwigo album=\"$ALBUM\" type=\"slider\" autoplay=\"false\" limit=\"2\"] [piwigo album=\"$ALBUM\" layout=\"masonry\" limit=\"2\"] [piwigo album=\"$ALBUM\" type=\"justified\" limit=\"2\"] [piwigo album=\"$ALBUM\" type=\"collage\" limit=\"2\"] [piwigo album=\"$ALBUM\" type=\"photo-text\" photo_text=\"CI\" limit=\"2\"]"
 php -S 127.0.0.1:8088 -t "$WP" > "$LAB/wp-server.log" 2>&1 &
 echo "$!" > "$LAB/wp-server.pid"
 for i in $(seq 1 60); do
