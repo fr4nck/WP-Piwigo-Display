@@ -8,6 +8,7 @@ on:
       - '3.x-dev'
       - 'audit/**'
       - 'release/3.0.0-rc.3'
+      - 'integration/3.1.0-rc3-audit-combined-20261116'
     tags:
       - 'v*'
   workflow_dispatch:
