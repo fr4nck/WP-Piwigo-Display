@@ -36,6 +36,8 @@ wpqa plugin install "$GH_ZIP"
 [[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "$WPQA_VERSION" ]] || fail "Candidate version mismatch"
 wpqa plugin install "$ORG_ZIP"
 wpqa --url="$B2" plugin activate wp-piwigo-display
+wpqa --url="$B2" eval 'update_option("wpd_custom_svg_masks",array("a1b2c3d4e5f6"=>array("name"=>"SITE B2 ONLY","svg"=>"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"/>")));'
+[[ "$(wpqa --url="$B3" eval 'echo get_option("wpd_custom_svg_masks",null)===null ? "PASS" : "FAIL";')" == PASS ]] || fail "A custom mask leaked across multisite sites"
 if wpqa plugin activate display4piwigo --network; then
   fail "Network activation was accepted despite b2 already running GitHub Piwigo Display"
 fi
@@ -64,4 +66,7 @@ echo "WP_MULTISITE_STAGE=subscriber_cannot_deactivate_network"
 wpqa --url="$B2" eval 'wp_set_current_user(1); do_action("admin_init");'
 [[ "$(network_digest)" == "$ACTIVE_HASH" ]] || fail "Administrator admin_init deactivated Piwigo Display network-wide"
 echo "WP_MULTISITE_STAGE=administrator_cannot_silently_deactivate_network"
+[[ "$(wpqa --url="$B2" eval 'echo isset(get_option("wpd_custom_svg_masks",array())["a1b2c3d4e5f6"]) ? "PASS" : "FAIL";')" == PASS ]] || fail "Site B2 lost its private mask library during network activation"
+[[ "$(wpqa --url="$B3" eval 'echo get_option("wpd_custom_svg_masks",null)===null ? "PASS" : "FAIL";')" == PASS ]] || fail "Site B3 inherited site B2 masks"
+echo "WP_MULTISITE_MASKS=PASS site-local masks preserved and isolated"
 echo "WP_MULTISITE_PASS WP=$WP_VERSION"

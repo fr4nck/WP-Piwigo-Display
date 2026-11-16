@@ -99,6 +99,8 @@ jobs:
             --exclude 'build' \
             --exclude '/vendor/' \
             --exclude 'tests' \
+            --exclude '/docs/' \
+            --exclude '/node_modules/' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
             --exclude 'phpcs.xml.dist' \
@@ -167,6 +169,8 @@ jobs:
             --exclude 'build' \
             --exclude '/vendor/' \
             --exclude 'tests' \
+            --exclude '/docs/' \
+            --exclude '/node_modules/' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
             --exclude 'phpcs.xml.dist' \
@@ -216,7 +220,7 @@ jobs:
           unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
           unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/includes/class-wpd-migration-guard.php' > /dev/null
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
-          if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+          if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|docs|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
             echo 'Fichiers indésirables dans le ZIP.' >&2
             exit 1
           fi
@@ -234,7 +238,7 @@ jobs:
           unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
           unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"textdomain": "display4piwigo"'
           unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
-          if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+          if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|docs|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
             echo 'Unwanted file in WordPress.org candidate.' >&2
             exit 1
           fi

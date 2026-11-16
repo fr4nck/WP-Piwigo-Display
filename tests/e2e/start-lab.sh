@@ -237,6 +237,7 @@ wpqa option update home 'http://127.0.0.1:8088' --quiet
 
 rsync -a "$GITHUB_WORKSPACE/" "$LAB/stage/wp-piwigo-display/" \
   --exclude '/.git/' --exclude '/.github/' --exclude '/tests/' \
+  --exclude '/docs/' --exclude '/node_modules/' \
   --exclude '/vendor/' --exclude '/node_modules/' --exclude '/build/' \
   --exclude '*.zip'
 # The upstream Splide dependency is bundled under assets/vendor/ and MUST NOT

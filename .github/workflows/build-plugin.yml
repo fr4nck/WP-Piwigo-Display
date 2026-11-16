@@ -81,6 +81,8 @@ jobs:
             --exclude 'build' \
             --exclude '/vendor/' \
             --exclude 'tests' \
+            --exclude '/docs/' \
+            --exclude '/node_modules/' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
             --exclude 'phpcs.xml.dist' \
@@ -150,7 +152,7 @@ jobs:
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/wp-piwigo-display.php$')" -eq 1
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/includes/class-wpd-migration-guard.php$')" -eq 1
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
-          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
+          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/(docs/|.*\.zip$)'
 
       - name: Enregistrer la provenance du candidat
         shell: bash

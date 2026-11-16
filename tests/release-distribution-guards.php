@@ -28,7 +28,7 @@ foreach ( array( 'plugin header' => $entry, 'readme' => $readme ) as $label => $
 
 $workflow_cases = array(
 	'.github/workflows/build-plugin.yml' => 1,
-	'.github/workflows/php-lint.yml' => 3,
+	'.github/workflows/php-lint.yml' => 2,
 	'tests/e2e/start-lab.sh' => 1,
 );
 foreach ( $workflow_cases as $filename => $expected ) {
