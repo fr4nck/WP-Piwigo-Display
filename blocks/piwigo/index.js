@@ -228,7 +228,7 @@
                 // Convert all block-supported attributes, including the
                 // newer layout and photo-text fields, with their schema types.
                 var handled = {};
-                Object.keys(uiDefaults).concat(Object.keys(shortcodeMap), ['preset','shape','radius']).forEach(function (key) {
+                Object.keys(uiDefaults).concat(Object.keys(shortcodeMap), ['preset','shape','radius','align']).forEach(function (key) {
                     if (handled[key]) return;
                     handled[key] = true;
                     var shortcodeKey = shortcodeMap[key] || key;
