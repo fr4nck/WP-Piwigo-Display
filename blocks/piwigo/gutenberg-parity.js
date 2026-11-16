@@ -21,13 +21,15 @@
     var albumRequestGeneration = 0;
     var albumSubscribers = [];
 
-    function publishAlbums(albums) {
+    function publishAlbums(albums, initiatingPicker) {
         albumSubscribers.slice().forEach(function (subscriber) {
-            subscriber(albums);
+            // The initiating picker owns its request lifecycle: when it closes,
+            // only its own requestId may authorize a local state update.
+            if (subscriber.owner !== initiatingPicker) subscriber.notify(albums);
         });
     }
 
-    function loadAlbums(forceReload) {
+    function loadAlbums(forceReload, initiatingPicker) {
         if (forceReload) {
             albumCache = null;
             albumRequest = null;
@@ -71,7 +73,7 @@
             // another Gutenberg block that initiated the newer request.
             if (generation !== albumRequestGeneration) return null;
             albumCache = albums;
-            publishAlbums(albums);
+            publishAlbums(albums, initiatingPicker);
             return albums;
         }).catch(function (exception) {
             if (generation !== albumRequestGeneration) return null;
@@ -142,11 +144,12 @@
             var onAlbums = function (items) {
                 if (active) setAlbums(items);
             };
-            albumSubscribers.push(onAlbums);
+            var subscription = { owner: latestRequest, notify: onAlbums };
+            albumSubscribers.push(subscription);
             if (albumCache) onAlbums(albumCache);
             return function () {
                 active = false;
-                albumSubscribers = albumSubscribers.filter(function (item) { return item !== onAlbums; });
+                albumSubscribers = albumSubscribers.filter(function (item) { return item !== subscription; });
                 latestRequest.current += 1;
             };
         }, []);
@@ -155,7 +158,7 @@
             var requestId = ++latestRequest.current;
             setLoading(true);
             setError('');
-            loadAlbums(forceReload).then(function (items) {
+            loadAlbums(forceReload, latestRequest).then(function (items) {
                 if (items && latestRequest.current === requestId) setAlbums(items);
             }).catch(function (exception) {
                 if (latestRequest.current === requestId) {
