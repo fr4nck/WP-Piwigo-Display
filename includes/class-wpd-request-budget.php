@@ -14,6 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class WPD_Request_Budget {
 	/**
+	 * Per-endpoint budgets for the lifetime of one WordPress PHP request.
+	 * Separate gallery shortcodes and tag queries must not reset the quota.
+	 *
+	 * @var array<string, WPD_Request_Budget>
+	 */
+	private static array $request_budgets = array();
+
+	/**
 	 * Upper bound for POST and fallback GET requests in one traversal.
 	 */
 	private const MAX_HTTP_CALLS = 32;
@@ -61,6 +69,23 @@ final class WPD_Request_Budget {
 	 */
 	public function __construct( ?float $started_at = null ) {
 		$this->started_at = null === $started_at ? microtime( true ) : $started_at;
+	}
+
+	/**
+	 * Returns the same budget for repeated Piwigo calls to one endpoint
+	 * during this PHP request, including public and service-account clients.
+	 * Never store credentials or endpoint URLs in the budget map keys.
+	 *
+	 * @param string $endpoint Sanitized Piwigo base URL.
+	 * @return WPD_Request_Budget Shared request-scoped budget.
+	 */
+	public static function for_endpoint( string $endpoint ): WPD_Request_Budget {
+		$key = md5( $endpoint );
+		if ( ! isset( self::$request_budgets[ $key ] ) ) {
+			self::$request_budgets[ $key ] = new self();
+		}
+
+		return self::$request_budgets[ $key ];
 	}
 
 	/**
