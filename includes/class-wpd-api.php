@@ -359,7 +359,6 @@ final class WPD_Api {
 			}
 		}
 
-
 		// Missing mbstring or Unicode normalization must not silently select a
 		// different private album. Numeric Piwigo IDs remain usable.
 		$comparison_key = static function ( string $value ): ?string {
@@ -377,6 +376,7 @@ final class WPD_Api {
 			}
 			return 1 === preg_match( '/[^\x00-\x7F]/', $value ) ? null : strtolower( $value );
 		};
+
 		$unsupported = null === $comparison_key( $album );
 		foreach ( $categories as $category ) {
 			if ( ! is_array( $category ) ) {
