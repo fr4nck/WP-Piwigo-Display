@@ -103,8 +103,8 @@ final class WPD_Renderer {
 				$image_fit        = self::get_image_fit( $image, $fit );
 				?>
 				<figure class="wp-piwigo-display-item <?php echo esc_attr( $orientation ); ?>" style="--wpd-current-image-fit: <?php echo esc_attr( $image_fit ); ?>;">
-					<a href="<?php echo esc_url( '' !== $large_url ? $large_url : $image_url ); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo self::escape_piwigo_text( $lightbox_caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */; ?>">
-						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */; ?>" loading="lazy" decoding="async" />
+					<a href="<?php echo esc_url( '' !== $large_url ? $large_url : $image_url ); ?>" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo self::escape_piwigo_text( $lightbox_caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>">
+						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode, 'figcaption' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
 				</figure>
@@ -178,8 +178,8 @@ final class WPD_Renderer {
 						$lightbox_caption = self::get_caption_text( $title, $description, $caption_mode );
 						?>
 						<li class="splide__slide">
-							<a href="<?php echo esc_url( $image_url ); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo self::escape_piwigo_text( $lightbox_caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */; ?>">
-								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */; ?>" loading="lazy" decoding="async" />
+							<a href="<?php echo esc_url( $image_url ); ?>" class="wp-piwigo-display-slide-link" rel="noopener" data-wpd-lightbox="true" data-wpd-title="<?php echo self::escape_piwigo_text( $lightbox_caption, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>">
+								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>" loading="lazy" decoding="async" />
 							</a>
 							<?php echo self::render_caption( $title, $description, $caption_mode, 'div' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
 						</li>
@@ -199,7 +199,7 @@ final class WPD_Renderer {
 						?>
 						<?php // translators: %d: Image position in the slider. ?>
 						<button type="button" class="wp-piwigo-display-slider-thumbnail<?php echo 0 === $index ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr( (string) $index ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Afficher l’image %d', 'wp-piwigo-display' ), $index + 1 ) ); ?>">
-							<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */; ?>" loading="lazy" decoding="async" />
+							<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo self::escape_piwigo_text( $title, true ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full HTML and shortcode escaping. */ ?>" loading="lazy" decoding="async" />
 						</button>
 					<?php endforeach; ?>
 				</div>
