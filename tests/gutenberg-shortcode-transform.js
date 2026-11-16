@@ -49,7 +49,7 @@ assert.strictEqual(additional.attributes.photoTextMaxImages, 12);
 
 // RC3 cross-PR regression: S-05 URI-coded Classic shortcodes imported via
 // S-06 Gutenberg transform must decode once, before handling typed fields.
-const specialText = 'La "Roche" [aux Fées] & la famille\\nPêle-Mêle';
+const specialText = 'La "Roche" [aux Fées] & la famille\nPêle-Mêle';
 const specialTags = 'enfants & "familles" [2026]';
 const specialUrl = 'https://gallery.example.test/a%20b?x=1&y=2';
 const encoded = entry.transform({ named: {
@@ -131,7 +131,7 @@ assert.ok(copyButton, 'The Gutenberg shortcode-copy button must be present.');
 copyButton.props.onClick();
 assert.ok(copied.startsWith('[piwigo '), 'Copied shortcode must be complete.');
 const copiedAttributes = {};
-for (const match of copied.matchAll(/\\b([a-z_][a-z0-9_]*)="([^"]*)"/g)) {
+for (const match of copied.matchAll(/\b([a-z_][a-z0-9_]*)="([^"]*)"/g)) {
     copiedAttributes[match[1]] = match[2];
 }
 assert.strictEqual(copiedAttributes.wpd_codec, 'uri', 'Copied Gutenberg shortcodes need an explicit URI codec marker.');
@@ -143,6 +143,6 @@ assert.strictEqual(decodeURIComponent(copiedAttributes.justified_row_height), '2
 assert.strictEqual(decodeURIComponent(copiedAttributes.collage_seed), '42');
 assert.strictEqual(decodeURIComponent(copiedAttributes.photo_text_outline), 'false');
 assert.strictEqual(decodeURIComponent(copiedAttributes.photo_text_letter_spacing), '-7');
-assert.ok(!/\\b(?:photoText|piwigoUrl|masonryColumns|justifiedRowHeight)=/.test(copied));
+assert.ok(!/\b(?:photoText|piwigoUrl|masonryColumns|justifiedRowHeight)=/.test(copied));
 
 console.log('Gutenberg : conversion de shortcode en bloc : PASS.');
