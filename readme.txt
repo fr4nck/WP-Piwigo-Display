@@ -1,7 +1,7 @@
 === Piwigo Display ===
 Contributors: fr4nck
 Tags: piwigo, gallery, photos, gutenberg, slider
-Requires at least: 6.0
+Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: 3.1.0-rc.2

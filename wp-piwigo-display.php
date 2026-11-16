@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/fr4nck/WP-Piwigo-Display
  * Description: Affiche des albums Piwigo dans WordPress sans importer les images dans la médiathèque.
  * Version: 3.1.0-rc.2
- * Requires at least: 6.0
+ * Requires at least: 6.3
  * Requires PHP: 8.1
  * Author: Franck Bellardie
  * License: GPL-3.0-or-later

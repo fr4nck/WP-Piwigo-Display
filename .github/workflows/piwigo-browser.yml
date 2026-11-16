@@ -41,10 +41,10 @@ jobs:
       WPD_ENABLE_DARKROOM: ${{ matrix.darkroom }}
     steps:
       - name: Checkout candidate only
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: PHP 8.3 for disposable WordPress
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.3'
           extensions: mysqli, gd, mbstring, curl, xml, zip
@@ -236,7 +236,7 @@ jobs:
 
       - name: Save synthetic test screenshots and assertions
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: piwigo-3.1.0-${{ matrix.lab_id }}-browser-proof
           path: ${{ runner.temp }}/piwigo-310-e2e/reports/

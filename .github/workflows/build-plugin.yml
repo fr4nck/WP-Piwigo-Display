@@ -36,10 +36,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configure PHP 8.1
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.1'
           coverage: none
@@ -81,6 +81,8 @@ jobs:
             --exclude 'build' \
             --exclude '/vendor/' \
             --exclude 'tests' \
+            --exclude '/docs/' \
+            --exclude '/node_modules/' \
             --exclude 'composer.json' \
             --exclude 'composer.lock' \
             --exclude 'phpcs.xml.dist' \
@@ -126,7 +128,7 @@ jobs:
           grep -Fq '"name": "wp-piwigo-display/gallery"' build/plugin-check/display4piwigo/blocks/piwigo/block.json
 
       - name: Run WordPress Plugin Check
-        uses: wordpress/plugin-check-action@v1
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1
         with:
           build-dir: './build/plugin-check/display4piwigo'
           exclude-directories: 'vendor,tests,build'
@@ -150,7 +152,7 @@ jobs:
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/wp-piwigo-display.php$')" -eq 1
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/includes/class-wpd-migration-guard.php$')" -eq 1
           test "$(unzip -Z1 "$ZIP" | grep -c '^wp-piwigo-display/assets/js/wp-piwigo-display-slider.js$')" -eq 1
-          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/.*\.zip$'
+          ! unzip -Z1 "$ZIP" | grep -Eq '^wp-piwigo-display/(docs/|.*\.zip$)'
 
       - name: Enregistrer la provenance du candidat
         shell: bash
@@ -165,7 +167,7 @@ jobs:
           printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$GITHUB_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
 
       - name: Conserver le ZIP candidat sans publication
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: piwigo-display-${{ github.sha }}-verification
           path: |
@@ -188,13 +190,13 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Récupérer le paquet vérifié
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: piwigo-display-${{ github.sha }}-verification
 

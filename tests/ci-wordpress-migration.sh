@@ -32,7 +32,7 @@ echo "20faab8e598299a7db5d3ace1622f3b8f7c464c27b0ce16778ab93e7c1e59ed4  $BASE301
 wpqa() { php "$WP_CLI_PHAR" --path="$WP_ROOT" --allow-root "$@"; }
 fail() { echo "WP_MIGRATION_FAIL: $*" >&2; exit 1; }
 snapshot() {
-  wpqa eval 'echo hash("sha256",serialize(array(get_option("wp_piwigo_display_options"),get_option("wp_piwigo_display_service_account"))));'
+  wpqa eval 'echo hash("sha256",serialize(array(get_option("wp_piwigo_display_options"),get_option("wp_piwigo_display_service_account"),get_option("wpd_custom_svg_masks"))));'
 }
 assert_options() { [[ "$(snapshot)" == "$BASE_HASH" ]] || fail "Stored settings changed: $1"; }
 assert_content() {
@@ -51,7 +51,7 @@ wpqa core install --url=http://piwigo-qa.local --title="Piwigo migration QA" \
 
 wpqa plugin install "$OLD" --activate
 [[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.0" ]] || fail "Legacy ZIP version"
-wpqa eval 'update_option("wp_piwigo_display_options",array("piwigo_url"=>"https://ci.example.invalid/gallery","cache_duration"=>3600));update_option("wp_piwigo_display_service_account",array("enabled"=>false,"username"=>"ci","password"=>"fake-only"));'
+wpqa eval 'update_option("wp_piwigo_display_options",array("piwigo_url"=>"https://ci.example.invalid/gallery","cache_duration"=>3600));update_option("wp_piwigo_display_service_account",array("enabled"=>false,"username"=>"ci","password"=>"fake-only"));update_option("wpd_custom_svg_masks",array("a1b2c3d4e5f6"=>array("name"=>"CI SVG MASK", "svg"=>"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"><path d=\"M0 0H10V10H0Z\"/></svg>")));'
 BASE_HASH="$(snapshot)"
 SHORTCODE_CONTENT='[piwigo album="5" type="slider" autoplay="false"]'
 BLOCK_CONTENT='<!-- wp:wp-piwigo-display/gallery {"albumId":"5","displayType":"slider"} /-->'
@@ -95,6 +95,7 @@ assert_options "candidate resumed"
 assert_content "candidate resumed"
 assert_identity "candidate resumed"
 echo "WP_MIGRATION_STAGE=candidate_resumed_pass"
+echo "WP_MIGRATION_MASKS=PASS preserved across published 3.0.1, GitHub and WordPress.org rollback"
 
 wpqa plugin install "$ORG_ZIP"
 if wpqa plugin activate display4piwigo; then fail "Dual activation allowed"; fi
@@ -132,7 +133,7 @@ assert_identity "old folder removed"
 echo "WP_MIGRATION_STAGE=old_folder_removed_without_loss"
 
 wpqa plugin uninstall display4piwigo --deactivate
-[[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Final uninstall did not remove credentials"
+[[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null && get_option("wpd_custom_svg_masks",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Final uninstall did not remove credentials"
 assert_content "last uninstall"
 echo "WP_MIGRATION_STAGE=final_uninstall_scrubs_secrets"
 
@@ -141,7 +142,7 @@ echo "WP_MIGRATION_STAGE=final_uninstall_scrubs_secrets"
 # uninstaller is allowed to remove the shared configuration and credentials.
 wpqa plugin install "$GH_ZIP"
 wpqa plugin install "$ORG_ZIP"
-wpqa eval 'update_option("wp_piwigo_display_options",array("piwigo_url"=>"https://ci.example.invalid/gallery"));update_option("wp_piwigo_display_service_account",array("enabled"=>false,"username"=>"ci","password"=>"fake-only"));'
+wpqa eval 'update_option("wp_piwigo_display_options",array("piwigo_url"=>"https://ci.example.invalid/gallery"));update_option("wp_piwigo_display_service_account",array("enabled"=>false,"username"=>"ci","password"=>"fake-only"));update_option("wpd_custom_svg_masks",array("a1b2c3d4e5f6"=>array("name"=>"CI SVG MASK", "svg"=>"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"/>")));'
 wpqa eval '
   require_once ABSPATH . "wp-admin/includes/file.php";
   require_once ABSPATH . "wp-admin/includes/plugin.php";
@@ -159,7 +160,7 @@ wpqa eval '
 ' | grep -Fxq 'WP_GROUP_DELETE_PASS' || fail "Batched WordPress uninstall failed"
 if wpqa plugin is-installed wp-piwigo-display; then fail "GitHub plugin survives group deletion"; fi
 if wpqa plugin is-installed display4piwigo; then fail "WordPress.org candidate survives group deletion"; fi
-[[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Batched final uninstall retained credentials"
+[[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null && get_option("wpd_custom_svg_masks",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Batched final uninstall retained credentials"
 assert_content "batched last uninstall"
 echo "WP_MIGRATION_STAGE=group_uninstall_pass"
 echo "WP_MIGRATION_PASS WP=$WP_VERSION"
