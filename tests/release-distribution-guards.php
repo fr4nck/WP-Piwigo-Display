@@ -52,6 +52,11 @@ if ( ! str_contains( $migration, 'get_option("wpd_custom_svg_masks")' )
 	$fail( 'Migration must preserve custom SVG masks through upgrade/rollback and scrub them on last uninstall.' );
 }
 
+// Test the oldest advertised Block API v3 compatible WordPress branch.
+if ( ! preg_match( "/- php: '8\.1'\s*\n\s*wordpress: '6\.3\.14'\s*\n\s*mode: single/", $ci ) ) {
+	$fail( 'The minimum supported WordPress 6.3 line requires a real single-site CI migration.' );
+}
+
 $action_workflows = array(
 	'.github/workflows/build-plugin.yml',
 	'.github/workflows/php-lint.yml',

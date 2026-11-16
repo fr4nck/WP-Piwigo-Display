@@ -272,6 +272,9 @@ jobs:
       matrix:
         include:
           - php: '8.1'
+            wordpress: '6.3.14'
+            mode: single
+          - php: '8.1'
             wordpress: '6.9'
             mode: single
           - php: '8.4'
