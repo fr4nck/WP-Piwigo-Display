@@ -34,11 +34,30 @@ async function editor(page) {
   }
 }
 async function mountInspectors(page) {
-  // L’éditeur natif affiche un seul inspecteur à la fois. Deux BlockEdit réels
-  // sont montés ici dans deux SlotFillProvider WordPress, sur les mêmes blocs
-  // du document et le vrai store d’annulation. Aucun hook/composant n’est simulé.
+  // Le sélecteur de production est extrait du filtre enregistré, sans en
+  // réécrire le code. Deux instances utilisent les vrais hooks React, les vrais
+  // composants WordPress et les attributs/historique du document Gutenberg.
+  // Ce montage évite la règle native d’un seul inspecteur actif à la fois.
   await page.evaluate(() => {
-    const {createElement:el, createRoot} = wp.element;
+    const {createElement:el, createRoot, Children} = wp.element;
+    const filter = wp.hooks.filters['editor.BlockEdit'].handlers.find(
+      handler=>handler.namespace==='wp-piwigo-display/gutenberg-parity'
+    );
+    if (!filter) throw Error('Filtre Gutenberg de production absent');
+    const controls = filter.callback(()=>null)({
+      name:'wp-piwigo-display/gallery',attributes:{},setAttributes(){}
+    });
+    function findPicker(node) {
+      if (!node || typeof node !== 'object') return null;
+      if (typeof node.type === 'function' && node.type.name === 'AlbumPicker') return node.type;
+      for (const child of Children.toArray(node.props?.children)) {
+        const found = findPicker(child);
+        if (found) return found;
+      }
+      return null;
+    }
+    const AlbumPicker = findPicker(controls);
+    if (!AlbumPicker) throw Error('Composant AlbumPicker de production absent');
     const node = document.createElement('div');
     node.id = 'wpd-ci-inspectors';
     Object.assign(node.style, {
@@ -53,15 +72,11 @@ async function mountInspectors(page) {
       );
       return blocks.map((block, index) => el('section',{
         id:'wpd-ci-' + index,key:block.clientId,'aria-label':'Bloc CI ' + index
-      }, el(wp.components.SlotFillProvider, null,
-        el(wp.blockEditor.BlockEdit, {
-          ...block, isSelected:true, mayDisplayControls:true,
-          setAttributes: attributes => wp.data.dispatch('core/block-editor')
-            .updateBlockAttributes(block.clientId,attributes),
-          onReplace:()=>{}, onRemove:()=>{}
-        }),
-        el(wp.blockEditor.InspectorControls.Slot)
-      )));
+      }, el(AlbumPicker,{
+        value:block.attributes.albumId,
+        onChange: value=>wp.data.dispatch('core/block-editor')
+          .updateBlockAttributes(block.clientId,{albumId:value})
+      })));
     }
     window.wpdCiRoot = createRoot(node);
     window.wpdCiRoot.render(el(InspectorPair));
@@ -75,6 +90,7 @@ async function main() {
   const browser = await chromium.launch({headless:true,args:['--no-sandbox']});
   const context = await browser.newContext();
   const page = await context.newPage();
+  page.on('pageerror',error=>console.error('BROWSER_PAGE_ERROR: ' + error.stack));
   const anonymous = await browser.newContext();
   const guest = await anonymous.newPage();
   const pwg = await request.newContext({baseURL:'http://127.0.0.1:8090'});
@@ -113,6 +129,9 @@ async function main() {
         wp.blocks.createBlock('wp-piwigo-display/gallery',{albumId:String(id)})
       ]);
     }, fixture.public);
+    const canvas = await page.locator('iframe[name="editor-canvas"]').count()
+      ? page.frameLocator('iframe[name="editor-canvas"]') : page;
+    await canvas.locator('[data-type="wp-piwigo-display/gallery"]').nth(1).waitFor();
     await mountInspectors(page);
     const a = page.locator('#wpd-ci-0'), b = page.locator('#wpd-ci-1');
     let albumRequests = 0, gateNext = false;
