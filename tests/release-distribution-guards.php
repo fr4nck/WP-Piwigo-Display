@@ -39,9 +39,9 @@ foreach ( $workflow_cases as $filename => $expected ) {
 }
 $build = (string) file_get_contents( $root . '/.github/workflows/build-plugin.yml' );
 $ci = (string) file_get_contents( $root . '/.github/workflows/php-lint.yml' );
-if ( ! str_contains( $build, 'wp-piwigo-display/docs/' )
-	|| ! str_contains( $ci, 'wp-piwigo-display/docs/' )
-	|| ! str_contains( $ci, 'display4piwigo/docs/' ) ) {
+if ( ! str_contains( $build, 'wp-piwigo-display/(docs/' )
+	|| ! str_contains( $ci, 'wp-piwigo-display/(\.github|docs|' )
+	|| ! str_contains( $ci, 'display4piwigo/(\.github|docs|' ) ) {
 	$fail( 'Both generated ZIPs must explicitly reject internal docs/.');
 }
 
