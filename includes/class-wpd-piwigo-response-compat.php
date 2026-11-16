@@ -159,7 +159,8 @@ final class WPD_Piwigo_Response_Compat {
 		// A fragment of JavaScript/HTML can contain an unmatched opening
 		// brace or quote before the actual Piwigo response. In that case
 		// the fast scanner never returns to depth zero. Retry only at a
-		// recognizable Piwigo response prefix, with a strict work budget.
+		// plausible JSON object header, with a strict work budget. JSON
+		// object member order is not significant: stat may follow result.
 		return self::recover_after_unmatched_prefix( $body );
 	}
 
@@ -179,7 +180,7 @@ final class WPD_Piwigo_Response_Compat {
 		$offset      = 0;
 		$work_budget = 4 * $length;
 
-		while ( 1 === preg_match( '/\{\s*"stat"\s*:\s*"(?:ok|fail)"/', $body, $matches, PREG_OFFSET_CAPTURE, $offset ) ) {
+		while ( 1 === preg_match( '/\{\s*"(?:[^"\\\\]|\\\\.){1,128}"\s*:/', $body, $matches, PREG_OFFSET_CAPTURE, $offset ) ) {
 			$start   = (int) $matches[0][1];
 			$offset  = $start + 1;
 			$depth   = 0;
