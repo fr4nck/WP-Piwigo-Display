@@ -29,4 +29,22 @@ assert.strictEqual(converted.attributes.piwigoUrl, 'https://gallery.example.test
 assert.strictEqual(converted.attributes.transparentBackground, false);
 assert.strictEqual(converted.attributes.radius, 8);
 assert.strictEqual(converted.attributes.align, 'right');
+// S-06: extra block attributes must round-trip the canonical snake_case
+// shortcode keys, including photo-text and all layout-specific options.
+const additional = entry.transform({ named: {
+    album: '154', masonry_columns: '3', justified_row_height: '275',
+    collage_seed: '42', collage_rotation: '8', photo_text: 'Pêle-Mêle',
+    photo_text_line_height: '115', photo_text_letter_spacing: '-7',
+    photo_text_outline: 'false', photo_text_max_images: '12'
+} });
+assert.strictEqual(additional.attributes.masonryColumns, 3);
+assert.strictEqual(additional.attributes.justifiedRowHeight, 275);
+assert.strictEqual(additional.attributes.collageSeed, '42');
+assert.strictEqual(additional.attributes.collageRotation, 8);
+assert.strictEqual(additional.attributes.photoText, 'Pêle-Mêle');
+assert.strictEqual(additional.attributes.photoTextLineHeight, 115);
+assert.strictEqual(additional.attributes.photoTextLetterSpacing, -7);
+assert.strictEqual(additional.attributes.photoTextOutline, false);
+assert.strictEqual(additional.attributes.photoTextMaxImages, 12);
+
 console.log('Gutenberg : conversion de shortcode en bloc : PASS.');
