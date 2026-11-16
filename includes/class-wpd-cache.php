@@ -515,6 +515,15 @@ final class WPD_Cache {
 	}
 
 	/**
+	 * Returns the persistent cache namespace generation.
+	 *
+	 * @return string Current generation, or the legacy default before first purge.
+	 */
+	private static function cache_generation(): string {
+		return function_exists( 'get_option' ) ? (string) get_option( self::GENERATION_OPTION, '0' ) : '0';
+	}
+
+	/**
 	 * Builds an album-and-tags cache key.
 	 *
 	 * @param int                $album_id   Piwigo album identifier.
@@ -526,10 +535,6 @@ final class WPD_Cache {
 	 * @param string             $context    Authentication context hash.
 	 * @return string
 	 */
-	private static function cache_generation(): string {
-		return function_exists( 'get_option' ) ? (string) get_option( self::GENERATION_OPTION, '0' ) : '0';
-	}
-
 	private static function get_album_tag_cache_key( int $album_id, array $tags, string $tag_mode, string $piwigo_url, bool $recursive, int $depth, string $context ): string {
 		sort( $tags, SORT_STRING );
 
