@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once __DIR__ . '/class-wpd-request-budget.php';
+
 /**
  * Handles authenticated requests to the configured Piwigo service account.
  *
@@ -51,12 +53,13 @@ final class WPD_Service_Api {
 	 * @return array|true|WP_Error Piwigo status response, true, or an error.
 	 */
 	public function test_connection() {
-		$login = $this->login();
+		$budget = new WPD_Request_Budget();
+		$login  = $this->login( $budget );
 		if ( is_wp_error( $login ) ) {
 			return $login;
 		}
 
-		$status = $this->request( array( 'method' => 'pwg.session.getStatus' ), false );
+		$status = $this->request( array( 'method' => 'pwg.session.getStatus' ), false, $budget );
 		if ( is_wp_error( $status ) ) {
 			return $status;
 		}
@@ -77,12 +80,14 @@ final class WPD_Service_Api {
 	 *
 	 * @return array|WP_Error Category list or an error.
 	 */
-	public function get_all_categories() {
+	public function get_all_categories( ?WPD_Request_Budget $budget = null ) {
 		$response = $this->request(
 			array(
 				'method'    => 'pwg.categories.getList',
 				'recursive' => 'true',
-			)
+			),
+			true,
+			$budget
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -102,14 +107,15 @@ final class WPD_Service_Api {
 	 * @param bool $recursive Whether Piwigo should include descendants.
 	 * @return array|WP_Error Image list or an error.
 	 */
-	public function get_images_from_album( int $album_id, int $max = 0, bool $recursive = false ) {
+	public function get_images_from_album( int $album_id, int $max = 0, bool $recursive = false, ?WPD_Request_Budget $budget = null ) {
 		if ( 0 >= $album_id ) {
 			return new WP_Error( 'wpd_invalid_album', __( 'Identifiant d\'album invalide.', 'wp-piwigo-display' ) );
 		}
 
+		$budget   = $budget ?? new WPD_Request_Budget();
 		$images   = array();
 		$page     = 0;
-		$per_page = 500;
+		$per_page = 0 < $max ? min( 500, $max ) : 500;
 
 		do {
 			$response = $this->request(
@@ -119,7 +125,9 @@ final class WPD_Service_Api {
 					'recursive' => $recursive ? 'true' : 'false',
 					'per_page'  => $per_page,
 					'page'      => $page,
-				)
+				),
+				true,
+				$budget
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -128,8 +136,15 @@ final class WPD_Service_Api {
 
 			$page_images = $response['result']['images'] ?? array();
 			$page_images = is_array( $page_images ) ? $page_images : array();
+			$limit_check = $budget->accept_page( count( $page_images ), $per_page );
+			if ( is_wp_error( $limit_check ) ) {
+				return $limit_check;
+			}
 
 			foreach ( $page_images as $image ) {
+				if ( ! is_array( $image ) ) {
+					continue;
+				}
 				$this->add_unique_image( $images, $image );
 
 				if ( 0 < $max && count( $images ) >= $max ) {
@@ -165,7 +180,8 @@ final class WPD_Service_Api {
 			return $this->get_images_from_album( $album_id, $max, true );
 		}
 
-		$categories = $this->get_all_categories();
+		$budget     = new WPD_Request_Budget();
+		$categories = $this->get_all_categories( $budget );
 		if ( is_wp_error( $categories ) ) {
 			return $categories;
 		}
@@ -190,7 +206,7 @@ final class WPD_Service_Api {
 
 		$images = array();
 		foreach ( array_unique( $album_ids ) as $current_album_id ) {
-			$current = $this->get_images_from_album( (int) $current_album_id, 0, false );
+			$current = $this->get_images_from_album( (int) $current_album_id, 0, false, $budget );
 			if ( is_wp_error( $current ) ) {
 				return $current;
 			}
@@ -214,11 +230,12 @@ final class WPD_Service_Api {
 	 * @param string $tag_mode Match mode: any or all.
 	 * @return array|WP_Error Image list or an error.
 	 */
-	public function get_images_by_tags( array $tags, string $tag_mode = 'any' ) {
+	public function get_images_by_tags( array $tags, string $tag_mode = 'any', ?WPD_Request_Budget $budget = null ) {
 		if ( empty( $tags ) ) {
 			return array();
 		}
 
+		$budget   = $budget ?? new WPD_Request_Budget();
 		$images   = array();
 		$page     = 0;
 		$per_page = 500;
@@ -232,7 +249,9 @@ final class WPD_Service_Api {
 					'tag_mode_and' => 'all' === $tag_mode ? 'true' : 'false',
 					'per_page'     => $per_page,
 					'page'         => $page,
-				)
+				),
+				true,
+				$budget
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -241,8 +260,15 @@ final class WPD_Service_Api {
 
 			$page_images = $response['result']['images'] ?? array();
 			$page_images = is_array( $page_images ) ? $page_images : array();
+			$limit_check = $budget->accept_page( count( $page_images ), $per_page );
+			if ( is_wp_error( $limit_check ) ) {
+				return $limit_check;
+			}
 
 			foreach ( $page_images as $image ) {
+				if ( ! is_array( $image ) ) {
+					continue;
+				}
 				$this->add_unique_image( $images, $image );
 			}
 
@@ -258,7 +284,7 @@ final class WPD_Service_Api {
 	 *
 	 * @return true|WP_Error True on success or an error.
 	 */
-	private function login() {
+	private function login( ?WPD_Request_Budget $budget = null ) {
 		if ( $this->authenticated ) {
 			return true;
 		}
@@ -273,7 +299,8 @@ final class WPD_Service_Api {
 				'username' => WPD_Service_Account::get_username(),
 				'password' => WPD_Service_Account::get_password(),
 			),
-			false
+			false,
+			$budget
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -302,7 +329,7 @@ final class WPD_Service_Api {
 	 * @param bool  $authenticate Whether the service account must be logged in first.
 	 * @return array|WP_Error Decoded API response or an error.
 	 */
-	private function request( array $body, bool $authenticate = true ) {
+	private function request( array $body, bool $authenticate = true, ?WPD_Request_Budget $budget = null ) {
 		if ( '' === $this->base_url ) {
 			return new WP_Error(
 				'wpd_service_https_required',
@@ -310,22 +337,29 @@ final class WPD_Service_Api {
 			);
 		}
 
+		$budget = $budget ?? new WPD_Request_Budget();
 		if ( $authenticate ) {
-			$login = $this->login();
+			$login = $this->login( $budget );
 			if ( is_wp_error( $login ) ) {
 				return $login;
 			}
 		}
 
+		$timeout = $budget->reserve_http_call();
+		if ( is_wp_error( $timeout ) ) {
+			return $timeout;
+		}
+
 		$response = wp_safe_remote_post(
 			$this->base_url . '/ws.php?format=json',
 			array(
-				'timeout'     => 10,
-				'redirection' => 0,
-				'user-agent'  => 'Piwigo Display/' . WPD_VERSION,
-				'body'        => $body,
-				'cookies'     => $this->cookies,
-				'sslverify'   => true,
+				'timeout'             => $timeout,
+				'redirection'         => 0,
+				'user-agent'          => 'Piwigo Display/' . WPD_VERSION,
+				'limit_response_size' => WPD_Request_Budget::MAX_RESPONSE_BYTES,
+				'body'                => $body,
+				'cookies'             => $this->cookies,
+				'sslverify'           => true,
 			)
 		);
 
