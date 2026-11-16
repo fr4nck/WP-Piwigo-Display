@@ -172,7 +172,15 @@ final class WPD_Plugin {
 	 * @return void
 	 */
 	public function ajax_get_albums(): void {
-		check_ajax_referer( 'wpd_get_albums', 'nonce' );
+		if ( false === check_ajax_referer( 'wpd_get_albums', 'nonce', false ) ) {
+			wp_send_json_error(
+				array(
+					'code'    => 'wpd_nonce_expired',
+					'message' => __( 'La session du sélecteur d’albums a expiré. Sauvegardez votre travail, puis rechargez la page.', 'wp-piwigo-display' ),
+				),
+				403
+			);
+		}
 
 		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Accès refusé.', 'wp-piwigo-display' ) ), 403 );

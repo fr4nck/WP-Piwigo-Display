@@ -1,0 +1,98 @@
+name: Gutenberg and Piwigo album security - real integration
+
+on:
+  push:
+    branches:
+      - 'integration/3.1.0-rc3-audit-combined-20261116'
+      - 'maintenance/3.0.1-s01-base-20261116'
+    paths:
+      - '.github/workflows/editor-security.yml'
+      - 'tests/e2e/editor-security-*'
+      - 'includes/**'
+      - 'assets/**'
+      - 'blocks/**'
+      - 'wp-piwigo-display.php'
+  pull_request:
+    paths:
+      - '.github/workflows/editor-security.yml'
+      - 'tests/e2e/editor-security-*'
+      - 'includes/**'
+      - 'assets/**'
+      - 'blocks/**'
+      - 'wp-piwigo-display.php'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: editor-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-editor-security:
+    name: Gutenberg DOM and private homonyms / Piwigo ${{ matrix.piwigo }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - piwigo: '16.2.0'
+            mariadb: '10.6'
+          - piwigo: '16.4.0'
+            mariadb: '11.4'
+    env:
+      WPD_PIWIGO_TAG: ${{ matrix.piwigo }}
+      WPD_MARIADB_TAG: ${{ matrix.mariadb }}
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Configure PHP for disposable WordPress
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli, gd, mbstring, curl, xml, zip
+          coverage: none
+      - name: Install pinned browser test engine
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Check focused test syntax
+        run: |
+          bash -n tests/e2e/editor-security-start.sh
+          node --check tests/e2e/editor-security-browser.cjs
+          php -l tests/e2e/editor-security-fixture.php
+          php -l tests/e2e/editor-security-piwigo.php
+          php tests/album-picker-nonce.php
+      - name: Start disposable WordPress and real Piwigo homonyms
+        run: bash tests/e2e/editor-security-start.sh
+      - name: Real service account and homonyms - cold and persistent hot cache
+        run: |
+          set -Eeuo pipefail
+          php "$WPD_LAB/wp-cli.phar" --path="$WPD_LAB/wordpress" --allow-root \
+            eval 'WPD_Cache::clear_all();'
+          for phase in cold persistent-hot; do
+            echo "REAL_HOMONYM_CACHE_PHASE=$phase"
+            php "$WPD_LAB/wp-cli.phar" --path="$WPD_LAB/wordpress" --allow-root \
+              eval-file tests/e2e/editor-security-piwigo.php
+          done
+      - name: Real Gutenberg DOM, expired nonce and anonymous/private rendering
+        run: node tests/e2e/editor-security-browser.cjs
+      - name: Show focused failure diagnostics as text
+        if: failure()
+        run: |
+          LAB="$RUNNER_TEMP/piwigo-editor-security"
+          if [ -f "$LAB/wp-server.log" ]; then tail -n 60 "$LAB/wp-server.log"; fi
+          if [ -f "$LAB/proxy.log" ]; then tail -n 20 "$LAB/proxy.log"; fi
+      - name: Tear down disposable services
+        if: always()
+        run: |
+          set +e
+          LAB="$RUNNER_TEMP/piwigo-editor-security"
+          for name in wp-server proxy; do
+            if [ -f "$LAB/$name.pid" ]; then kill "$(cat "$LAB/$name.pid")" 2>/dev/null; fi
+          done
+          docker rm -f wpd-310-piwigo wpd-310-db 2>/dev/null
+          docker network rm wpd-310-e2e 2>/dev/null
+          echo 'EDITOR_SECURITY_LAB_STOPPED=YES'
