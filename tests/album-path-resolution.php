@@ -155,6 +155,25 @@ $assert( 60 === $api->resolve_album_id( '/Privé/Équipe' ), 'A private album pa
 $assert( is_wp_error( $api->resolve_album_id( '#50' ) ), 'A missing #50 name must not reveal the private album 50.' );
 $assert( 50 === $api->resolve_album_id( '50' ), 'An explicitly provided numeric private album ID keeps its original meaning.' );
 
+// Audit #168: same-name public/private albums must never resolve by API order.
+$homonyms = array(
+	array( 'id' => 80, 'name' => 'Public', 'uppercats' => '80', 'permalink' => 'public' ),
+	array( 'id' => 90, 'name' => 'Équipe', 'uppercats' => '80,90', 'permalink' => 'equipe-publique' ),
+	array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
+	array( 'id' => 60, 'name' => 'Équipe', 'uppercats' => '50,60', 'permalink' => 'equipe-privee' ),
+);
+foreach ( array( $homonyms, array_reverse( $homonyms ) ) as $ordered ) {
+	WPD_Service_Api::$categories = $ordered;
+	$ambiguous = $api->resolve_album_id( 'Équipe' );
+	$assert( is_wp_error( $ambiguous ) && 'wpd_album_ambiguous' === $ambiguous->code, 'Duplicate names must be rejected regardless of API ordering.' );
+	$assert( 90 === $api->resolve_album_id( '/Public/Équipe' ), 'An explicit public path must select the public album.' );
+	$assert( 60 === $api->resolve_album_id( '/Privé/Équipe' ), 'An explicit private path must select the private album.' );
+	$assert( 90 === $api->resolve_album_id( 'equipe-publique' ), 'The public permalink must keep resolving.' );
+	$assert( 60 === $api->resolve_album_id( 'equipe-privee' ), 'The private permalink must keep resolving.' );
+	$assert( 60 === $api->resolve_album_id( '60' ), 'An explicit private numeric album ID must keep resolving.' );
+}
+WPD_Service_Api::$categories = $private_categories;
+
 $other_url = 'https://other.example.test';
 $other_body = array(
 	'method'    => 'pwg.categories.getList',
