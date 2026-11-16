@@ -8,6 +8,7 @@ on:
       - '3.x-dev'
       - 'audit/**'
       - 'release/3.0.0-rc.3'
+      - 'maintenance/3.0.1-s01-base-20261116'
     tags:
       - 'v*'
   workflow_dispatch:
