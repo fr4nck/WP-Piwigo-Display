@@ -99,6 +99,15 @@ $assert(
 	'Recovery must reject an unsupported stat, then accept the actual Piwigo object.'
 );
 
+// Regression: a stray unmatched brace in HTML/JavaScript preceding otherwise
+// valid Piwigo JSON must not swallow the API response.
+$unclosed_prefix = array( 'body' => '<script>/* injected { */</script>{"stat":"ok","result":{"id":42}}' );
+$unclosed_recovered = WPD_Piwigo_Response_Compat::clean_response( $unclosed_prefix, $args, $url );
+$assert(
+    '{"stat":"ok","result":{"id":42}}' === ( $unclosed_recovered['body'] ?? '' ),
+    'An unclosed brace in the polluted prefix must not conceal the actual Piwigo JSON.'
+);
+
 // Prior implementation performed a fresh nested scan from every opening
 // brace (quadratic CPU on hostile bodies). Verify linear behavior and that
 // scanning remains correct when a malformed object precedes valid Piwigo JSON.
