@@ -57,6 +57,23 @@ $plugin = file_get_contents( __DIR__ . '/../includes/class-wpd-plugin.php' );
 $assert_same( true, false !== strpos( (string) $slider, "transition === 'none' ? 0" ), 'Le mode sans animation doit forcer une vitesse nulle.' );
 $assert_same( true, false !== strpos( (string) $slider, "type: isFade ? 'fade' : 'loop'" ), 'Le fondu doit utiliser le type fade de Splide.' );
 $assert_same( true, false !== strpos( (string) $slider, 'direction: direction' ), 'La direction doit être fournie à Splide.' );
+
+// Historical RC3 slider fallback invariants: keep native navigation usable
+// before Splide loads, without duplicate initialization or hidden slides.
+foreach ( array(
+	'bindNativeFallback',
+	"slider.dataset.wpdFallbackBound === 'true'",
+	"slider.dataset.wpdSliderInitialized === 'true'",
+	'slide.hidden = !active',
+	"slide.setAttribute('aria-hidden'",
+	"splide.on('mounted moved'",
+	'window.setInterval',
+	'attempts >= 20',
+	"document.readyState === 'loading'",
+) as $contract ) {
+	$assert_same( true, false !== strpos( (string) $slider, $contract ), 'Régression du fallback slider : ' . $contract );
+}
+
 $assert_same( true, false !== strpos( (string) $slider, 'prefers-reduced-motion: reduce' ), 'Le slider doit respecter prefers-reduced-motion.' );
 $assert_same( true, false !== strpos( (string) $slider, "if (!slides.length)" ), 'Le fallback ne doit dépendre que de la présence de slides, pas de miniatures.' );
 $assert_same( true, false !== strpos( (string) $slider, 'wpd-native-slider-controls' ), 'Le fallback doit créer des commandes précédent/suivant même sans miniatures.' );
