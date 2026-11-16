@@ -62,6 +62,8 @@ wpqa plugin is-active wp-piwigo-display || fail "In-place upgrade disabled legac
 assert_options "GitHub in-place 3.0.1"
 assert_content "GitHub in-place 3.0.1"
 assert_identity "GitHub in-place 3.0.1"
+wpqa eval-file tests/e2e/s01-stable-shortcode-safety.php
+echo "WP_STABLE_S01_STAGE=github_in_place_pass"
 echo "WP_MIGRATION_STAGE=github_in_place_pass"
 
 wpqa plugin install "$ORG_ZIP"

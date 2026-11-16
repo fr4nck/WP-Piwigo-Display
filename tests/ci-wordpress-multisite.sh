@@ -37,6 +37,8 @@ if wpqa plugin activate display4piwigo --network; then
   fail "Network activation was accepted despite b2 already running GitHub Piwigo Display"
 fi
 wpqa --url="$B2" plugin is-active wp-piwigo-display || fail "Conflicting network activation disturbed b2"
+wpqa --url="$B2" eval-file tests/e2e/s01-stable-shortcode-safety.php
+echo "WP_STABLE_S01_STAGE=multisite_local_pass"
 echo "WP_MULTISITE_STAGE=network_activation_refused"
 
 wpqa --url="$B2" plugin deactivate wp-piwigo-display
