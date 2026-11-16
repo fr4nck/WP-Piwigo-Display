@@ -29,9 +29,13 @@ async function login(page, user, password) {
 async function editor(page) {
   await page.goto('http://127.0.0.1:8088/wp-admin/post-new.php?post_type=page');
   await page.waitForFunction(() => window.wp?.blocks?.getBlockType('wp-piwigo-display/gallery'));
-  if (await page.locator('.components-guide').count()) {
-    await page.locator('.components-guide').getByRole('button',{name:/Close|Fermer/}).click();
-  }
+  // La préférence peut arriver du serveur après le premier rendu : ne pas
+  // cliquer un guide qui se démonte pendant la synchronisation WordPress.
+  await page.evaluate(() => {
+    wp.data.dispatch('core/preferences').set('core/edit-post','welcomeGuide',false);
+    wp.data.dispatch('core/preferences').set('core/editor','welcomeGuide',false);
+  });
+  await page.locator('.components-guide').waitFor({state:'hidden'});
 }
 async function mountInspectors(page) {
   // Le sélecteur de production est extrait du filtre enregistré, sans en
