@@ -49,6 +49,7 @@
       "node tests/public-accessibility.js",
       "node tests/release-draft-guards.js",
       "node tests/gutenberg-album-picker.js",
+      "node tests/gutenberg-album-picker-multiblock.js",
       "node tests/slider-fallback.js",
       "node tests/slider-layout.js",
       "node tests/gutenberg-resize-interactions.js"
