@@ -51,4 +51,33 @@ if ( ! str_contains( $migration, 'get_option("wpd_custom_svg_masks")' )
 	|| ! str_contains( $migration, 'WP_MIGRATION_MASKS=PASS' ) ) {
 	$fail( 'Migration must preserve custom SVG masks through upgrade/rollback and scrub them on last uninstall.' );
 }
+
+$action_workflows = array(
+	'.github/workflows/build-plugin.yml',
+	'.github/workflows/php-lint.yml',
+	'.github/workflows/piwigo-browser.yml',
+);
+foreach ( $action_workflows as $path ) {
+	$contents = (string) file_get_contents( $root . '/' . $path );
+	preg_match_all( '/^\s*uses:\s*[a-z0-9_-]+\/[a-z0-9_-]+@([^\s#]+)/m', $contents, $matches );
+	if ( empty( $matches[1] ) ) {
+		$fail( "No GitHub Action dependency found in $path." );
+	}
+	foreach ( $matches[1] as $ref ) {
+		if ( 1 !== preg_match( '/^[a-f0-9]{40}$/D', $ref ) ) {
+			$fail( "GitHub Action dependency is not commit-pinned in $path." );
+		}
+	}
+}
+$wpcli_digest = 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c';
+$wpcli_url = 'https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar';
+foreach ( array( '.github/workflows/php-lint.yml', 'tests/e2e/start-lab.sh' ) as $path ) {
+	$contents = (string) file_get_contents( $root . '/' . $path );
+	if ( ! str_contains( $contents, $wpcli_url )
+		|| ! str_contains( $contents, $wpcli_digest )
+		|| ! str_contains( $contents, 'sha256sum --check' ) ) {
+		$fail( "Downloaded WP-CLI in $path must be pinned and SHA256-verified." );
+	}
+}
+
 echo "S15_S16=PASS Block API min WP, ZIP privacy, and SVG mask migration assertions\n";

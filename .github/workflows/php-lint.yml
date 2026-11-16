@@ -45,17 +45,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configure PHP 8.1
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.1'
           coverage: none
           tools: composer:v2
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -120,7 +120,7 @@ jobs:
           grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display' wp-piwigo-display.php
 
       - name: Run WordPress Plugin Check
-        uses: wordpress/plugin-check-action@v1
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1
         with:
           build-dir: './build/plugin-check/display4piwigo'
           exclude-directories: 'vendor,tests,build'
@@ -129,7 +129,7 @@ jobs:
           ignore-codes: 'WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound'
 
       - name: Configure PHP 8.4
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.4'
           coverage: none
@@ -151,7 +151,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Read plugin version
         id: version
@@ -250,7 +250,7 @@ jobs:
           cat PROVENANCE.txt
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: piwigo-display-${{ steps.version.outputs.version }}-${{ github.sha }}
           path: |
@@ -298,17 +298,17 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=15
     steps:
       - name: Checkout candidate
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configure PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: ${{ matrix.php }}
           extensions: mysqli, mbstring, zip
           coverage: none
 
       - name: Retrieve both independently identified ZIPs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: piwigo-display-${{ needs.package.outputs.version }}-${{ github.sha }}
           path: ${{ runner.temp }}/piwigo-zip-candidates
@@ -318,8 +318,9 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error \
-            https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+            https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar \
             --output "${{ runner.temp }}/wp-cli.phar"
+          printf '%s  %s\n' 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c' "${{ runner.temp }}/wp-cli.phar" | sha256sum --check
           php "${{ runner.temp }}/wp-cli.phar" --info
 
       - name: Exercise 3.0.0 to 3.0.1 to 3.1.0 and rollback on WordPress
@@ -351,12 +352,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout the exact candidate commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
       - name: Retrieve ZIPs from this fully qualified run
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: piwigo-display-${{ needs.package.outputs.version }}-${{ github.sha }}
           path: build

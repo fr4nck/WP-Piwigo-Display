@@ -217,8 +217,9 @@ echo "PIWIGO_REAL_IMAGES=PASS"
 
 WP="$LAB/wordpress"
 curl --fail --location --silent --show-error \
-  https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+  https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar \
   -o "$LAB/wp-cli.phar"
+printf '%s  %s\n' 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c' "$LAB/wp-cli.phar" | sha256sum --check
 wpqa() { php "$LAB/wp-cli.phar" --path="$WP" --allow-root "$@"; }
 wpqa core download --version=6.9 --locale=en_US --quiet
 wpqa config create --dbname=wordpress --dbuser=ci --dbpass=ci-only-db \
