@@ -350,6 +350,9 @@ final class WPD_Api {
 
 		$names = array();
 		foreach ( $categories as $category ) {
+			if ( ! is_array( $category ) ) {
+				continue;
+			}
 			$id = absint( $category['id'] ?? 0 );
 			if ( 0 < $id ) {
 				$names[ $id ] = sanitize_text_field( (string) ( $category['name'] ?? '' ) );
@@ -357,25 +360,43 @@ final class WPD_Api {
 		}
 
 		$wanted_path = trim( $album, '/' );
+		$matches     = array();
 		foreach ( $categories as $category ) {
-			$id   = absint( $category['id'] ?? 0 );
-			$name = $names[ $id ] ?? '';
+			if ( ! is_array( $category ) ) {
+				continue;
+			}
+
+			$id = absint( $category['id'] ?? 0 );
 			if ( 0 >= $id ) {
 				continue;
 			}
 
-			if ( 0 === strcasecmp( $name, $album ) ) {
-				return $id;
+			$name    = $names[ $id ] ?? '';
+			$matched = 0 === strcasecmp( $name, $album );
+			if ( ! $matched ) {
+				$category_path = self::build_category_path( $category, $names );
+				$matched       = '' !== $category_path && 0 === strcasecmp( $category_path, $wanted_path );
 			}
-
-			$category_path = self::build_category_path( $category, $names );
-			if ( '' !== $category_path && 0 === strcasecmp( $category_path, $wanted_path ) ) {
-				return $id;
+			if ( ! $matched ) {
+				$permalink = sanitize_text_field( (string) ( $category['permalink'] ?? '' ) );
+				$matched   = '' !== $permalink && 0 === strcasecmp( trim( $permalink, '/' ), $wanted_path );
 			}
-
-			if ( isset( $category['permalink'] ) && 0 === strcasecmp( trim( sanitize_text_field( (string) $category['permalink'] ), '/' ), $wanted_path ) ) {
-				return $id;
+			if ( $matched ) {
+				$matches[ $id ] = true;
+				if ( 1 < count( $matches ) ) {
+					return new WP_Error(
+						'wpd_album_ambiguous',
+						sprintf(
+							/* translators: %s: ambiguous Piwigo album name, path or permalink. */
+							__( 'Nom d’album ambigu : %s. Utilisez son chemin complet ou son identifiant Piwigo.', 'wp-piwigo-display' ),
+							$album
+						)
+					);
+				}
 			}
+		}
+		if ( 1 === count( $matches ) ) {
+			return (int) array_key_first( $matches );
 		}
 
 		return new WP_Error(

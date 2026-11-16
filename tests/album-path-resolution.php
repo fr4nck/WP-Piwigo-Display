@@ -145,6 +145,9 @@ $assert( 30 === $api->resolve_album_id( '/ALSH/Été 2026/Séjour voile' ), 'A f
 $assert( 40 === $api->resolve_album_id( 'ALSH/Séjour voile' ), 'Human-readable paths must disambiguate duplicate album names.' );
 $assert( 30 === $api->resolve_album_id( 'sejour-voile' ), 'Historical permalink lookup must remain supported.' );
 
+$ambiguous = $api->resolve_album_id( 'Séjour voile' );
+$assert( is_wp_error( $ambiguous ) && 'wpd_album_ambiguous' === $ambiguous->code, 'A short name shared by two albums must be rejected.' );
+
 $private_categories = array(
 	array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
 	array( 'id' => 60, 'name' => 'Équipe', 'uppercats' => '50,60', 'permalink' => 'equipe' ),
@@ -154,6 +157,24 @@ WPD_Service_Api::$categories     = $private_categories;
 $assert( 60 === $api->resolve_album_id( '/Privé/Équipe' ), 'A private album path must resolve through the service account on the configured Piwigo URL.' );
 $assert( is_wp_error( $api->resolve_album_id( '#50' ) ), 'A missing #50 name must not reveal the private album 50.' );
 $assert( 50 === $api->resolve_album_id( '50' ), 'An explicitly provided numeric private album ID keeps its original meaning.' );
+
+$homonymous_categories = array_merge(
+	$private_categories,
+	array(
+		array( 'id' => 10, 'name' => 'Été', 'uppercats' => '10', 'permalink' => 'ete-public' ),
+		array( 'id' => 20, 'name' => 'Été', 'uppercats' => '50,20', 'permalink' => 'ete-prive' ),
+	)
+);
+foreach ( array( $homonymous_categories, array_reverse( $homonymous_categories ) ) as $ordered_categories ) {
+	WPD_Service_Api::$categories = $ordered_categories;
+	$ambiguous = $api->resolve_album_id( 'Été' );
+	$assert( is_wp_error( $ambiguous ) && 'wpd_album_ambiguous' === $ambiguous->code, 'Public/private homonyms must fail closed regardless of API order.' );
+	$assert( 10 === $api->resolve_album_id( '/Été' ), 'Explicit root path must select the public homonym.' );
+	$assert( 20 === $api->resolve_album_id( '/Privé/Été' ), 'Explicit private path must select the intended private homonym.' );
+	$assert( 10 === $api->resolve_album_id( 'ete-public' ), 'Public permalink must remain unambiguous.' );
+	$assert( 20 === $api->resolve_album_id( 'ete-prive' ), 'Private permalink must remain unambiguous.' );
+	$assert( 20 === $api->resolve_album_id( '20' ), 'Explicit numeric private identifier must remain supported.' );
+}
 
 $other_url = 'https://other.example.test';
 $other_body = array(

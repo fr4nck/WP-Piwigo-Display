@@ -134,6 +134,25 @@ check( is_wp_error( WPD_Cache::resolve_album_id( '#5' ) ),
 check( 5 === WPD_Cache::resolve_album_id( '5' ),
     'Les identifiants numeriques explicites restent inchanges durant une panne.' );
 WPD_Service_Api::$categories_unavailable = false;
+
+$homonymous_categories = array(
+    array( 'id' => 10, 'name' => 'Été', 'uppercats' => '10', 'permalink' => 'ete-public' ),
+    array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
+    array( 'id' => 20, 'name' => 'Été', 'uppercats' => '50,20', 'permalink' => 'ete-prive' ),
+);
+foreach ( array( $homonymous_categories, array_reverse( $homonymous_categories ) ) as $ordered_categories ) {
+    WPD_Service_Api::$categories = $ordered_categories;
+    $GLOBALS['transients'] = array();
+    next_request();
+    $ambiguous = WPD_Cache::resolve_album_id( 'Été' );
+    check( is_wp_error( $ambiguous ) && 'wpd_album_ambiguous' === $ambiguous->get_error_code(),
+        'A public/private homonym must never depend on service API ordering.' );
+    check( 10 === WPD_Cache::resolve_album_id( '/Été' ), 'Explicit root path must select the public album.' );
+    check( 20 === WPD_Cache::resolve_album_id( '/Privé/Été' ), 'Explicit private path must select the private album.' );
+    check( 10 === WPD_Cache::resolve_album_id( 'ete-public' ), 'Public permalink must remain supported.' );
+    check( 20 === WPD_Cache::resolve_album_id( 'ete-prive' ), 'Private permalink must remain supported.' );
+    check( 20 === WPD_Cache::resolve_album_id( '20' ), 'Explicit numeric private album ID must remain supported.' );
+}
 // Reused from the historical 3.1.x-dev private-stale regression: never read
 // or serve stale private content, while keeping the public fallback available.
 $GLOBALS['transients'] = array();
