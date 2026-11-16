@@ -16,7 +16,7 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. Version 3.0.1 is being prepared as a maintenance update; it has not yet been released. WordPress.org directory distribution is being prepared and is not yet available.
+Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. Maintenance version 3.0.1 was published on GitHub on November 13, 2026. WordPress.org directory distribution is being prepared and is not yet available.
 
 Version 3.0.0 includes:
 
