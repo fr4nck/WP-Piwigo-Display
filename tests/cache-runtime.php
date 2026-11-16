@@ -148,4 +148,37 @@ foreach ( array( $homonymous_categories, array_reverse( $homonymous_categories )
     check( 20 === WPD_Cache::resolve_album_id( 'ete-prive' ), 'Private permalink must remain supported.' );
     check( 20 === WPD_Cache::resolve_album_id( '20' ), 'Explicit numeric private album ID must remain supported.' );
 }
+
+// Unicode public/private near-homonyms: compare safely or require numeric IDs.
+$unicode_categories = array(
+	array( 'id' => 10, 'name' => 'Été', 'uppercats' => '10', 'permalink' => 'ete-public' ),
+	array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
+	array( 'id' => 20, 'name' => 'été', 'uppercats' => '50,20', 'permalink' => 'ete-prive' ),
+	array( 'id' => 30, 'name' => 'Ete', 'uppercats' => '30', 'permalink' => 'ete-ascii' ),
+);
+foreach ( array( $unicode_categories, array_reverse( $unicode_categories ) ) as $ordered_categories ) {
+	WPD_Service_Api::$categories = $ordered_categories;
+	$GLOBALS['transients'] = array();
+	next_request();
+	$result = WPD_Cache::resolve_album_id( 'ÉTÉ' );
+	$expected_code = function_exists( 'mb_strtolower' ) ? 'wpd_album_ambiguous' : 'wpd_album_unicode_unsupported';
+	check( is_wp_error( $result ) && $expected_code === $result->get_error_code(), 'Cached Unicode aliases must fail closed regardless of category order.' );
+	check( 20 === WPD_Cache::resolve_album_id( '20' ), 'Explicit IDs must work without Unicode extensions.' );
+	if ( function_exists( 'mb_strtolower' ) ) {
+		check( 10 === WPD_Cache::resolve_album_id( '/Été' ), 'Public full path must remain distinct.' );
+		check( 20 === WPD_Cache::resolve_album_id( '/Privé/été' ), 'Private full path must remain distinct.' );
+		check( 30 === WPD_Cache::resolve_album_id( 'Ete' ), 'Ete must not be confused with Été.' );
+	}
+}
+WPD_Service_Api::$categories = array(
+	array( 'id' => 10, 'name' => 'Café', 'uppercats' => '10', 'permalink' => 'cafe-public' ),
+	array( 'id' => 20, 'name' => "Cafe\u{0301}", 'uppercats' => '20', 'permalink' => 'cafe-prive' ),
+);
+$GLOBALS['transients'] = array();
+next_request();
+$decomposed = WPD_Cache::resolve_album_id( 'Café' );
+$expected_code = function_exists( 'mb_strtolower' ) && class_exists( 'Normalizer', false )
+	? 'wpd_album_ambiguous' : 'wpd_album_unicode_unsupported';
+check( is_wp_error( $decomposed ) && $expected_code === $decomposed->get_error_code(), 'Cache NFC/NFD aliases must fail closed.' );
+
 echo "Cache : résolution, panne, contexte privé, rétablissement et session locale : PASS.\n";

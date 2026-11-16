@@ -416,6 +416,47 @@ final class WPD_Cache {
 			}
 		}
 
+		// Missing mbstring or Unicode normalization must not silently select a
+		// different private album. Numeric Piwigo IDs remain usable.
+		$comparison_key = static function ( string $value ): ?string {
+			if ( class_exists( 'Normalizer', false ) ) {
+				$normalized = \Normalizer::normalize( $value, \Normalizer::FORM_C );
+				if ( ! is_string( $normalized ) ) {
+					return null;
+				}
+				$value = $normalized;
+			} elseif ( 1 === preg_match( '/\p{M}/u', $value ) ) {
+				return null;
+			}
+			if ( function_exists( 'mb_strtolower' ) ) {
+				return mb_strtolower( $value, 'UTF-8' );
+			}
+			return 1 === preg_match( '/[^\x00-\x7F]/', $value ) ? null : strtolower( $value );
+		};
+
+		$unsupported = null === $comparison_key( $album );
+		foreach ( $categories as $category ) {
+			if ( ! is_array( $category ) ) {
+				continue;
+			}
+			$name      = sanitize_text_field( (string) ( $category['name'] ?? '' ) );
+			$permalink = sanitize_text_field( (string) ( $category['permalink'] ?? '' ) );
+			if ( null === $comparison_key( $name ) || ( '' !== $permalink && null === $comparison_key( $permalink ) ) ) {
+				$unsupported = true;
+			}
+		}
+		if ( $unsupported ) {
+			return new WP_Error(
+				'wpd_album_unicode_unsupported',
+				__( 'La comparaison de ce nom d’album ne peut pas être garantie sur ce serveur. Utilisez son identifiant Piwigo.', 'wp-piwigo-display' )
+			);
+		}
+		$labels_equal = static function ( string $left, string $right ) use ( $comparison_key ): bool {
+			$left_key  = $comparison_key( $left );
+			$right_key = $comparison_key( $right );
+			return null !== $left_key && null !== $right_key && $left_key === $right_key;
+		};
+
 		$wanted_path = trim( $album, '/' );
 		$matches     = array();
 		foreach ( $categories as $category ) {
@@ -429,14 +470,14 @@ final class WPD_Cache {
 			}
 
 			$name    = $names[ $id ] ?? '';
-			$matched = 0 === strcasecmp( $name, $album );
+			$matched = $labels_equal( $name, $album );
 			if ( ! $matched ) {
 				$category_path = self::build_category_path( $category, $names );
-				$matched       = '' !== $category_path && 0 === strcasecmp( $category_path, $wanted_path );
+				$matched       = '' !== $category_path && $labels_equal( $category_path, $wanted_path );
 			}
 			if ( ! $matched ) {
 				$permalink = sanitize_text_field( (string) ( $category['permalink'] ?? '' ) );
-				$matched   = '' !== $permalink && 0 === strcasecmp( trim( $permalink, '/' ), $wanted_path );
+				$matched   = '' !== $permalink && $labels_equal( trim( $permalink, '/' ), $wanted_path );
 			}
 			if ( $matched ) {
 				$matches[ $id ] = true;
