@@ -78,6 +78,7 @@ final class WPD_Service_Api {
 	/**
 	 * Retrieves every visible Piwigo category.
 	 *
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Category list or an error.
 	 */
 	public function get_all_categories( ?WPD_Request_Budget $budget = null ) {
@@ -105,6 +106,7 @@ final class WPD_Service_Api {
 	 * @param int  $album_id Album identifier.
 	 * @param int  $max      Maximum number of images, or zero for all images.
 	 * @param bool $recursive Whether Piwigo should include descendants.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Image list or an error.
 	 */
 	public function get_images_from_album( int $album_id, int $max = 0, bool $recursive = false, ?WPD_Request_Budget $budget = null ) {
@@ -228,6 +230,7 @@ final class WPD_Service_Api {
 	 *
 	 * @param array  $tags     Tag names.
 	 * @param string $tag_mode Match mode: any or all.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Image list or an error.
 	 */
 	public function get_images_by_tags( array $tags, string $tag_mode = 'any', ?WPD_Request_Budget $budget = null ) {
@@ -282,6 +285,7 @@ final class WPD_Service_Api {
 	/**
 	 * Authenticates the configured service account.
 	 *
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return true|WP_Error True on success or an error.
 	 */
 	private function login( ?WPD_Request_Budget $budget = null ) {
@@ -327,6 +331,7 @@ final class WPD_Service_Api {
 	 *
 	 * @param array $body         API request body.
 	 * @param bool  $authenticate Whether the service account must be logged in first.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Decoded API response or an error.
 	 */
 	private function request( array $body, bool $authenticate = true, ?WPD_Request_Budget $budget = null ) {
