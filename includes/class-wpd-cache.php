@@ -433,6 +433,7 @@ final class WPD_Cache {
 		}
 
 		$wanted_path = trim( $album, '/' );
+		$matched_ids = array();
 		foreach ( $categories as $category ) {
 			if ( ! is_array( $category ) ) {
 				continue;
@@ -445,18 +446,31 @@ final class WPD_Cache {
 			}
 
 			if ( 0 === strcasecmp( $name, $album ) ) {
-				return $id;
+				$matched_ids[ $id ] = true;
+				continue;
 			}
 
 			$category_path = self::build_category_path( $category, $names );
 			if ( '' !== $category_path && 0 === strcasecmp( $category_path, $wanted_path ) ) {
-				return $id;
+				$matched_ids[ $id ] = true;
+				continue;
 			}
 
 			$permalink = sanitize_text_field( (string) ( $category['permalink'] ?? '' ) );
 			if ( '' !== $permalink && 0 === strcasecmp( trim( $permalink, '/' ), $wanted_path ) ) {
-				return $id;
+				$matched_ids[ $id ] = true;
+				continue;
 			}
+		}
+
+		if ( 1 === count( $matched_ids ) ) {
+			return (int) array_key_first( $matched_ids );
+		}
+		if ( 1 < count( $matched_ids ) ) {
+			return new WP_Error(
+				'wpd_album_ambiguous',
+				__( 'Plusieurs albums correspondent à cette sélection. Utilisez un identifiant Piwigo ou un chemin unique.', 'wp-piwigo-display' )
+			);
 		}
 
 		return new WP_Error(
