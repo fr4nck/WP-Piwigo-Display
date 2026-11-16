@@ -41,9 +41,9 @@ final class WPD_Api {
 	/**
 	 * Retrieves images from one album.
 	 *
-	 * @param int  $album_id  Album identifier.
-	 * @param int  $max       Maximum number of images, or zero for unlimited.
-	 * @param bool $recursive Whether Piwigo should include descendant albums.
+	 * @param int                     $album_id  Album identifier.
+	 * @param int                     $max       Maximum number of images, or zero for unlimited.
+	 * @param bool                    $recursive Whether Piwigo should include descendant albums.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
@@ -105,7 +105,7 @@ final class WPD_Api {
 	 * Retrieves images matching tags.
 	 *
 	 * @param array<int, string> $tags     Tag names.
-	 * @param string             $tag_mode Matching mode: any or all.
+	 * @param string                  $tag_mode Matching mode: any or all.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
@@ -217,8 +217,8 @@ final class WPD_Api {
 	/**
 	 * Resolves album identifiers up to a relative depth.
 	 *
-	 * @param int $album_id Root album identifier.
-	 * @param int $depth    Maximum relative depth.
+	 * @param int                     $album_id Root album identifier.
+	 * @param int                     $depth    Maximum relative depth.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, int>|WP_Error
 	 */
