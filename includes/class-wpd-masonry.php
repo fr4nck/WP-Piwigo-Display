@@ -134,8 +134,8 @@ final class WPD_Masonry {
 				$link_url       = '' !== $navigation_url ? $navigation_url : ( '' !== $large_url ? $large_url : $image_url );
 				?>
 				<figure class="wp-piwigo-display-masonry-item">
-					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo wpd_escape_piwigo_text( $caption, true ); ?>">
-						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo wpd_escape_piwigo_text( $title, true ); ?>" loading="lazy" decoding="async" />
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( '' !== $navigation_url ? 'false' : 'true' ); ?>" data-wpd-title="<?php echo esc_attr( WPD_Renderer::encode_shortcode_brackets( $caption ) ); ?>">
+						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( WPD_Renderer::encode_shortcode_brackets( $title ) ); ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Method returns escaped markup. ?>
 				</figure>
@@ -268,10 +268,10 @@ final class WPD_Masonry {
 
 		$html = '<figcaption class="wp-piwigo-display-caption">';
 		if ( $show_title ) {
-			$html .= '<span class="wp-piwigo-display-caption-title">' . wpd_escape_piwigo_text( $title ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-title">' . esc_html( WPD_Renderer::encode_shortcode_brackets( $title ) ) . '</span>';
 		}
 		if ( $show_description ) {
-			$html .= '<span class="wp-piwigo-display-caption-description">' . wpd_escape_piwigo_text( $description ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-description">' . esc_html( WPD_Renderer::encode_shortcode_brackets( $description ) ) . '</span>';
 		}
 
 		return $html . '</figcaption>';

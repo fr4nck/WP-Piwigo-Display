@@ -137,8 +137,8 @@ final class WPD_Justified {
 				$link_url       = '' !== $navigation_url ? $navigation_url : ( '' !== $large_url ? $large_url : $image_url );
 				?>
 				<figure class="wp-piwigo-display-justified-item" style="--wpd-justified-grow:<?php echo esc_attr( (string) $basis ); ?>;--wpd-justified-ratio:<?php echo esc_attr( (string) $ratio ); ?>;">
-					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( $lightbox && '' === $navigation_url ? 'true' : 'false' ); ?>" data-wpd-title="<?php echo wpd_escape_piwigo_text( $caption, true ); ?>">
-						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo wpd_escape_piwigo_text( $title, true ); ?>" width="<?php echo esc_attr( (string) $dimensions['width'] ); ?>" height="<?php echo esc_attr( (string) $dimensions['height'] ); ?>" loading="lazy" decoding="async" />
+					<a href="<?php echo esc_url( $link_url ); ?>" rel="noopener" data-wpd-lightbox="<?php echo esc_attr( $lightbox && '' === $navigation_url ? 'true' : 'false' ); ?>" data-wpd-title="<?php echo esc_attr( WPD_Renderer::encode_shortcode_brackets( $caption ) ); ?>">
+						<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( WPD_Renderer::encode_shortcode_brackets( $title ) ); ?>" width="<?php echo esc_attr( (string) $dimensions['width'] ); ?>" height="<?php echo esc_attr( (string) $dimensions['height'] ); ?>" loading="lazy" decoding="async" />
 					</a>
 					<?php echo self::render_caption( $title, $description, $caption_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped markup. ?>
 				</figure>
@@ -288,10 +288,10 @@ final class WPD_Justified {
 
 		$html = '<figcaption class="wp-piwigo-display-caption">';
 		if ( $show_title ) {
-			$html .= '<span class="wp-piwigo-display-caption-title">' . wpd_escape_piwigo_text( $title ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-title">' . esc_html( WPD_Renderer::encode_shortcode_brackets( $title ) ) . '</span>';
 		}
 		if ( $show_description ) {
-			$html .= '<span class="wp-piwigo-display-caption-description">' . wpd_escape_piwigo_text( $description ) . '</span>';
+			$html .= '<span class="wp-piwigo-display-caption-description">' . esc_html( WPD_Renderer::encode_shortcode_brackets( $description ) ) . '</span>';
 		}
 
 		return $html . '</figcaption>';
