@@ -607,8 +607,8 @@ final class WPD_Settings {
 					<p>
 						<?php
 						printf(
-							/* translators: %d: number of deleted cache entries. */
-							esc_html__( 'Cache vidé. %d entrée(s) supprimée(s).', 'wp-piwigo-display' ),
+							/* translators: %d: number of transients physically removed from the WordPress database. */
+							esc_html__( 'Cache invalidé. %d entrée(s) supprimée(s) de la base WordPress ; les anciennes entrées du cache externe ne sont plus utilisées.', 'wp-piwigo-display' ),
 							// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Status value comes from an internal admin redirect.
 							absint( wp_unslash( $_GET['wpd_cache_cleared'] ) )
 						);
