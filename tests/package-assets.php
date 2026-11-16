@@ -46,6 +46,14 @@ if ( empty( $references ) ) {
 }
 
 $missing = array();
+
+// Licences and provenance must also survive packaging, not only source checkout.
+foreach ( array( 'assets/vendor/splide/LICENSE', 'assets/vendor/splide/README.md' ) as $vendor_file ) {
+	if ( ! is_file( $root . DIRECTORY_SEPARATOR . str_replace( '/', DIRECTORY_SEPARATOR, $vendor_file ) ) ) {
+		$missing[] = $vendor_file;
+	}
+}
+
 foreach ( array_keys( $references ) as $reference ) {
 	$asset = $root . DIRECTORY_SEPARATOR . str_replace( '/', DIRECTORY_SEPARATOR, $reference );
 	if ( ! is_file( $asset ) ) {
