@@ -166,13 +166,14 @@ final class WPD_Cache {
 	public static function clear_all(): int {
 		global $wpdb;
 
-		self::$request_cache = array();
-		self::$api_clients   = array();
 		// Transients in a persistent object cache are not discoverable via wp_options.
 		// Rotate the durable key namespace before attempting best-effort physical deletion.
 		if ( function_exists( 'update_option' ) ) {
 			update_option( self::GENERATION_OPTION, wp_generate_uuid4(), false );
 		}
+
+		self::$request_cache = array();
+		self::$api_clients   = array();
 		$deleted             = 0;
 		$patterns            = array(
 			'_transient_wpd_album_',
