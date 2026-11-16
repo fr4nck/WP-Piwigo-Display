@@ -19,8 +19,17 @@
     var albumCache = null;
     var albumRequest = null;
     var albumRequestGeneration = 0;
+    var albumSubscribers = [];
 
-    function loadAlbums(forceReload) {
+    function publishAlbums(albums, initiatingPicker) {
+        albumSubscribers.slice().forEach(function (subscriber) {
+            // The initiating picker owns its request lifecycle: when it closes,
+            // only its own requestId may authorize a local state update.
+            if (subscriber.owner !== initiatingPicker) subscriber.notify(albums);
+        });
+    }
+
+    function loadAlbums(forceReload, initiatingPicker) {
         if (forceReload) {
             albumCache = null;
             albumRequest = null;
@@ -60,8 +69,15 @@
             })) {
                 throw new Error(__('Liste des albums Piwigo invalide.', 'wp-piwigo-display'));
             }
-            if (generation === albumRequestGeneration) albumCache = albums;
+            // A late response must never roll back a newer refresh, even in
+            // another Gutenberg block that initiated the newer request.
+            if (generation !== albumRequestGeneration) return null;
+            albumCache = albums;
+            publishAlbums(albums, initiatingPicker);
             return albums;
+        }).catch(function (exception) {
+            if (generation !== albumRequestGeneration) return null;
+            throw exception;
         }).finally(function () {
             if (albumRequest === request) albumRequest = null;
         });
@@ -121,12 +137,35 @@
             setSelectedId(String(props.value || ''));
         }, [props.value]);
 
+        // One block's refresh must update every mounted picker. The shared
+        // cache alone is insufficient: each picker owns its React album state.
+        useEffect(function () {
+            var active = true;
+            var onAlbums = function (items) {
+                if (!active) return;
+                // A newer refresh in another block supersedes this picker's
+                // pending request, spinner and previously displayed errors.
+                latestRequest.current += 1;
+                setAlbums(items);
+                setLoading(false);
+                setError('');
+            };
+            var subscription = { owner: latestRequest, notify: onAlbums };
+            albumSubscribers.push(subscription);
+            if (albumCache) onAlbums(albumCache);
+            return function () {
+                active = false;
+                albumSubscribers = albumSubscribers.filter(function (item) { return item !== subscription; });
+                latestRequest.current += 1;
+            };
+        }, []);
+
         function requestAlbums(forceReload) {
             var requestId = ++latestRequest.current;
             setLoading(true);
             setError('');
-            loadAlbums(forceReload).then(function (items) {
-                if (latestRequest.current === requestId) setAlbums(items);
+            loadAlbums(forceReload, latestRequest).then(function (items) {
+                if (items && latestRequest.current === requestId) setAlbums(items);
             }).catch(function (exception) {
                 if (latestRequest.current === requestId) {
                     setError(exception.message || __('Impossible de charger les albums.', 'wp-piwigo-display'));
