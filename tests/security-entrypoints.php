@@ -14,7 +14,7 @@ $checks = array(
         'admin_post_wpd_clear_cache',
         'admin_post_wpd_test_connection',
         'admin_post_wpd_export_diagnostic',
-        "check_ajax_referer( 'wpd_get_albums', 'nonce' )",
+        "check_ajax_referer( 'wpd_get_albums', 'nonce', false )",
         "current_user_can( 'manage_options' )",
         "check_admin_referer( 'wpd_clear_cache' )",
         "check_admin_referer( 'wpd_test_connection' )",
@@ -22,7 +22,7 @@ $checks = array(
     ),
     'includes/class-wpd-service-account.php' => array(
         'admin_post_wpd_test_service_account',
-        "check_ajax_referer( 'wpd_get_albums', 'nonce' )",
+        "check_ajax_referer( 'wpd_get_albums', 'nonce', false )",
         "current_user_can( 'manage_options' )",
         "check_admin_referer( 'wpd_test_service_account' )",
         'wp_safe_redirect(',

@@ -99,3 +99,9 @@ Les métriques **Santé API & cache** sont conçues pour rester agrégées et ne
 ## Avant toute publication de version
 
 La checklist complète reste `docs/RECETTE-3X.md`. Les contrôles automatisés ne remplacent pas la recette réelle des trois interfaces WordPress, du sélecteur d’albums, du clavier, du responsive et du cas OpenStreetMap signalé par une utilisatrice.
+
+## Sélecteur d’albums : session expirée
+
+Un éditeur laissé ouvert longtemps peut recevoir « La session du sélecteur d’albums a expiré ». Sauvegardez votre travail, puis rechargez la page avant de rouvrir la liste. Le bouton d’actualisation des albums ne renouvelle pas le jeton de sécurité WordPress. La sélection saisie reste conservée ; un refus d’autorisation distinct ne doit pas être présenté comme une expiration.
+
+La recette automatisée `editor-security.yml` exerce les composants React/Gutenberg et jQuery réels, le nonce expiré et les albums public/privé homonymes sur deux Piwigo jetables. Les résultats sont à vérifier sur le SHA exact de chaque branche ; ils ne remplacent pas la recette de l’installation de l’utilisatrice.

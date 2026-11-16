@@ -315,7 +315,15 @@ final class WPD_Service_Account {
 	 * @return void
 	 */
 	public static function ajax_get_albums(): void {
-		check_ajax_referer( 'wpd_get_albums', 'nonce' );
+		if ( false === check_ajax_referer( 'wpd_get_albums', 'nonce', false ) ) {
+			wp_send_json_error(
+				array(
+					'code'    => 'wpd_nonce_expired',
+					'message' => __( 'La session du sélecteur d’albums a expiré. Sauvegardez votre travail, puis rechargez la page.', 'wp-piwigo-display' ),
+				),
+				403
+			);
+		}
 
 		// Other users fall through to the public handler, which applies its own
 		// capability check and lists only albums visible without authentication.
