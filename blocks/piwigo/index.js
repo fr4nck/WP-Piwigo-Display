@@ -44,12 +44,15 @@
         'photoTextMaxImages','photoTextOutlineWidth'
     ];
 
+    // PHP's editor codec decodes only shortcodes carrying this explicit
+    // marker. Percent-encoding protects quotes/brackets without changing
+    // existing author-written shortcodes or Gutenberg block attributes.
     var escapeShortcodeValue = function(value) {
-        return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\[/g, '&#91;').replace(/\]/g, '&#93;');
+        return encodeURIComponent(String(value));
     };
 
     var buildShortcode = function(attributes) {
-        var parts = [];
+        var parts = ['wpd_codec="uri"'];
         Object.keys(attributes).forEach(function(key) {
             var value = attributes[key];
             if (typeof value === 'undefined' || value === null || value === '') return;
@@ -224,6 +227,7 @@
             tag: 'piwigo',
             transform: function (attrs) {
                 var named = attrs && attrs.named ? attrs.named : {};
+                var codecUri = named.wpd_codec === 'uri';
                 var result = {};
                 // Convert all block-supported attributes, including the
                 // newer layout and photo-text fields, with their schema types.
@@ -234,6 +238,13 @@
                     var shortcodeKey = shortcodeMap[key] || key;
                     if (!Object.prototype.hasOwnProperty.call(named, shortcodeKey)) return;
                     var value = named[shortcodeKey];
+                    if (codecUri && typeof value === 'string') {
+                        try {
+                            value = decodeURIComponent(value);
+                        } catch (error) {
+                            // Leave malformed manually written values literal.
+                        }
+                    }
                     if (booleanKeys.indexOf(key) !== -1) {
                         value = /^(true|1|yes)$/i.test(String(value));
                     } else if (key === 'orientations') {
