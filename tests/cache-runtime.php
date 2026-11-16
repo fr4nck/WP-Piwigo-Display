@@ -5,6 +5,7 @@ define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 final class WP_Error {
     public function __construct( public string $code, public string $message ) {}
+    public function get_error_code(): string { return $this->code; }
 }
 final class WPD_Settings {
     public static function get_piwigo_url(): string { return 'https://photos.example.test'; }
