@@ -323,7 +323,7 @@
         });
 
         $dialog.on('input', '[data-wpd="height"]', function () { editingLegacyHeight = ''; });
-        $dialog.on('change input', 'input, select', refresh);
+        $dialog.on('change input', 'input, select, textarea', refresh);
         $dialog.on('click', '[data-wpd-shape-value]', function () {
             $dialog.find('[data-wpd="shape"]').val($(this).attr('data-wpd-shape-value')).trigger('change');
         });
