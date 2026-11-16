@@ -269,6 +269,13 @@ final class WPD_Cache {
 					return $stale;
 				}
 
+				// This quota ends with the PHP request. A transient would deny
+				// a later WordPress request even though its budget is fresh.
+				if ( 'wpd_api_budget_exceeded' === $value->get_error_code() ) {
+					self::$request_cache[ $cache_key ] = $value;
+					return $value;
+				}
+
 				$error = new WP_Error(
 					'wpd_temporarily_unavailable',
 					__( 'La galerie Piwigo est temporairement indisponible. Réessayez dans quelques instants.', 'wp-piwigo-display' )

@@ -163,3 +163,11 @@ if wpqa plugin is-installed display4piwigo; then fail "WordPress.org candidate s
 assert_content "batched last uninstall"
 echo "WP_MIGRATION_STAGE=group_uninstall_pass"
 echo "WP_MIGRATION_PASS WP=$WP_VERSION"
+
+# F-02 : vrais transients et cinq processus PHP distincts par contexte.
+for mode in public service; do
+  for phase in exhaust recover hot upstream upstream-hot; do
+    WPD_F02_SOURCE="$GITHUB_WORKSPACE" WPD_F02_MODE="$mode" WPD_F02_PHASE="$phase" \
+      wpqa --skip-plugins eval-file "$GITHUB_WORKSPACE/tests/e2e/f02-cache-requests.php"
+  done
+done

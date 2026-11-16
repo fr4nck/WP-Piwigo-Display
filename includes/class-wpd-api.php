@@ -52,10 +52,29 @@ final class WPD_Api {
 			return new WP_Error( 'wpd_invalid_album', __( 'Identifiant d\'album invalide.', 'wp-piwigo-display' ) );
 		}
 
-		$budget            = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
-		$images            = array();
+		$budget = $budget ?? WPD_Request_Budget::for_endpoint( $this->base_url );
+		$images = array();
+		$result = $this->append_album_images( $album_id, $max, $recursive, $budget, $images );
+
+		return is_wp_error( $result ) ? $result : array_values( $images );
+	}
+
+	/**
+	 * Appends album pages until the shared unique-image limit is reached.
+	 *
+	 * Page size stays fixed within an album because Piwigo uses page offsets.
+	 * Images already seen in another album must not consume the remaining max.
+	 *
+	 * @param int                $album_id  Album identifier.
+	 * @param int                $max       Global maximum, or zero for unlimited.
+	 * @param bool               $recursive Whether Piwigo should include descendants.
+	 * @param WPD_Request_Budget $budget  Shared request budget.
+	 * @param array              $images    Shared collection indexed by historical keys.
+	 * @return true|WP_Error Success or a fail-closed traversal error.
+	 */
+	private function append_album_images( int $album_id, int $max, bool $recursive, WPD_Request_Budget $budget, array &$images ) {
 		$page              = 0;
-		$per_page          = 0 < $max ? min( 500, $max ) : 500;
+		$per_page          = 0 < $max ? min( 500, $max - count( $images ) ) : 500;
 		$page_images_count = 0;
 
 		do {
@@ -91,14 +110,14 @@ final class WPD_Api {
 
 				$this->add_unique_image( $images, $image );
 				if ( 0 < $max && count( $images ) >= $max ) {
-					return array_slice( array_values( $images ), 0, $max );
+					return true;
 				}
 			}
 
 			++$page;
 		} while ( $page_images_count === $per_page && 1000 > $page );
 
-		return array_values( $images );
+		return true;
 	}
 
 	/**
@@ -168,6 +187,10 @@ final class WPD_Api {
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public function get_images_from_album_recursive( int $album_id, int $max = 0, int $depth = 10 ) {
+		if ( 0 >= $album_id ) {
+			return new WP_Error( 'wpd_invalid_album', __( 'Identifiant d\'album invalide.', 'wp-piwigo-display' ) );
+		}
+
 		if ( 0 >= $depth ) {
 			return $this->get_images_from_album( $album_id, $max, false );
 		}
@@ -184,16 +207,13 @@ final class WPD_Api {
 
 		$images = array();
 		foreach ( $album_ids as $current_album_id ) {
-			$album_images = $this->get_images_from_album( $current_album_id, 0, false, $budget );
-			if ( is_wp_error( $album_images ) ) {
-				return $album_images;
+			$result = $this->append_album_images( $current_album_id, $max, false, $budget, $images );
+			if ( is_wp_error( $result ) ) {
+				return $result;
 			}
 
-			foreach ( $album_images as $image ) {
-				$this->add_unique_image( $images, $image );
-				if ( 0 < $max && count( $images ) >= $max ) {
-					return array_slice( array_values( $images ), 0, $max );
-				}
+			if ( 0 < $max && count( $images ) >= $max ) {
+				return array_values( $images );
 			}
 		}
 
@@ -463,6 +483,10 @@ final class WPD_Api {
 		}
 
 		if ( is_wp_error( $response ) ) {
+			if ( 'wpd_api_budget_exceeded' === $response->get_error_code() ) {
+				return $response;
+			}
+
 			return new WP_Error(
 				'wpd_http_error',
 				sprintf(
@@ -516,9 +540,9 @@ final class WPD_Api {
 	 * @param array<string, mixed>    $body     Public API request parameters.
 	 * @param array<string, mixed>    $original Original HTTP 403 response.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
-	 * @return array<string, mixed>
+	 * @return array<string, mixed>|WP_Error
 	 */
-	private function retry_public_read_as_get( array $body, array $original, WPD_Request_Budget $budget ): array {
+	private function retry_public_read_as_get( array $body, array $original, WPD_Request_Budget $budget ): array|WP_Error {
 		$allowed = array(
 			'pwg.categories.getList'   => array( 'method', 'cat_id', 'recursive' ),
 			'pwg.categories.getImages' => array( 'method', 'cat_id', 'recursive', 'per_page', 'page' ),
@@ -542,7 +566,7 @@ final class WPD_Api {
 
 		$timeout = $budget->reserve_http_call();
 		if ( is_wp_error( $timeout ) ) {
-			return $original;
+			return $timeout;
 		}
 
 		$response = wp_safe_remote_get(

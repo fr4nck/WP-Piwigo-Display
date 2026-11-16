@@ -70,6 +70,64 @@ jobs:
           php "$WP_CLI" --path="$WP_ROOT" --allow-root \
             eval-file tests/e2e/real-caption-shortcode-safety.php
 
+      - name: F-02 RED baseline then GREEN across separate WordPress requests
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          LAB="${{ runner.temp }}/piwigo-310-e2e"
+          WP_CLI="$LAB/wp-cli.phar"
+          WP_ROOT="$LAB/wordpress"
+          BASE=ee79a7c5a67f69dd0724a592c4b86be1247775f4
+          git fetch --no-tags --depth=1 origin "$BASE"
+          test "$(git rev-parse FETCH_HEAD)" = "$BASE"
+          mkdir -p "$LAB/f02-baseline"
+          git archive "$BASE" includes | tar -x -C "$LAB/f02-baseline"
+          for mode in public service; do
+            for phase in exhaust recover; do
+              set +e
+              WPD_F02_SOURCE="$LAB/f02-baseline" WPD_F02_VARIANT=baseline \
+                WPD_F02_MODE="$mode" WPD_F02_PHASE="$phase" \
+                php "$WP_CLI" --path="$WP_ROOT" --allow-root --skip-plugins \
+                eval-file tests/e2e/f02-cache-requests.php > "$LAB/reports/f02-red-$mode-$phase.log" 2>&1
+              rc=$?
+              set -e
+              cat "$LAB/reports/f02-red-$mode-$phase.log"
+              test "$rc" = 1
+              grep -q 'WP_F02=FAIL' "$LAB/reports/f02-red-$mode-$phase.log"
+            done
+            for phase in exhaust recover hot upstream upstream-hot; do
+              WPD_F02_SOURCE="$GITHUB_WORKSPACE" WPD_F02_VARIANT=candidate \
+                WPD_F02_MODE="$mode" WPD_F02_PHASE="$phase" \
+                php "$WP_CLI" --path="$WP_ROOT" --allow-root --skip-plugins \
+                eval-file tests/e2e/f02-cache-requests.php | tee "$LAB/reports/f02-green-$mode-$phase.log"
+            done
+          done
+
+      - name: F-01 real 10001-image Piwigo and service over verified TLS
+        shell: bash
+        run: bash tests/e2e/f01-real-piwigo.sh
+
+      - name: F-03 measure category volumes under real WordPress at 128 MiB
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          LAB="${{ runner.temp }}/piwigo-310-e2e"
+          for mode in public service; do
+            for count in 1000 10000 50000 90000; do
+              set +e
+              WPD_F03_SOURCE="$GITHUB_WORKSPACE" WPD_F03_COUNT="$count" WPD_F03_DEPTH=1 WPD_F03_MODE="$mode" \
+                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root --skip-plugins \
+                eval-file tests/e2e/f03-categories-volume.php > "$LAB/reports/f03-$mode-$count.log" 2>&1
+              rc=$?
+              set -e
+              cat "$LAB/reports/f03-$mode-$count.log"
+              if [ "$rc" != 0 ]; then
+                grep -q 'Allowed memory size' "$LAB/reports/f03-$mode-$count.log"
+                echo "F03_RESOURCE_LIMIT_OBSERVED mode=$mode count=$count rc=$rc"
+              fi
+            done
+          done
+
       - name: S-05 shortcode parser and editor encoding under real WordPress
         shell: bash
         run: |
@@ -135,6 +193,9 @@ jobs:
           LAB="${{ runner.temp }}/piwigo-310-e2e"
           if [ -f "$LAB/wp-server.pid" ]; then
             kill "$(cat "$LAB/wp-server.pid")" 2>/dev/null
+          fi
+          if [ -f "$LAB/f01-proxy.pid" ]; then
+            kill "$(cat "$LAB/f01-proxy.pid")" 2>/dev/null
           fi
           docker rm -f wpd-310-piwigo wpd-310-db 2>/dev/null
           docker network rm wpd-310-e2e 2>/dev/null

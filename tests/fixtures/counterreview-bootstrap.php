@@ -70,6 +70,9 @@ function cr_http( $url, $arguments, $verb ) {
             $cookies = array( new WP_Http_Cookie() );
             break;
         case 'pwg.categories.getList':
+            if ( isset( $GLOBALS['category_body'] ) ) {
+                return array( 'response' => array( 'code' => 200 ), 'body' => $GLOBALS['category_body'] );
+            }
             $result = array( 'categories' => $GLOBALS['categories'] );
             break;
         case 'pwg.categories.getImages':
