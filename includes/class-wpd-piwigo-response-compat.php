@@ -180,11 +180,11 @@ final class WPD_Piwigo_Response_Compat {
 		$work_budget = 4 * $length;
 
 		while ( 1 === preg_match( '/\{\s*"stat"\s*:\s*"(?:ok|fail)"/', $body, $matches, PREG_OFFSET_CAPTURE, $offset ) ) {
-			$start       = (int) $matches[0][1];
-			$offset      = $start + 1;
-			$depth       = 0;
-			$quoted      = false;
-			$escaped     = false;
+			$start   = (int) $matches[0][1];
+			$offset  = $start + 1;
+			$depth   = 0;
+			$quoted  = false;
+			$escaped = false;
 
 			for ( $position = $start; $position < $length; ++$position ) {
 				--$work_budget;
