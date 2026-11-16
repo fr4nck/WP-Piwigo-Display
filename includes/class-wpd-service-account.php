@@ -40,6 +40,61 @@ final class WPD_Service_Account {
 		add_action( 'wp_ajax_wpd_get_albums', array( self::class, 'ajax_get_albums' ), 1 );
 		add_action( 'admin_post_wpd_test_service_account', array( self::class, 'test_connection' ) );
 		add_action( 'admin_notices', array( self::class, 'render_notice' ) );
+		add_action( 'added_option', array( self::class, 'enforce_non_autoload' ) );
+		add_action( 'updated_option', array( self::class, 'enforce_non_autoload' ) );
+	}
+
+	/**
+	 * Keeps credentials outside WordPress' automatically loaded options.
+	 *
+	 * @param string $option Option name added or updated by WordPress.
+	 * @return void
+	 */
+	public static function enforce_non_autoload( string $option ): void {
+		if ( self::OPTION_NAME === $option ) {
+			self::disable_autoload();
+		}
+	}
+
+	/**
+	 * Sets the credential option to autoload=false, including older installations.
+	 *
+	 * WordPress 6.4 and later have a cache-safe Options API for this operation.
+	 * On WordPress 6.0–6.3, update only the autoload column of the exact option
+	 * and invalidate the alloptions/object caches; do not rewrite the secret.
+	 *
+	 * @return void
+	 */
+	private static function disable_autoload(): void {
+		if ( function_exists( 'wp_set_option_autoload' ) ) {
+			wp_set_option_autoload( self::OPTION_NAME, false );
+			return;
+		}
+
+		global $wpdb;
+
+		if ( ! is_object( $wpdb ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- WordPress <=6.3 has no Options API for changing only the autoload flag.
+		$autoload = $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM {$wpdb->options} WHERE option_name = %s", self::OPTION_NAME ) );
+		if ( ! in_array( $autoload, array( 'yes', 'on', 'auto', 'auto-on' ), true ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Only autoload is changed; the stored credentials remain byte-for-byte identical.
+		$updated = $wpdb->update(
+			$wpdb->options,
+			array( 'autoload' => 'no' ),
+			array( 'option_name' => self::OPTION_NAME ),
+			array( '%s' ),
+			array( '%s' )
+		);
+		if ( false !== $updated && 0 < $updated ) {
+			wp_cache_delete( 'alloptions', 'options' );
+			wp_cache_delete( self::OPTION_NAME, 'options' );
+		}
 	}
 
 	/**
@@ -48,6 +103,7 @@ final class WPD_Service_Account {
 	 * @return void
 	 */
 	public static function register_settings(): void {
+		self::disable_autoload();
 		register_setting(
 			'wp_piwigo_display',
 			self::OPTION_NAME,
@@ -86,12 +142,23 @@ final class WPD_Service_Account {
 	public static function sanitize_options( $options ): array {
 		$options  = is_array( $options ) ? $options : array();
 		$previous = self::get_options();
-		$password = isset( $options['password'] ) ? (string) $options['password'] : '';
+		$password = isset( $options['password'] ) && is_string( $options['password'] ) ? $options['password'] : '';
+		$clear    = isset( $options['clear_password'] ) && is_scalar( $options['clear_password'] )
+			&& filter_var( $options['clear_password'], FILTER_VALIDATE_BOOLEAN );
+
+		$enabled  = $options['enabled'] ?? ( defined( self::ENABLED_CONSTANT ) ? ( $previous['enabled'] ?? 'false' ) : false );
+		$username = $options['username'] ?? ( $previous['username'] ?? '' );
+		if ( ! is_scalar( $enabled ) ) {
+			$enabled = $previous['enabled'] ?? 'false';
+		}
+		if ( ! is_scalar( $username ) ) {
+			$username = $previous['username'] ?? '';
+		}
 
 		$sanitized = array(
-			'enabled'  => filter_var( $options['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false',
-			'username' => sanitize_text_field( (string) ( $options['username'] ?? '' ) ),
-			'password' => '' !== $password ? $password : (string) ( $previous['password'] ?? '' ),
+			'enabled'  => filter_var( $enabled, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false',
+			'username' => sanitize_text_field( (string) $username ),
+			'password' => $clear ? '' : ( '' !== $password ? $password : (string) ( $previous['password'] ?? '' ) ),
 		);
 
 		$changed = ( $previous['enabled'] ?? 'false' ) !== $sanitized['enabled']
@@ -163,6 +230,12 @@ final class WPD_Service_Account {
 			esc_attr( $placeholder ),
 			disabled( defined( self::PASSWORD_CONSTANT ), true, false ),
 			esc_html__( 'Le mot de passe n’est jamais réaffiché dans l’administration.', 'wp-piwigo-display' )
+		);
+
+		printf(
+			'<label><input type="checkbox" name="%1$s[clear_password]" value="true"> %2$s</label>',
+			esc_attr( self::OPTION_NAME ),
+			esc_html__( 'Effacer le mot de passe enregistré dans WordPress', 'wp-piwigo-display' )
 		);
 
 		$url = wp_nonce_url( admin_url( 'admin-post.php?action=wpd_test_service_account' ), 'wpd_test_service_account' );
