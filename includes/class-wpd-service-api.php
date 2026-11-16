@@ -103,9 +103,9 @@ final class WPD_Service_Api {
 	/**
 	 * Retrieves images from one album.
 	 *
-	 * @param int  $album_id Album identifier.
-	 * @param int  $max      Maximum number of images, or zero for all images.
-	 * @param bool $recursive Whether Piwigo should include descendants.
+	 * @param int                     $album_id Album identifier.
+	 * @param int                     $max      Maximum number of images, or zero for all images.
+	 * @param bool                    $recursive Whether Piwigo should include descendants.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Image list or an error.
 	 */
@@ -228,8 +228,8 @@ final class WPD_Service_Api {
 	/**
 	 * Retrieves images matching one or more tags.
 	 *
-	 * @param array  $tags     Tag names.
-	 * @param string $tag_mode Match mode: any or all.
+	 * @param array                   $tags     Tag names.
+	 * @param string                  $tag_mode Match mode: any or all.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Image list or an error.
 	 */
@@ -329,8 +329,8 @@ final class WPD_Service_Api {
 	/**
 	 * Sends one POST request to the Piwigo API.
 	 *
-	 * @param array $body         API request body.
-	 * @param bool  $authenticate Whether the service account must be logged in first.
+	 * @param array                   $body         API request body.
+	 * @param bool                    $authenticate Whether the service account must be logged in first.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array|WP_Error Decoded API response or an error.
 	 */
