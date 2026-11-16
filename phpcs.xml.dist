@@ -31,6 +31,14 @@
         </properties>
     </rule>
 
+    <rule ref="WordPress.Security.EscapeOutput">
+        <properties>
+            <property name="customEscapingFunctions" type="array">
+                <element value="WPD_Renderer::escape_piwigo_text" />
+            </property>
+        </properties>
+    </rule>
+
     <rule ref="WordPress.Files.FileName">
         <properties>
             <property name="strict_class_file_names" value="true" />
