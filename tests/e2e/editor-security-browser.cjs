@@ -91,6 +91,7 @@ async function main() {
   const context = await browser.newContext();
   const page = await context.newPage();
   page.on('pageerror',error=>console.error('BROWSER_PAGE_ERROR: ' + error.stack));
+  page.on('dialog',dialog=>dialog.accept());
   const anonymous = await browser.newContext();
   const guest = await anonymous.newPage();
   const pwg = await request.newContext({baseURL:'http://127.0.0.1:8090'});
@@ -218,14 +219,18 @@ async function main() {
     await a.getByRole('tree').waitFor();
 
     // Valider un bloc, puis utiliser la vraie histoire Gutenberg.
-    await row(a,'CI Refresh 1').getByRole('button',{name:'Valider',exact:true}).click();
+    await row(a,'CI Refresh 1').getByRole('button',{name:'Choisir cet album : CI Refresh 1',exact:true}).click();
     await page.waitForFunction(id => wp.data.select('core/block-editor').getBlocks()[0].attributes.albumId === String(id), first.id);
     assert.deepEqual(await blockValues(page),[String(first.id),String(fixture.public)]);
     await page.evaluate(() => wp.data.dispatch('core/editor').undo());
     await page.waitForFunction(id => wp.data.select('core/block-editor').getBlocks()[0].attributes.albumId === String(id), fixture.public);
+    await page.waitForFunction(selected => Array.from(document.querySelectorAll('#wpd-ci-0 [role="treeitem"]'))
+      .some(row=>row.textContent.includes('CI Refresh 1') && row.getAttribute('aria-selected')===selected),'false');
     assert.equal(await row(a,'CI Refresh 1').getAttribute('aria-selected'),'false');
     await page.evaluate(() => wp.data.dispatch('core/editor').redo());
     await page.waitForFunction(id => wp.data.select('core/block-editor').getBlocks()[0].attributes.albumId === String(id), first.id);
+    await page.waitForFunction(selected => Array.from(document.querySelectorAll('#wpd-ci-0 [role="treeitem"]'))
+      .some(row=>row.textContent.includes('CI Refresh 1') && row.getAttribute('aria-selected')===selected),'true');
     assert.equal(await row(a,'CI Refresh 1').getAttribute('aria-selected'),'true');
 
     const postId = await page.evaluate(async () => {
