@@ -20,7 +20,17 @@
             var album = shortcode.match(/\balbum="([^"]*)"/);
             var slider = /\btype="slider"/.test(shortcode);
             var label = slider ? 'Diaporama Piwigo' : 'Galerie Piwigo';
-            if (album && album[1]) label += ' — ' + album[1];
+            if (album && album[1]) {
+                var albumLabel = album[1];
+                if (/\bwpd_codec="uri"/.test(shortcode)) {
+                    try {
+                        albumLabel = decodeURIComponent(albumLabel);
+                    } catch (error) {
+                        // Keep a malformed manually-entered value literal.
+                    }
+                }
+                label += ' — ' + albumLabel;
+            }
 
             return '<span class="wpd-tinymce-shortcode" contenteditable="false" role="button" tabindex="0" title="Double-cliquez pour modifier" data-wpd-shortcode="' +
                 encodeShortcode(shortcode) +
