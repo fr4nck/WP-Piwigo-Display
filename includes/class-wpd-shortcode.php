@@ -24,13 +24,38 @@ final class WPD_Shortcode {
 	}
 
 	/**
+	 * Decodes only editor-generated, versioned shortcode attribute values.
+	 *
+	 * Existing shortcodes without the opt-in marker retain their original
+	 * attributes, including literal percent sequences. Decoding precedes the
+	 * existing per-field sanitation, URL validation and capability checks.
+	 *
+	 * @param array<string, mixed> $atts Raw WordPress shortcode attributes.
+	 * @return array<string, mixed> Decoded values for the current format.
+	 */
+	private static function decode_editor_attributes( array $atts ): array {
+		if ( 'uri' !== ( $atts['wpd_codec'] ?? null ) ) {
+			return $atts;
+		}
+
+		unset( $atts['wpd_codec'] );
+		foreach ( $atts as $key => $value ) {
+			if ( is_string( $value ) ) {
+				$atts[ $key ] = rawurldecode( $value );
+			}
+		}
+
+		return $atts;
+	}
+
+	/**
 	 * Renders a Piwigo gallery or slider.
 	 *
 	 * @param mixed $atts Shortcode attributes, or an empty string from WordPress.
 	 * @return string Rendered HTML.
 	 */
 	public static function render( $atts = array() ): string {
-		$atts     = is_array( $atts ) ? $atts : array();
+		$atts     = is_array( $atts ) ? self::decode_editor_attributes( $atts ) : array();
 		$defaults = array_merge(
 			array(
 				'album'        => '',
