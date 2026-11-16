@@ -49,7 +49,12 @@ function untrailingslashit( $value ) { return rtrim( $value, '/\\' ); }
 function sanitize_text_field( $value ) { return (string) $value; }
 function absint( $value ) { return abs( (int) $value ); }
 function is_wp_error( $value ) { return $value instanceof WP_Error; }
-function get_transient( $key ) { return $GLOBALS['transients'][ $key ] ?? false; }
+function get_transient( $key ) {
+    if ( isset( $GLOBALS['transient_reads'] ) ) {
+        $GLOBALS['transient_reads'][] = $key;
+    }
+    return $GLOBALS['transients'][ $key ] ?? false;
+}
 function set_transient( $key, $value, $ttl ) { $GLOBALS['transients'][ $key ] = $value; $GLOBALS['ttls'][ $key ] = $ttl; return true; }
 function wp_using_ext_object_cache() { return true; }
 function wp_cache_add( ...$args ) { return true; }
@@ -129,4 +134,37 @@ check( is_wp_error( WPD_Cache::resolve_album_id( '#5' ) ),
 check( 5 === WPD_Cache::resolve_album_id( '5' ),
     'Les identifiants numeriques explicites restent inchanges durant une panne.' );
 WPD_Service_Api::$categories_unavailable = false;
+// Reused from the historical 3.1.x-dev private-stale regression: never read
+// or serve stale private content, while keeping the public fallback available.
+$GLOBALS['transients'] = array();
+$GLOBALS['ttls'] = array();
+$GLOBALS['transient_reads'] = array();
+next_request();
+$remember = new ReflectionMethod( WPD_Cache::class, 'remember' );
+$remember->setAccessible( true );
+
+$private_cache_key = 'wpd_album_private_no_stale';
+$private_stale_key = 'wpd_stale_' . md5( $private_cache_key );
+$GLOBALS['transients'][ $private_stale_key ] = array( array( 'id' => 42 ) );
+$private_error = $remember->invoke( null, $private_cache_key, static fn() => new WP_Error( 'upstream', 'secret-private' ), false );
+check( is_wp_error( $private_error ), 'An upstream error must not serve stale private data.' );
+check( ! in_array( $private_stale_key, $GLOBALS['transient_reads'], true ), 'Private stale data must not even be read.' );
+
+$GLOBALS['transients'] = array();
+$GLOBALS['transient_reads'] = array();
+next_request();
+$public_cache_key = 'wpd_album_public_stale_ok';
+$public_stale_key = 'wpd_stale_' . md5( $public_cache_key );
+$GLOBALS['transients'][ $public_stale_key ] = array( array( 'id' => 53 ) );
+$public_result = $remember->invoke( null, $public_cache_key, static fn() => new WP_Error( 'upstream', 'public-outage' ), true );
+check( is_array( $public_result ) && 53 === ( $public_result[0]['id'] ?? null ), 'Public stale fallback must stay available.' );
+
+$GLOBALS['transients'] = array();
+next_request();
+$private_success_key = 'wpd_album_private_success';
+$private_success_stale_key = 'wpd_stale_' . md5( $private_success_key );
+$private_success = $remember->invoke( null, $private_success_key, static fn() => array( array( 'id' => 61 ) ), false );
+check( is_array( $private_success ) && 61 === ( $private_success[0]['id'] ?? null ), 'Authorized private data must stay readable.' );
+check( ! array_key_exists( $private_success_stale_key, $GLOBALS['transients'] ), 'Private data must not be copied into the long-term stale cache.' );
+
 echo "Cache : résolution, panne, contexte privé, rétablissement et session locale : PASS.\n";
