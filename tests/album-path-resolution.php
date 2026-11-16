@@ -176,6 +176,35 @@ foreach ( array( $homonymous_categories, array_reverse( $homonymous_categories )
 	$assert( 20 === $api->resolve_album_id( '20' ), 'Explicit numeric private identifier must remain supported.' );
 }
 
+// Unicode case and NFC/NFD variants must not select an unexpected private album.
+$unicode_categories = array(
+	array( 'id' => 10, 'name' => 'Été', 'uppercats' => '10', 'permalink' => 'ete-public' ),
+	array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
+	array( 'id' => 20, 'name' => 'été', 'uppercats' => '50,20', 'permalink' => 'ete-prive' ),
+	array( 'id' => 30, 'name' => 'Ete', 'uppercats' => '30', 'permalink' => 'ete-ascii' ),
+);
+foreach ( array( $unicode_categories, array_reverse( $unicode_categories ) ) as $ordered_categories ) {
+	WPD_Service_Api::$categories = $ordered_categories;
+	$result = $api->resolve_album_id( 'ÉTÉ' );
+	$expected_code = function_exists( 'mb_strtolower' ) ? 'wpd_album_ambiguous' : 'wpd_album_unicode_unsupported';
+	$assert( is_wp_error( $result ) && $expected_code === $result->code, 'Unicode public/private aliases must fail closed, regardless of response order.' );
+	$assert( 20 === $api->resolve_album_id( '20' ), 'An explicit private ID must work without Unicode extensions.' );
+	if ( function_exists( 'mb_strtolower' ) ) {
+		$assert( 10 === $api->resolve_album_id( '/Été' ), 'A complete public Unicode path must remain usable.' );
+		$assert( 20 === $api->resolve_album_id( '/Privé/été' ), 'A complete private Unicode path must remain usable.' );
+		$assert( 30 === $api->resolve_album_id( 'Ete' ), 'Accent removal must not merge Ete and Été.' );
+	}
+}
+$decomposed_categories = array(
+	array( 'id' => 10, 'name' => 'Café', 'uppercats' => '10', 'permalink' => 'cafe-public' ),
+	array( 'id' => 20, 'name' => "Cafe\u{0301}", 'uppercats' => '20', 'permalink' => 'cafe-prive' ),
+);
+WPD_Service_Api::$categories = $decomposed_categories;
+$decomposed = $api->resolve_album_id( 'Café' );
+$expected_code = function_exists( 'mb_strtolower' ) && class_exists( 'Normalizer', false )
+	? 'wpd_album_ambiguous' : 'wpd_album_unicode_unsupported';
+$assert( is_wp_error( $decomposed ) && $expected_code === $decomposed->code, 'NFC/NFD collisions must never select a single album.' );
+
 $other_url = 'https://other.example.test';
 $other_body = array(
 	'method'    => 'pwg.categories.getList',
