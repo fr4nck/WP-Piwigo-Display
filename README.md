@@ -131,6 +131,7 @@ Les shortcodes restent disponibles pour les intégrations manuelles, les modèle
 
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
+- [Dépannage](docs/DEPANNAGE.md)
 - [Shortcodes](docs/shortcodes.md)
 - [Compte de service](docs/COMPTE-DE-SERVICE.md)
 - [Formes](docs/FORMES.md)
