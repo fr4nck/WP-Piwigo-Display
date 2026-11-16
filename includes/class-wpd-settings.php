@@ -133,7 +133,7 @@ final class WPD_Settings {
 		<script>
 		(function(){
 			const q=id=>document.getElementById(id);
-			const esc=value=>String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+			const esc=value=>encodeURIComponent(String(value));
 			const add=(parts,key,value,allowZero=false)=>{if(value!=='' && (allowZero || value!=='0')) parts.push(key+'="'+esc(value)+'"');};
 			function initAlbumPicker(){
 				if(window.WPDAlbumPicker){
@@ -150,6 +150,7 @@ final class WPD_Settings {
 			function build(){
 				updateVisibility();
 				const parts=[];
+				parts.push('wpd_codec="uri"');
 				add(parts,'album',q('wpd-c-album').value.trim(),true);
 				add(parts,'preset',q('wpd-c-preset').value,true);
 				add(parts,'type',q('wpd-c-type').value,true);
