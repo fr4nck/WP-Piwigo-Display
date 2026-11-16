@@ -26,7 +26,13 @@ const input = 'La "Roche" [aux Fées] & \\ / ? # % + = $';
       await dialog.locator('[data-wpd="type"]').selectOption('photo-text');
       await dialog.locator('[data-wpd="photo_text"]').fill(input);
       const shortcode = await dialog.locator('[data-wpd-preview]').inputValue();
-      assert.ok(shortcode.includes('wpd_codec="uri"') && shortcode.includes(encodeURIComponent(input)));
+      assert.ok(shortcode.includes('wpd_codec="uri"') && shortcode.includes(encodeURIComponent(input)),
+        'Classic preview did not refresh after textarea input');
+      const changed = input + ' seconde saisie';
+      await dialog.locator('[data-wpd="photo_text"]').fill(changed);
+      assert.ok((await dialog.locator('[data-wpd-preview]').inputValue()).includes(encodeURIComponent(changed)),
+        'Classic preview did not refresh after subsequent textarea input');
+      await dialog.locator('[data-wpd="photo_text"]').fill(input);
       await page.getByRole('button',{name:'Insérer dans la page',exact:true}).click();
       await page.locator('#title').fill('CI codec roundtrip');
       await Promise.all([page.waitForNavigation(),page.locator('#save-post').click()]);
@@ -88,7 +94,8 @@ const input = 'La "Roche" [aux Fées] & \\ / ? # % + = $';
       await page.evaluate(async()=>{
         wp.data.dispatch('core/editor').editPost({status:'publish'});
         await wp.data.dispatch('core/editor').savePost();
-        if (wp.data.select('core/editor').getLastPostSavingError()) throw new Error('block save failed');
+        if (wp.data.select('core/editor').didPostSaveRequestFail() ||
+          !wp.data.select('core/editor').didPostSaveRequestSucceed()) throw new Error('block save failed');
       });
       const frontend=await context.newPage();
       await frontend.goto('http://127.0.0.1:8088/?page_id='+record.id);
@@ -101,7 +108,8 @@ const input = 'La "Roche" [aux Fées] & \\ / ? # % + = $';
       await page.evaluate(async code=>{
         wp.data.dispatch('core/block-editor').resetBlocks([wp.blocks.createBlock('core/shortcode',{text:code})]);
         await wp.data.dispatch('core/editor').savePost();
-        if (wp.data.select('core/editor').getLastPostSavingError()) throw new Error('shortcode save failed');
+        if (wp.data.select('core/editor').didPostSaveRequestFail() ||
+          !wp.data.select('core/editor').didPostSaveRequestSucceed()) throw new Error('shortcode save failed');
       },copied);
       await frontend.reload();
       assert.equal(await frontend.locator('.wpd-photo-text-semantic').innerText(),input);

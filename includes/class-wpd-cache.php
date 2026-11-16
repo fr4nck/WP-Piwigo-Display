@@ -32,6 +32,9 @@ final class WPD_Cache {
 	 */
 	private const LOCK_TTL = 20;
 
+	/** Durable generation used to invalidate transients in external object caches. */
+	private const GENERATION_OPTION = 'wp_piwigo_display_cache_generation';
+
 	/**
 	 * Resolves an album identifier using the same access context as rendering.
 	 *
@@ -59,7 +62,7 @@ final class WPD_Cache {
 
 		$piwigo_url = '' !== $piwigo_url ? untrailingslashit( $piwigo_url ) : WPD_Settings::get_piwigo_url();
 		$context    = self::get_access_context( $piwigo_url );
-		$cache_key  = 'wpd_album_' . md5( $context . '|' . $piwigo_url . '|categories' );
+		$cache_key  = 'wpd_album_' . md5( self::cache_generation() . '|' . $context . '|' . $piwigo_url . '|categories' );
 		$categories = self::remember(
 			$cache_key,
 			static function () use ( $piwigo_url ) {
@@ -162,6 +165,12 @@ final class WPD_Cache {
 	 */
 	public static function clear_all(): int {
 		global $wpdb;
+
+		// Transients in a persistent object cache are not discoverable via wp_options.
+		// Rotate the durable key namespace before attempting best-effort physical deletion.
+		if ( function_exists( 'update_option' ) ) {
+			update_option( self::GENERATION_OPTION, wp_generate_uuid4(), false );
+		}
 
 		self::$request_cache = array();
 		self::$api_clients   = array();
@@ -507,6 +516,15 @@ final class WPD_Cache {
 	}
 
 	/**
+	 * Returns the persistent cache namespace generation.
+	 *
+	 * @return string Current generation, or the legacy default before first purge.
+	 */
+	private static function cache_generation(): string {
+		return function_exists( 'get_option' ) ? (string) get_option( self::GENERATION_OPTION, '0' ) : '0';
+	}
+
+	/**
 	 * Builds an album-and-tags cache key.
 	 *
 	 * @param int                $album_id   Piwigo album identifier.
@@ -521,7 +539,7 @@ final class WPD_Cache {
 	private static function get_album_tag_cache_key( int $album_id, array $tags, string $tag_mode, string $piwigo_url, bool $recursive, int $depth, string $context ): string {
 		sort( $tags, SORT_STRING );
 
-		return 'wpd_album_' . md5( $context . '|' . $piwigo_url . '|' . $album_id . '|tags|' . implode( ',', $tags ) . '|' . $tag_mode . '|' . ( $recursive ? '1' : '0' ) . '|' . $depth );
+		return 'wpd_album_' . md5( self::cache_generation() . '|' . $context . '|' . $piwigo_url . '|' . $album_id . '|tags|' . implode( ',', $tags ) . '|' . $tag_mode . '|' . ( $recursive ? '1' : '0' ) . '|' . $depth );
 	}
 
 	/**
@@ -536,6 +554,6 @@ final class WPD_Cache {
 	 * @return string
 	 */
 	private static function get_album_cache_key( int $album_id, int $max, string $piwigo_url, bool $recursive, int $depth, string $context ): string {
-		return 'wpd_album_' . md5( $context . '|' . $piwigo_url . '|' . $album_id . '|' . $max . '|' . ( $recursive ? '1' : '0' ) . '|' . $depth );
+		return 'wpd_album_' . md5( self::cache_generation() . '|' . $context . '|' . $piwigo_url . '|' . $album_id . '|' . $max . '|' . ( $recursive ? '1' : '0' ) . '|' . $depth );
 	}
 }
