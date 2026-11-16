@@ -44,6 +44,7 @@ final class WPD_Api {
 	 * @param int  $album_id  Album identifier.
 	 * @param int  $max       Maximum number of images, or zero for unlimited.
 	 * @param bool $recursive Whether Piwigo should include descendant albums.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public function get_images_from_album( int $album_id, int $max = 0, bool $recursive = false, ?WPD_Request_Budget $budget = null ) {
@@ -105,6 +106,7 @@ final class WPD_Api {
 	 *
 	 * @param array<int, string> $tags     Tag names.
 	 * @param string             $tag_mode Matching mode: any or all.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public function get_images_by_tags( array $tags, string $tag_mode = 'any', ?WPD_Request_Budget $budget = null ) {
@@ -217,6 +219,7 @@ final class WPD_Api {
 	 *
 	 * @param int $album_id Root album identifier.
 	 * @param int $depth    Maximum relative depth.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, int>|WP_Error
 	 */
 	private function get_descendant_album_ids( int $album_id, int $depth, WPD_Request_Budget $budget ) {
@@ -277,6 +280,7 @@ final class WPD_Api {
 	/**
 	 * Retrieves all visible categories.
 	 *
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public function get_all_categories( ?WPD_Request_Budget $budget = null ) {
@@ -420,6 +424,7 @@ final class WPD_Api {
 	 * Sends one request to the Piwigo web service.
 	 *
 	 * @param array<string, mixed> $body Request parameters.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	private function request( array $body, ?WPD_Request_Budget $budget = null ) {
@@ -510,6 +515,7 @@ final class WPD_Api {
 	 *
 	 * @param array<string, mixed> $body     Public API request parameters.
 	 * @param array<string, mixed> $original Original HTTP 403 response.
+	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<string, mixed>
 	 */
 	private function retry_public_read_as_get( array $body, array $original, WPD_Request_Budget $budget ): array {
