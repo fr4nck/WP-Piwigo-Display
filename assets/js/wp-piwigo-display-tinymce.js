@@ -29,6 +29,56 @@
                 '</span>';
         }
 
+        // Preserve shortcode values containing literal brackets, quotes, or
+        // backslash-escaped quotes. A regular expression ending at the first
+        // ] corrupts shortcodes when that bracket occurs inside an attribute.
+        function renderShortcodePreviews(content) {
+            var output = '';
+            var cursor = 0;
+            var index = 0;
+
+            while ((index = content.indexOf('[piwigo', cursor)) !== -1) {
+                var afterName = content.charAt(index + 7);
+                var previous = index > 0 ? content.charAt(index - 1) : '';
+                if (previous === '[' || (afterName !== ']' && !/\s/.test(afterName))) {
+                    output += content.slice(cursor, index + 7);
+                    cursor = index + 7;
+                    continue;
+                }
+
+                var quote = '';
+                var escaped = false;
+                var end = -1;
+
+                for (var position = index + 7; position < content.length; position++) {
+                    var character = content.charAt(position);
+                    if (quote) {
+                        if (escaped) {
+                            escaped = false;
+                        } else if (character === '\\') {
+                            escaped = true;
+                        } else if (character === quote) {
+                            quote = '';
+                        }
+                    } else if (character === '"' || character === "'") {
+                        quote = character;
+                    } else if (character === ']') {
+                        end = position;
+                        break;
+                    }
+                }
+
+                if (end === -1) {
+                    return output + content.slice(cursor);
+                }
+
+                output += content.slice(cursor, index) + preview(content.slice(index, end + 1));
+                cursor = end + 1;
+            }
+
+            return output + content.slice(cursor);
+        }
+
         function requestEdit(node) {
             if (!node || !window.jQuery) return;
             window.jQuery(document).trigger('wpd:edit-shortcode', [
@@ -39,7 +89,7 @@
         }
 
         editor.on('BeforeSetContent', function (event) {
-            event.content = event.content.replace(/\[piwigo(?:\s[^\]]*)?\]/g, preview);
+            event.content = renderShortcodePreviews(event.content);
         });
 
         editor.on('PostProcess', function (event) {
