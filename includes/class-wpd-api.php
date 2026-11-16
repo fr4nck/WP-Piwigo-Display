@@ -104,7 +104,7 @@ final class WPD_Api {
 	/**
 	 * Retrieves images matching tags.
 	 *
-	 * @param array<int, string> $tags     Tag names.
+	 * @param array<int, string>      $tags     Tag names.
 	 * @param string                  $tag_mode Matching mode: any or all.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<int, array<string, mixed>>|WP_Error
@@ -423,7 +423,7 @@ final class WPD_Api {
 	/**
 	 * Sends one request to the Piwigo web service.
 	 *
-	 * @param array<string, mixed> $body Request parameters.
+	 * @param array<string, mixed>    $body Request parameters.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -513,8 +513,8 @@ final class WPD_Api {
 	 * parameters or non-scalar values. A failed GET preserves the original
 	 * POST response (HTTP 403) instead of concealing the access failure.
 	 *
-	 * @param array<string, mixed> $body     Public API request parameters.
-	 * @param array<string, mixed> $original Original HTTP 403 response.
+	 * @param array<string, mixed>    $body     Public API request parameters.
+	 * @param array<string, mixed>    $original Original HTTP 403 response.
 	 * @param WPD_Request_Budget|null $budget Shared request and image-volume budget.
 	 * @return array<string, mixed>
 	 */
