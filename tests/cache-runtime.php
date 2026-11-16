@@ -102,6 +102,27 @@ next_request();
 check( is_wp_error( WPD_Cache::resolve_album_id( 'Privé' ) ), 'Un contributeur prévisualise un album privé.' );
 $GLOBALS['publisher'] = true;
 check( 7 === WPD_Cache::resolve_album_id( 'Privé' ), 'Un auteur ne peut plus prévisualiser les albums autorisés.' );
+// Audit #168: both category enumeration orders must reject ambiguous public/private names.
+$homonyms = array(
+    array( 'id' => 80, 'name' => 'Public', 'uppercats' => '80', 'permalink' => 'public' ),
+    array( 'id' => 90, 'name' => 'Équipe', 'uppercats' => '80,90', 'permalink' => 'equipe-publique' ),
+    array( 'id' => 50, 'name' => 'Privé', 'uppercats' => '50', 'permalink' => 'prive' ),
+    array( 'id' => 60, 'name' => 'Équipe', 'uppercats' => '50,60', 'permalink' => 'equipe-privee' ),
+);
+foreach ( array( $homonyms, array_reverse( $homonyms ) ) as $ordered ) {
+    WPD_Service_Api::$categories = $ordered;
+    $GLOBALS['transients'] = array();
+    next_request();
+    $ambiguous = WPD_Cache::resolve_album_id( 'Équipe' );
+    check( is_wp_error( $ambiguous ) && 'wpd_album_ambiguous' === $ambiguous->get_error_code(),
+        'The cached resolver must reject public/private homonyms regardless of API order.' );
+    check( 90 === WPD_Cache::resolve_album_id( '/Public/Équipe' ), 'Public full path must remain explicit.' );
+    check( 60 === WPD_Cache::resolve_album_id( '/Privé/Équipe' ), 'Private full path must remain explicit.' );
+    check( 90 === WPD_Cache::resolve_album_id( 'equipe-publique' ), 'Public permalink must remain usable.' );
+    check( 60 === WPD_Cache::resolve_album_id( 'equipe-privee' ), 'Private permalink must remain usable.' );
+    check( 60 === WPD_Cache::resolve_album_id( '60' ), 'Explicit private numeric ID must remain usable.' );
+}
+
 // N1: A renamed #name must never silently turn into another album ID.
 $GLOBALS['preview'] = false;
 $GLOBALS['publisher'] = false;
