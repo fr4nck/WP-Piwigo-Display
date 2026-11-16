@@ -103,6 +103,7 @@ jobs:
             done
           done
 
+
       - name: F-01 real 10001-image Piwigo and service over verified TLS
         shell: bash
         run: bash tests/e2e/f01-real-piwigo.sh
@@ -128,6 +129,17 @@ jobs:
             done
           done
 
+          # Mesures complémentaires sans plafond de nombre d'albums.
+          for mode in public service; do
+            for spec in 1000:500:128M 10000:50:128M 90000:1:256M; do
+              IFS=: read -r count depth mem <<< "$spec"
+              WPD_F03_SOURCE="$GITHUB_WORKSPACE" WPD_F03_COUNT="$count" WPD_F03_DEPTH="$depth" \
+                WPD_F03_MEMORY="$mem" WPD_F03_MODE="$mode" \
+                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root --skip-plugins \
+                eval-file tests/e2e/f03-categories-volume.php | tee "$LAB/reports/f03-$mode-$count-$depth-$mem.log"
+            done
+          done
+
       - name: S-05 shortcode parser and editor encoding under real WordPress
         shell: bash
         run: |
@@ -140,6 +152,19 @@ jobs:
       - name: Baseline browser gallery and navigation on genuine Piwigo
         shell: bash
         run: node tests/e2e/browser.cjs baseline
+
+      - name: F-04 controlled JSON volumes from real Piwigo before OSM
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          LAB="${{ runner.temp }}/piwigo-310-e2e"
+          for mib in 3.9 4.1 7.9; do
+            for kind in clean polluted; do
+              WPD_F04_MIB="$mib" WPD_F04_KIND="$kind" WPD_F04_PHASE=baseline \
+                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root \
+                eval-file tests/e2e/f04-response-volume.php | tee "$LAB/reports/f04-baseline-$mib-$kind.log"
+            done
+          done
 
       - name: Activate upstream OpenStreetMap plugin on test Piwigo only
         shell: bash
@@ -159,6 +184,19 @@ jobs:
         shell: bash
         run: node tests/e2e/browser.cjs osm
 
+      - name: F-04 controlled JSON volumes with real OSM active
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          LAB="${{ runner.temp }}/piwigo-310-e2e"
+          for mib in 3.9 4.1 7.9; do
+            for kind in clean polluted; do
+              WPD_F04_MIB="$mib" WPD_F04_KIND="$kind" WPD_F04_PHASE=osm \
+                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root \
+                eval-file tests/e2e/f04-response-volume.php | tee "$LAB/reports/f04-osm-$mib-$kind.log"
+            done
+          done
+
       - name: Test Gutenberg block registration and admin composer
         shell: bash
         run: node tests/e2e/browser.cjs gutenberg
@@ -175,6 +213,17 @@ jobs:
       - name: Test real Classic Editor shortcode builder
         shell: bash
         run: node tests/e2e/browser.cjs classic
+
+      - name: Save and reopen special characters through real Classic Editor
+        run: node tests/e2e/editor-roundtrip.cjs classic
+
+      - name: Return disposable editor to Gutenberg
+        run: |
+          php "${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar" \
+            --path="${{ runner.temp }}/piwigo-310-e2e/wordpress" --allow-root plugin deactivate classic-editor
+
+      - name: Convert persisted Classic content and compare Gutenberg frontend styles
+        run: node tests/e2e/editor-roundtrip.cjs gutenberg
 
       - name: Save synthetic test screenshots and assertions
         if: always()

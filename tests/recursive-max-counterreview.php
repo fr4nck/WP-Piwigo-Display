@@ -19,7 +19,7 @@ foreach ( array( WPD_Api::class, WPD_Service_Api::class ) as $class ) {
     cr_check( is_array( $images ) && array( 1, 2, 3 ) === array_column( $images, 'id' ), "$class doublons inter/intra albums, ordre et quota restant" );
     $calls = array_values( array_filter( $GLOBALS['calls'], static fn( $c ) => 'pwg.categories.getImages' === $c['body']['method'] ) );
     cr_check( array( 1, 2, 2 ) === array_column( array_column( $calls, 'body' ), 'cat_id' ), "$class pagination continue après doublons et respecte depth=1" );
-    cr_check( array( 3, 2, 2 ) === array_column( array_column( $calls, 'body' ), 'per_page' ), "$class taille de page fixe par album, bornée au restant initial" );
+    cr_check( array( 3, 3, 3 ) === array_column( array_column( $calls, 'body' ), 'per_page' ), "$class taille de page fixe, bornée par max pour franchir les doublons" );
 
     cr_reset();
     $GLOBALS['albums'] = array( 1 => array( array( 'name' => 'sans id' ) ), 2 => array( array( 'name' => 'sans id' ), array( 'name' => 'nouvelle' ) ), 3 => array( array( 'id' => 3 ) ) );
@@ -31,6 +31,13 @@ foreach ( array( WPD_Api::class, WPD_Service_Api::class ) as $class ) {
     $result = ( new $class( WPD_Settings::get_piwigo_url() ) )->get_images_from_album_recursive( 1, 0, 2 );
     cr_check( is_wp_error( $result ) && 'wpd_api_budget_exceeded' === $result->get_error_code(), "$class max=0 conserve le plafond, aucune liste partielle" );
     cr_check( count( $GLOBALS['calls'] ) <= 32, "$class appels bornés" );
+
+    cr_reset();
+    $shared = array_map( static fn( $id ) => array( 'id' => $id ), range( 1, 499 ) );
+    $GLOBALS['albums'] = array( 1 => $shared, 2 => array_merge( $shared, array( array( 'id' => 500 ) ) ) );
+    $images = ( new $class( WPD_Settings::get_piwigo_url() ) )->get_images_from_album_recursive( 1, 500, 1 );
+    cr_check( is_array( $images ) && range( 1, 500 ) === array_column( $images, 'id' ), "$class 499 images communes ne doivent pas épuiser le budget de 32 appels" );
+    cr_check( $GLOBALS['rows'] <= 999 && count( $GLOBALS['calls'] ) <= 5, "$class préfixe de doublons chargé efficacement" );
 
     cr_reset();
     $GLOBALS['albums'][1] = 1;

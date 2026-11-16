@@ -64,6 +64,8 @@ final class WPD_Api {
 	 *
 	 * Page size stays fixed within an album because Piwigo uses page offsets.
 	 * Images already seen in another album must not consume the remaining max.
+	 * Size by the global max: using only the remaining slot count can spend
+	 * the entire HTTP budget stepping through an album's shared-image prefix.
 	 *
 	 * @param int                $album_id  Album identifier.
 	 * @param int                $max       Global maximum, or zero for unlimited.
@@ -74,7 +76,7 @@ final class WPD_Api {
 	 */
 	private function append_album_images( int $album_id, int $max, bool $recursive, WPD_Request_Budget $budget, array &$images ) {
 		$page              = 0;
-		$per_page          = 0 < $max ? min( 500, $max - count( $images ) ) : 500;
+		$per_page          = 0 < $max ? min( 500, $max ) : 500;
 		$page_images_count = 0;
 
 		do {
