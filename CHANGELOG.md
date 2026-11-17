@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 3.1.0-rc.3 — candidate en qualification (17 novembre 2026, non publiée)
+
+- Échec fermé sur noms d'albums Piwigo homonymes public/privé : sélection déterministe uniquement par identifiant, chemin ou permalien sans ambiguïté ; aucun chargement d'image sur nom ambigu.
+- Refus HTTP 403 d'un nonce de sélecteur expiré avant tout accès Piwigo, avec indication de sauvegarder puis recharger l'éditeur et récupération de la sélection.
+- Synchronisation multi-blocs Gutenberg et sélecteurs Classic/jQuery : actualisation partagée, réponses asynchrones anciennes ignorées, fermeture, annuler/rétablir, sauvegarde et réouverture.
+- Tests réels de sécurité, cache froid/persistant et rendu navigateur avec Piwigo 16.2 / 16.4 ; confidentialité des albums privés et contrôle positif des chemins autorisés.
+- Renforcement du cache, des diagnostics, des entrées et du traitement des réponses API, après contre-revue RC2.
+- Préparation du paquet candidat et des migrations WordPress mono/multisite sur CI ; vérification du commit de versionnement, des ZIP et du retour arrière encore exigée avant toute release.
+- La stable GitHub 3.0.1 publiée le 13 novembre et les préversions RC1/RC2 restent inchangées.
+
 ## 3.1.0-rc.2 — correction expérimentale du HTTP 403 (15 novembre 2026)
 
 - Repli GET unique pour `pwg.categories.getList` et `pwg.categories.getImages` publics lorsque le serveur refuse POST avec HTTP 403.

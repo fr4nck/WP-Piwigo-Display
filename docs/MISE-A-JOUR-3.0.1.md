@@ -1,6 +1,6 @@
 # Piwigo Display — Mise à jour de 3.0.0 vers 3.0.1
 
-**Statut :** procédure de la candidate 3.0.1. Ne pas déployer tant qu'une release GitHub 3.0.1 n'est pas explicitement publiée et qualifiée. Aucun ZIP de PR n'est une publication publique.
+**Statut :** la version stable 3.0.1 a été publiée sur GitHub le 13 novembre 2026. Utiliser uniquement le ZIP officiel accompagné de `SHA256SUMS` ; un ZIP de PR n'est pas une publication publique.
 
 ## Préparation
 
@@ -10,7 +10,7 @@
 
 ## Installation de la 3.0.1 GitHub
 
-1. Télécharger le **ZIP officiel** `piwigo-display-3.0.1.zip` de la future release GitHub ; comparer son SHA-256 au fichier `SHA256SUMS` publié.
+1. Télécharger le **ZIP officiel** `piwigo-display-3.0.1.zip` de la [release GitHub v3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1) ; comparer son SHA-256 au fichier `SHA256SUMS` publié.
 2. Dans WordPress : **Extensions → Ajouter → Téléverser une extension**. Sélectionner le ZIP.
 3. Si WordPress propose de remplacer l'installation existante, choisir le **remplacement en place**. Ne pas cliquer sur « Supprimer » ni désinstaller la 3.0.0.
 4. Vérifier que le dossier reste `wp-piwigo-display/`, que la version affichée est **3.0.1**, et que l'extension conserve son état d'activation.

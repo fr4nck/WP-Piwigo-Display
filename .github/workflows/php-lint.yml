@@ -147,7 +147,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     # PR artifacts are disposable verification candidates, never public releases.
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || github.ref == 'refs/heads/integration/3.1.0-rc3-audit-combined-20261116' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -266,7 +266,11 @@ jobs:
   integration:
     name: WordPress jetable / ${{ matrix.mode }} / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }}
     needs: package
-    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.release_action == 'publish-3.0.1' && inputs.real_recipe_go == true)
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/integration/3.1.0-rc3-audit-combined-20261116') ||
+      (github.event_name == 'workflow_dispatch' && inputs.release_action == 'verify-only') ||
+      (github.event_name == 'workflow_dispatch' && inputs.release_action == 'publish-3.0.1' && inputs.real_recipe_go == true)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

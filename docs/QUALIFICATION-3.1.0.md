@@ -2,6 +2,8 @@
 
 **État au 13 novembre 2026 : candidate en brouillon, aucune publication autorisée.**
 
+**Point du 17 novembre 2026 :** la branche d'intégration prépare une `3.1.0-rc.3` **non publiée**. La tête pré-versionnement `40cdcbade9d87fe972d64f506296127d7b86f059` est verte en CI qualité, avec WordPress/Piwigo 16.2 et 16.4 en navigateur, et tests Gutenberg/sécurité sur les deux versions. Les ZIP et la matrice migration/rollback doivent être **rejoués sur le commit portant le nouveau numéro de version**, sans publier : ce document conserve les preuves antérieures comme jalons historiques.
+
 ## Référence de sécurité et provenance
 
 - [Release GitHub v3.0.1](https://github.com/fr4nck/WP-Piwigo-Display/releases/tag/v3.0.1), commit `d25bd97dc4f975d940bc4ce6ca363d04a81c416d` ; archive officielle SHA-256 `20faab8e598299a7db5d3ace1622f3b8f7c464c27b0ce16778ab93e7c1e59ed4`.

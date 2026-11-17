@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 3.1.0-rc.2
+Stable tag: 3.1.0-rc.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,7 +16,7 @@ Piwigo Display keeps images in Piwigo and lets users build their presentation di
 
 Version 3 is no longer only a shortcode-based integration. It provides a dynamic Gutenberg block, an administration gallery composer, Classic Editor / TinyMCE integration, and a visual hierarchical album picker. These interfaces share the same rendering engine and settings. Shortcodes remain available as an advanced and backward-compatible interface.
 
-Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. Version 3.0.1 was released on November 13, 2026; version 3.1.0-rc.2 is a GitHub pre-release candidate, not the stable 3.1.0 release. WordPress.org directory distribution is being prepared and is not yet available.
+Piwigo Display 3.0.0 was released on GitHub on November 10, 2026. Version 3.0.1 was released on November 13, 2026; version 3.1.0-rc.3 is an unpublished candidate under qualification; the last published 3.1 pre-release is 3.1.0-rc.2, not a stable 3.1.0 release. WordPress.org directory distribution is being prepared and is not yet available.
 
 Version 3.0.0 includes:
 
@@ -133,6 +133,14 @@ Yes. When the operating system requests reduced motion, autoplay is disabled and
 Compatibility is not confirmed yet. A workaround is included for malformed API responses, but real-world validation is still pending. See https://github.com/fr4nck/WP-Piwigo-Display/issues/97 . This plugin does not display maps.
 
 == Changelog ==
+
+= 3.1.0-rc.3 (unpublished release candidate) =
+
+* Reject ambiguous public/private Piwigo album names without selecting an arbitrary match; preserve explicit paths, permalinks and IDs.
+* Expired album-picker nonces fail with HTTP 403 before any Piwigo call; Gutenberg and Classic Editor show recovery guidance without losing the selection.
+* Harden simultaneous Gutenberg block refreshes, stale AJAX replies, undo/redo and saved reopening.
+* Strengthen cache privacy, request/error handling and real Piwigo 16.2/16.4 browser regression coverage.
+* GitHub ZIP and WordPress.org candidate, migration and rollback remain verification-only; no RC3 release has been published.
 
 = 3.1.0-rc.2 (GitHub pre-release candidate) =
 
