@@ -117,16 +117,60 @@ wpqa eval '
   require_once ABSPATH . "wp-admin/includes/plugin.php";
   if (!defined("FS_METHOD")) { define("FS_METHOD", "direct"); }
   if (!WP_Filesystem()) { fwrite(STDERR, "Filesystem unavailable\n"); exit(1); }
-  $result = delete_plugins(array(
+  if (defined("WP_UNINSTALL_PLUGIN")) {
+    throw new RuntimeException("Le lot doit commencer dans un nouveau processus PHP.");
+  }
+
+  $plugins = array(
     "wp-piwigo-display/wp-piwigo-display.php",
     "display4piwigo/wp-piwigo-display.php"
-  ));
-  if (is_wp_error($result) || true !== $result) {
+  );
+  $core_file = wp_normalize_path(ABSPATH . "wp-admin/includes/plugin.php");
+  $known_redefinitions = 0;
+  $uninstall_order = array();
+  $observe_uninstall = static function ($plugin) use (&$uninstall_order): void {
+    $uninstall_order[] = $plugin;
+  };
+  add_action("pre_uninstall_plugin", $observe_uninstall);
+
+  // Core redéfinit la constante au second uninstall.php du même lot.
+  // Seul ce diagnostic Core précis est attendu ; tout autre diagnostic échoue.
+  set_error_handler(static function ($severity, $message, $file, $line) use (
+    $plugins, $core_file, &$known_redefinitions, &$uninstall_order
+  ): bool {
+    if (!(error_reporting() & $severity)) {
+      return false;
+    }
+    if (E_WARNING === $severity
+        && "Constant WP_UNINSTALL_PLUGIN already defined" === $message
+        && $core_file === wp_normalize_path($file)
+        && $plugins === $uninstall_order
+        && defined("WP_UNINSTALL_PLUGIN")
+        && $plugins[0] === WP_UNINSTALL_PLUGIN
+        && 0 === $known_redefinitions) {
+      ++$known_redefinitions;
+      return true;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
+  });
+  try {
+    $result = delete_plugins($plugins);
+  } finally {
+    restore_error_handler();
+    remove_action("pre_uninstall_plugin", $observe_uninstall);
+  }
+  if (is_wp_error($result) || true !== $result || $plugins !== $uninstall_order) {
     fwrite(STDERR, "Batched delete_plugins failed\n");
     exit(1);
   }
-  echo "WP_GROUP_DELETE_PASS";
-' | grep -Fxq 'WP_GROUP_DELETE_PASS' || fail "Batched WordPress uninstall failed"
+  echo "WP_GROUP_DELETE_CORE_COMPAT=PASS expected_redefinitions=" . $known_redefinitions . " unexpected_diagnostics=0\n";
+  echo "WP_GROUP_DELETE_PASS\n";
+' > "$WORK/group-uninstall.log" 2>&1 || {
+  cat "$WORK/group-uninstall.log"
+  fail "Batched WordPress uninstall failed"
+}
+cat "$WORK/group-uninstall.log"
+grep -Fxq 'WP_GROUP_DELETE_PASS' "$WORK/group-uninstall.log" || fail "Batched WordPress uninstall failed"
 if wpqa plugin is-installed wp-piwigo-display; then fail "GitHub plugin survives group deletion"; fi
 if wpqa plugin is-installed display4piwigo; then fail "WordPress.org candidate survives group deletion"; fi
 [[ "$(wpqa eval 'echo (get_option("wp_piwigo_display_options",null)===null && get_option("wp_piwigo_display_service_account",null)===null) ? "PASS":"FAIL";')" == PASS ]] || fail "Batched final uninstall retained credentials"
