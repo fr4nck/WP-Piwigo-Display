@@ -105,3 +105,11 @@ La checklist complète reste `docs/RECETTE-3X.md`. Les contrôles automatisés n
 Un éditeur laissé ouvert longtemps peut recevoir « La session du sélecteur d’albums a expiré ». Sauvegardez votre travail, puis rechargez la page avant de rouvrir la liste. Le bouton d’actualisation des albums ne renouvelle pas le jeton de sécurité WordPress. La sélection saisie reste conservée ; un refus d’autorisation distinct ne doit pas être présenté comme une expiration.
 
 La recette automatisée `editor-security.yml` exerce les composants React/Gutenberg et jQuery réels, le nonce expiré et les albums public/privé homonymes sur deux Piwigo jetables. Les résultats sont à vérifier sur le SHA exact de chaque branche ; ils ne remplacent pas la recette de l’installation de l’utilisatrice.
+
+## Albums accentués et extensions Unicode du serveur
+
+La recherche par nom, chemin ou permalien utilise `mbstring` pour la casse Unicode et `intl` (`Normalizer`) pour les formes composées/décomposées. Sans `mbstring`, un catalogue contenant des caractères non ASCII est refusé pour une recherche textuelle ; sans `intl`, la présence de caractères combinatoires entraîne le même refus conservateur. Un nom ASCII peut donc aussi être refusé si un autre album du catalogue rend la comparaison incertaine.
+
+Le message invite alors à utiliser l’identifiant numérique Piwigo. Cet identifiant reste utilisable sans ces deux extensions. Les noms ASCII restent comparables sur un catalogue entièrement ASCII ; l’absence d’`intl` seule conserve la comparaison des accents précomposés lorsque `mbstring` est présent. Un nom ambigu ne doit jamais sélectionner automatiquement un album privé.
+
+La matrice `unicode-fallback.yml` vérifie PHP 8.1 et 8.4 avec les deux extensions, sans `mbstring`, sans `intl`, puis sans les deux. Elle contrôle les extensions réellement chargées et appelle les résolveurs de production avec un catalogue de test, dans les deux ordres et avec le cache froid puis chaud. Ce contrôle ciblé ne remplace pas les essais WordPress/Piwigo réels.

@@ -1,0 +1,81 @@
+name: Unicode album fallback - native PHP extension matrix
+
+on:
+  push:
+    branches:
+      - 'integration/3.1.0-rc3-audit-combined-20261116'
+      - 'maintenance/3.0.1-s01-base-20261116'
+    paths:
+      - '.github/workflows/unicode-fallback.yml'
+      - 'tests/album-unicode-environment.php'
+      - 'includes/class-wpd-api.php'
+      - 'includes/class-wpd-cache.php'
+  pull_request:
+    paths:
+      - '.github/workflows/unicode-fallback.yml'
+      - 'tests/album-unicode-environment.php'
+      - 'includes/class-wpd-api.php'
+      - 'includes/class-wpd-cache.php'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unicode-fallback-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-unicode:
+    name: PHP ${{ matrix.php }} / ${{ matrix.profile.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.4']
+        profile:
+          - name: full
+            extensions: 'mbstring, intl'
+            mbstring: '1'
+            intl: '1'
+          - name: no-mbstring
+            extensions: ':mbstring, intl'
+            mbstring: '0'
+            intl: '1'
+          - name: no-intl
+            extensions: 'mbstring, :intl'
+            mbstring: '1'
+            intl: '0'
+          - name: neither
+            extensions: ':mbstring, :intl'
+            mbstring: '0'
+            intl: '0'
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Assert source SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "UNICODE_TESTED_SOURCE_SHA=$GITHUB_SHA"
+      - name: Configure native PHP extensions
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ matrix.profile.extensions }}
+          tools: none
+          coverage: none
+      - name: Exercise real resolvers and verify actual extension state
+        env:
+          WPD_UNICODE_PROFILE: ${{ matrix.profile.name }}
+          WPD_EXPECT_MBSTRING: ${{ matrix.profile.mbstring }}
+          WPD_EXPECT_INTL: ${{ matrix.profile.intl }}
+        run: |
+          set -Eeuo pipefail
+          php -l tests/album-unicode-environment.php
+          php tests/album-unicode-environment.php
+          printf 'Unicode PASS source=%s PHP=%s profile=%s mbstring=%s intl=%s\n' \
+            "$GITHUB_SHA" "${{ matrix.php }}" "$WPD_UNICODE_PROFILE" "$WPD_EXPECT_MBSTRING" "$WPD_EXPECT_INTL" \
+            >> "$GITHUB_STEP_SUMMARY"
