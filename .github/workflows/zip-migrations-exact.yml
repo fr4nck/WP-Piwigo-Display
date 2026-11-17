@@ -1,0 +1,386 @@
+name: ZIP et migrations - SHA exacts - verification seule
+
+on:
+  push:
+    branches:
+      - 'verification/zip-migrations-20261117-40cdcb-eb7b4e'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zip-migrations-exacts-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-rc:
+    name: RC3 40cdcba / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }} / ${{ matrix.mode }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.1'
+            wordpress: '6.3.14'
+            mode: single
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: single
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: single
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: multisite
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: multisite
+    env:
+      SOURCE_SHA: '40cdcbade9d87fe972d64f506296127d7b86f059'
+      VERIFICATION_MODE: verify-only
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wpqa
+          MYSQL_PASSWORD: wpqa
+          MYSQL_ROOT_PASSWORD: ci_fake_root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci_fake_root_password"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+    steps:
+      - name: Checkout the exact frozen source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+
+      - name: Assert exact source and record verifier identity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          printf 'TESTED_SOURCE_SHA=%s\nVERIFIER_WORKFLOW_SHA=%s\nVERIFICATION_MODE=verify-only\n' "$SOURCE_SHA" "$GITHUB_SHA"
+
+      - name: Configure matrix PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring, zip
+          coverage: none
+
+      - name: Read plugin version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(php -r '$c=file_get_contents("wp-piwigo-display.php"); preg_match("/Version:\\s*([^\\r\\n]+)/", $c, $m); echo trim($m[1] ?? "dev");')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare plugin directory
+        run: |
+          mkdir -p build/wp-piwigo-display
+          rsync -a ./ build/wp-piwigo-display/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'build' \
+            --exclude '/vendor/' \
+            --exclude 'tests' \
+            --exclude '/docs/' \
+            --exclude '/node_modules/' \
+            --exclude 'composer.json' \
+            --exclude 'composer.lock' \
+            --exclude 'phpcs.xml.dist' \
+            --exclude 'AGENTS.md' \
+            --exclude 'ROADMAP.md' \
+            --exclude 'ARCHITECTURE.md' \
+            --exclude 'AUDIT.md' \
+            --exclude 'CODEX.md' \
+            --exclude 'README.en.md' \
+            --exclude '*.zip'
+
+      - name: Check packaged frontend assets
+        run: php tests/package-assets.php build/wp-piwigo-display
+
+      - name: Prepare separate WordPress.org verification tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a build/wp-piwigo-display/ build/plugin-check/display4piwigo/
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          php tests/package-assets.php build/plugin-check/display4piwigo
+
+      - name: Create both verification ZIPs (never publish)
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cd build
+          zip -qr "piwigo-display-${VERSION}.zip" wp-piwigo-display
+          cd plugin-check
+          zip -qr "../display4piwigo-wporg-${VERSION}-candidate.zip" display4piwigo
+
+      - name: Verify ZIP and record provenance
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          cd build
+          ZIP="piwigo-display-${VERSION}.zip"
+          unzip -tq "$ZIP"
+          test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/includes/class-wpd-migration-guard.php' > /dev/null
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
+          if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|docs|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Fichiers indésirables dans le ZIP.' >&2
+            exit 1
+          fi
+          ORG_ZIP="display4piwigo-wporg-${VERSION}-candidate.zip"
+          unzip -tq "$ORG_ZIP"
+          test "$(unzip -Z1 "$ORG_ZIP" | cut -d/ -f1 | sort -u)" = 'display4piwigo'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/wp-piwigo-display.php'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/includes/class-wpd-migration-guard.php'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Text Domain: display4piwigo'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Plugin Name: Display4Piwigo'
+          if unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Eq '^ \* Update URI:'; then
+            echo 'Update URI must be absent from WordPress.org candidate.' >&2
+            exit 1
+          fi
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"textdomain": "display4piwigo"'
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|docs|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Unwanted file in WordPress.org candidate.' >&2
+            exit 1
+          fi
+          sha256sum "$ZIP" "$ORG_ZIP" > SHA256SUMS
+          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$SOURCE_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Verifier commit: %s\nSource tree: %s\nMode: verify-only\n' "$GITHUB_SHA" "$(git rev-parse 'HEAD^{tree}')" >> PROVENANCE.txt
+          cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
+          # Also record per-distribution hashes in the durable CI log.
+          cat SHA256SUMS
+          cat PROVENANCE.txt
+
+      - name: Install pinned disposable WP-CLI
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl --fail --location --silent --show-error \
+            https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar \
+            --output "${{ runner.temp }}/wp-cli.phar"
+          printf '%s  %s\n' 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c' "${{ runner.temp }}/wp-cli.phar" | sha256sum --check
+
+      - name: Run unchanged source migration or multisite recipe
+        shell: bash
+        env:
+          WP_VERSION: ${{ matrix.wordpress }}
+          WP_CLI_PHAR: ${{ runner.temp }}/wp-cli.phar
+          WPQA_PKG_DIR: ${{ github.workspace }}/build
+          WPQA_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          grep -Fxq "Checkout commit: $SOURCE_SHA" "$WPQA_PKG_DIR/PROVENANCE.txt"
+          if [[ "${{ matrix.mode }}" == multisite ]]; then
+            bash tests/ci-wordpress-multisite.sh
+          else
+            bash tests/ci-wordpress-migration.sh
+          fi
+          printf 'EXACT_SHA_ZIP_MIGRATION=PASS source=%s php=%s wordpress=%s mode=%s\n' \
+            "$SOURCE_SHA" "${{ matrix.php }}" "$WP_VERSION" "${{ matrix.mode }}"
+          printf 'PASS source=%s PHP=%s WordPress=%s mode=%s\n' \
+            "$SOURCE_SHA" "${{ matrix.php }}" "$WP_VERSION" "${{ matrix.mode }}" >> "$GITHUB_STEP_SUMMARY"
+
+  verify-maintenance:
+    name: Maintenance eb7b4ee / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }} / ${{ matrix.mode }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: single
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: single
+          - php: '8.1'
+            wordpress: '6.9'
+            mode: multisite
+          - php: '8.4'
+            wordpress: '7.1.4'
+            mode: multisite
+    env:
+      SOURCE_SHA: 'eb7b4eeef5307a9224aed72e0a76935a77b4def1'
+      VERIFICATION_MODE: verify-only
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wpqa
+          MYSQL_PASSWORD: wpqa
+          MYSQL_ROOT_PASSWORD: ci_fake_root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci_fake_root_password"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+    steps:
+      - name: Checkout the exact frozen source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+
+      - name: Assert exact source and record verifier identity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          printf 'TESTED_SOURCE_SHA=%s\nVERIFIER_WORKFLOW_SHA=%s\nVERIFICATION_MODE=verify-only\n' "$SOURCE_SHA" "$GITHUB_SHA"
+
+      - name: Configure matrix PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring, zip
+          coverage: none
+
+      - name: Read plugin version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(php -r '$c=file_get_contents("wp-piwigo-display.php"); preg_match("/Version:\\s*([^\\r\\n]+)/", $c, $m); echo trim($m[1] ?? "dev");')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare plugin directory
+        run: |
+          mkdir -p build/wp-piwigo-display
+          rsync -a ./ build/wp-piwigo-display/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'build' \
+            --exclude '/vendor/' \
+            --exclude 'tests' \
+            --exclude 'composer.json' \
+            --exclude 'composer.lock' \
+            --exclude 'phpcs.xml.dist' \
+            --exclude 'AGENTS.md' \
+            --exclude 'ROADMAP.md' \
+            --exclude 'ARCHITECTURE.md' \
+            --exclude 'AUDIT.md' \
+            --exclude 'CODEX.md' \
+            --exclude 'README.en.md' \
+            --exclude '*.zip'
+
+      - name: Check packaged frontend assets
+        run: php tests/package-assets.php build/wp-piwigo-display
+
+      - name: Prepare separate WordPress.org verification tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/plugin-check/display4piwigo
+          rsync -a build/wp-piwigo-display/ build/plugin-check/display4piwigo/
+          php .github/scripts/prepare-org-candidate.php build/plugin-check/display4piwigo display4piwigo
+          php tests/package-assets.php build/plugin-check/display4piwigo
+
+      - name: Create both verification ZIPs (never publish)
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cd build
+          zip -qr "piwigo-display-${VERSION}.zip" wp-piwigo-display
+          cd plugin-check
+          zip -qr "../display4piwigo-wporg-${VERSION}-candidate.zip" display4piwigo
+
+      - name: Verify ZIP and record provenance
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          cd build
+          ZIP="piwigo-display-${VERSION}.zip"
+          unzip -tq "$ZIP"
+          test "$(unzip -Z1 "$ZIP" | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/wp-piwigo-display.php' > /dev/null
+          unzip -Z1 "$ZIP" | grep -x 'wp-piwigo-display/includes/class-wpd-migration-guard.php' > /dev/null
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -E "^ \* Version: ${VERSION}\$" > /dev/null
+          if unzip -Z1 "$ZIP" | grep -E '^wp-piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Fichiers indésirables dans le ZIP.' >&2
+            exit 1
+          fi
+          ORG_ZIP="display4piwigo-wporg-${VERSION}-candidate.zip"
+          unzip -tq "$ORG_ZIP"
+          test "$(unzip -Z1 "$ORG_ZIP" | cut -d/ -f1 | sort -u)" = 'display4piwigo'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/wp-piwigo-display.php'
+          unzip -Z1 "$ORG_ZIP" | grep -Fxq 'display4piwigo/includes/class-wpd-migration-guard.php'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Text Domain: display4piwigo'
+          unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Fq ' * Plugin Name: Display4Piwigo'
+          if unzip -p "$ORG_ZIP" display4piwigo/wp-piwigo-display.php | grep -Eq '^ \* Update URI:'; then
+            echo 'Update URI must be absent from WordPress.org candidate.' >&2
+            exit 1
+          fi
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"name": "wp-piwigo-display/gallery"'
+          unzip -p "$ORG_ZIP" display4piwigo/blocks/piwigo/block.json | grep -Fq '"textdomain": "display4piwigo"'
+          unzip -p "$ZIP" wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          if unzip -Z1 "$ORG_ZIP" | grep -E '^display4piwigo/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Unwanted file in WordPress.org candidate.' >&2
+            exit 1
+          fi
+          sha256sum "$ZIP" "$ORG_ZIP" > SHA256SUMS
+          printf 'Checkout commit: %s\nPR head commit: %s\nPR base commit: %s\nVersion: %s\nRun: %s/%s/actions/runs/%s\n' "$SOURCE_SHA" "${PR_HEAD_SHA:-not-a-pr}" "${PR_BASE_SHA:-not-a-pr}" "$VERSION" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > PROVENANCE.txt
+          printf 'Verifier commit: %s\nSource tree: %s\nMode: verify-only\n' "$GITHUB_SHA" "$(git rev-parse 'HEAD^{tree}')" >> PROVENANCE.txt
+          cat SHA256SUMS PROVENANCE.txt >> "$GITHUB_STEP_SUMMARY"
+          # Also record per-distribution hashes in the durable CI log.
+          cat SHA256SUMS
+          cat PROVENANCE.txt
+
+      - name: Install pinned disposable WP-CLI
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl --fail --location --silent --show-error \
+            https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar \
+            --output "${{ runner.temp }}/wp-cli.phar"
+          printf '%s  %s\n' 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c' "${{ runner.temp }}/wp-cli.phar" | sha256sum --check
+
+      - name: Run unchanged source migration or multisite recipe
+        shell: bash
+        env:
+          WP_VERSION: ${{ matrix.wordpress }}
+          WP_CLI_PHAR: ${{ runner.temp }}/wp-cli.phar
+          WPQA_PKG_DIR: ${{ github.workspace }}/build
+          WPQA_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          grep -Fxq "Checkout commit: $SOURCE_SHA" "$WPQA_PKG_DIR/PROVENANCE.txt"
+          if [[ "${{ matrix.mode }}" == multisite ]]; then
+            bash tests/ci-wordpress-multisite.sh
+          else
+            bash tests/ci-wordpress-migration.sh
+          fi
+          printf 'EXACT_SHA_ZIP_MIGRATION=PASS source=%s php=%s wordpress=%s mode=%s\n' \
+            "$SOURCE_SHA" "${{ matrix.php }}" "$WP_VERSION" "${{ matrix.mode }}"
+          printf 'PASS source=%s PHP=%s WordPress=%s mode=%s\n' \
+            "$SOURCE_SHA" "${{ matrix.php }}" "$WP_VERSION" "${{ matrix.mode }}" >> "$GITHUB_STEP_SUMMARY"
+
