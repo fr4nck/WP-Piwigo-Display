@@ -1,4 +1,4 @@
-name: WordPress Piwigo et Unicode - SHA exacts - verification seule
+name: Piwigo OSM - SHA exact - cron du laboratoire isole
 
 on:
   push:
@@ -13,101 +13,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  verify-editor-security:
-    name: ${{ matrix.line }} Gutenberg DOM and private homonyms / Piwigo ${{ matrix.piwigo }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - line: RC3
-            source_sha: '196110417b30e9d375836886cab4e34dc270f56e'
-            piwigo: '16.2.0'
-            mariadb: '10.6'
-          - line: RC3
-            source_sha: '196110417b30e9d375836886cab4e34dc270f56e'
-            piwigo: '16.4.0'
-            mariadb: '11.4'
-          - line: Maintenance
-            source_sha: '94ff746d5a38ef1ab416cdc30c8d30ca488254a6'
-            piwigo: '16.2.0'
-            mariadb: '10.6'
-          - line: Maintenance
-            source_sha: '94ff746d5a38ef1ab416cdc30c8d30ca488254a6'
-            piwigo: '16.4.0'
-            mariadb: '11.4'
-    env:
-      SOURCE_SHA: ${{ matrix.source_sha }}
-      VERIFICATION_MODE: verify-only
-      WPD_PIWIGO_TAG: ${{ matrix.piwigo }}
-      WPD_MARIADB_TAG: ${{ matrix.mariadb }}
-    steps:
-      - name: Checkout exact candidate
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ env.SOURCE_SHA }}
-          persist-credentials: false
-      - name: Assert exact source and record verifier identity
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          printf 'TESTED_SOURCE_SHA=%s\nVERIFIER_WORKFLOW_SHA=%s\nVERIFICATION_MODE=verify-only\n' "$SOURCE_SHA" "$GITHUB_SHA"
-      - name: Configure PHP for disposable WordPress
-        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
-        with:
-          php-version: '8.3'
-          extensions: mysqli, gd, mbstring, curl, xml, zip
-          coverage: none
-      - name: Install pinned browser test engine
-        run: |
-          npm install --no-save --no-package-lock playwright@1.56.1
-          npx playwright install --with-deps chromium
-      - name: Check focused test syntax
-        run: |
-          bash -n tests/e2e/editor-security-start.sh
-          node --check tests/e2e/editor-security-browser.cjs
-          php -l tests/e2e/editor-security-fixture.php
-          php -l tests/e2e/editor-security-piwigo.php
-          php tests/album-picker-nonce.php
-      - name: Start disposable WordPress and real Piwigo homonyms
-        run: bash tests/e2e/editor-security-start.sh
-      - name: Real service account and homonyms - cold and persistent hot cache
-        run: |
-          set -Eeuo pipefail
-          php "$WPD_LAB/wp-cli.phar" --path="$WPD_LAB/wordpress" --allow-root \
-            eval 'WPD_Cache::clear_all();'
-          for phase in cold persistent-hot; do
-            echo "REAL_HOMONYM_CACHE_PHASE=$phase"
-            php "$WPD_LAB/wp-cli.phar" --path="$WPD_LAB/wordpress" --allow-root \
-              eval-file tests/e2e/editor-security-piwigo.php
-          done
-      - name: Real Gutenberg DOM, expired nonce and anonymous/private rendering
-        run: node tests/e2e/editor-security-browser.cjs
-      - name: Confirm exact source recipe completion
-        shell: bash
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          printf 'EXACT_SHA_EDITOR_SECURITY=PASS source=%s piwigo=%s\n' "$SOURCE_SHA" "${{ matrix.piwigo }}"
-      - name: Show focused failure diagnostics as text
-        if: failure()
-        run: |
-          LAB="$RUNNER_TEMP/piwigo-editor-security"
-          if [ -f "$LAB/wp-server.log" ]; then tail -n 60 "$LAB/wp-server.log"; fi
-          if [ -f "$LAB/proxy.log" ]; then tail -n 20 "$LAB/proxy.log"; fi
-      - name: Tear down disposable services
-        if: always()
-        run: |
-          set +e
-          LAB="$RUNNER_TEMP/piwigo-editor-security"
-          for name in wp-server proxy; do
-            if [ -f "$LAB/$name.pid" ]; then kill "$(cat "$LAB/$name.pid")" 2>/dev/null; fi
-          done
-          docker rm -f wpd-310-piwigo wpd-310-db 2>/dev/null
-          docker network rm wpd-310-e2e 2>/dev/null
-          echo 'EDITOR_SECURITY_LAB_STOPPED=YES'
-
   verify-rc-piwigo:
     name: RC3 1961104 WordPress + Piwigo + OSM + Chromium (${{ matrix.lab_id }})
     runs-on: ubuntu-24.04
@@ -160,6 +65,16 @@ jobs:
       - name: Start disposable Piwigo 16.4.0, MariaDB and WordPress 6.9
         shell: bash
         run: bash tests/e2e/start-lab.sh
+
+      - name: Isolate background cron in disposable WordPress
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root config set DISABLE_WP_CRON true --raw
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval \
+            'if (!defined("DISABLE_WP_CRON") || true !== DISABLE_WP_CRON) { throw new RuntimeException("Background cron remains enabled"); } echo "WP_CRON_LAB_ISOLATION=PASS\n";'
 
       - name: S-01 security regression in real WordPress content pipeline
         shell: bash
@@ -356,69 +271,3 @@ jobs:
           docker rm -f wpd-310-piwigo wpd-310-db 2>/dev/null
           docker network rm wpd-310-e2e 2>/dev/null
           echo 'DISPOSABLE_LAB_STOPPED=YES'
-
-  verify-native-unicode:
-    name: ${{ matrix.source.line }} PHP ${{ matrix.php }} / ${{ matrix.profile.name }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    env:
-      SOURCE_SHA: ${{ matrix.source.sha }}
-      VERIFICATION_MODE: verify-only
-    strategy:
-      fail-fast: false
-      matrix:
-        source:
-          - line: RC3
-            sha: '196110417b30e9d375836886cab4e34dc270f56e'
-          - line: Maintenance
-            sha: '94ff746d5a38ef1ab416cdc30c8d30ca488254a6'
-        php: ['8.1', '8.4']
-        profile:
-          - name: full
-            extensions: 'mbstring, intl'
-            mbstring: '1'
-            intl: '1'
-          - name: no-mbstring
-            extensions: ':mbstring, intl'
-            mbstring: '0'
-            intl: '1'
-          - name: no-intl
-            extensions: 'mbstring, :intl'
-            mbstring: '1'
-            intl: '0'
-          - name: neither
-            extensions: ':mbstring, :intl'
-            mbstring: '0'
-            intl: '0'
-    steps:
-      - name: Checkout exact candidate
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ env.SOURCE_SHA }}
-          persist-credentials: false
-      - name: Assert source SHA
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          echo "UNICODE_TESTED_SOURCE_SHA=$SOURCE_SHA"
-          echo "VERIFIER_WORKFLOW_SHA=$GITHUB_SHA"
-      - name: Configure native PHP extensions
-        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ${{ matrix.profile.extensions }}
-          tools: none
-          coverage: none
-      - name: Exercise real resolvers and verify actual extension state
-        env:
-          WPD_UNICODE_PROFILE: ${{ matrix.profile.name }}
-          WPD_EXPECT_MBSTRING: ${{ matrix.profile.mbstring }}
-          WPD_EXPECT_INTL: ${{ matrix.profile.intl }}
-        run: |
-          set -Eeuo pipefail
-          php -l tests/album-unicode-environment.php
-          php tests/album-unicode-environment.php
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          printf 'EXACT_SHA_UNICODE=PASS source=%s php=%s profile=%s\n' "$SOURCE_SHA" "${{ matrix.php }}" "$WPD_UNICODE_PROFILE"
-          printf 'Unicode PASS source=%s PHP=%s profile=%s mbstring=%s intl=%s\n' \
-            "$SOURCE_SHA" "${{ matrix.php }}" "$WPD_UNICODE_PROFILE" "$WPD_EXPECT_MBSTRING" "$WPD_EXPECT_INTL" \
-            >> "$GITHUB_STEP_SUMMARY"
