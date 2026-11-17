@@ -70,6 +70,16 @@ jobs:
         shell: bash
         run: bash tests/e2e/start-lab.sh
 
+      - name: Isolate background cron in disposable WordPress
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
+          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root config set DISABLE_WP_CRON true --raw
+          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval \
+            'if (!defined("DISABLE_WP_CRON") || true !== DISABLE_WP_CRON) { throw new RuntimeException("Background cron remains enabled"); } echo "WP_CRON_LAB_ISOLATION=PASS\n";'
+
       - name: S-01 security regression in real WordPress content pipeline
         shell: bash
         run: |
