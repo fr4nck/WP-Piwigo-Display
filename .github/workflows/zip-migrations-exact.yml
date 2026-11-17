@@ -211,7 +211,7 @@ jobs:
             "$SOURCE_SHA" "${{ matrix.php }}" "$WP_VERSION" "${{ matrix.mode }}" >> "$GITHUB_STEP_SUMMARY"
 
   verify-maintenance:
-    name: Maintenance 7b168be / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }} / ${{ matrix.mode }}
+    name: Maintenance 94ff746 / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }} / ${{ matrix.mode }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     strategy:
@@ -231,7 +231,7 @@ jobs:
             wordpress: '7.1.4'
             mode: multisite
     env:
-      SOURCE_SHA: '7b168be8dd515b2c5f13f5735a216b3fc3407896'
+      SOURCE_SHA: '94ff746d5a38ef1ab416cdc30c8d30ca488254a6'
       VERIFICATION_MODE: verify-only
     services:
       mysql:
