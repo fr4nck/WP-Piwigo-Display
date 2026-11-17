@@ -1,4 +1,4 @@
-name: Piwigo OSM - SHA exact - cron du laboratoire isole
+name: Gutenberg et Piwigo RC3 - SHA exact - verification seule
 
 on:
   push:
@@ -9,265 +9,93 @@ permissions:
   contents: read
 
 concurrency:
-  group: real-unicode-exacts-${{ github.ref }}
+  group: rc3-editor-exact-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  verify-rc-piwigo:
-    name: RC3 1961104 WordPress + Piwigo + OSM + Chromium (${{ matrix.lab_id }})
+  verify-editor-security:
+    name: ${{ matrix.line }} Gutenberg DOM and private homonyms / Piwigo ${{ matrix.piwigo }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
         include:
-          - lab_id: piwigo-164-default
-            piwigo: '16.4.0'
-            mariadb: '11.4'
-            darkroom: 'false'
-          - lab_id: piwigo-162-darkroom
+          - line: RC3
+            source_sha: 'a6af5b6e752e879a6a5972fb3cd3ab8291841614'
             piwigo: '16.2.0'
             mariadb: '10.6'
-            darkroom: 'true'
+          - line: RC3
+            source_sha: 'a6af5b6e752e879a6a5972fb3cd3ab8291841614'
+            piwigo: '16.4.0'
+            mariadb: '11.4'
     env:
-      SOURCE_SHA: '196110417b30e9d375836886cab4e34dc270f56e'
+      SOURCE_SHA: ${{ matrix.source_sha }}
       VERIFICATION_MODE: verify-only
       WPD_PIWIGO_TAG: ${{ matrix.piwigo }}
       WPD_MARIADB_TAG: ${{ matrix.mariadb }}
-      WPD_ENABLE_DARKROOM: ${{ matrix.darkroom }}
     steps:
-      - name: Checkout candidate only
+      - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.SOURCE_SHA }}
           persist-credentials: false
-
       - name: Assert exact source and record verifier identity
         shell: bash
         run: |
           set -Eeuo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           printf 'TESTED_SOURCE_SHA=%s\nVERIFIER_WORKFLOW_SHA=%s\nVERIFICATION_MODE=verify-only\n' "$SOURCE_SHA" "$GITHUB_SHA"
-
-      - name: PHP 8.3 for disposable WordPress
+      - name: Configure PHP for disposable WordPress
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.3'
           extensions: mysqli, gd, mbstring, curl, xml, zip
           coverage: none
-
       - name: Install pinned browser test engine
         run: |
-          set -Eeuo pipefail
           npm install --no-save --no-package-lock playwright@1.56.1
           npx playwright install --with-deps chromium
-
-      - name: Start disposable Piwigo 16.4.0, MariaDB and WordPress 6.9
-        shell: bash
-        run: bash tests/e2e/start-lab.sh
-
-      - name: Isolate background cron in disposable WordPress
-        shell: bash
+      - name: Check focused test syntax
+        run: |
+          bash -n tests/e2e/editor-security-start.sh
+          node --check tests/e2e/editor-security-browser.cjs
+          php -l tests/e2e/editor-security-fixture.php
+          php -l tests/e2e/editor-security-piwigo.php
+          php tests/album-picker-nonce.php
+      - name: Start disposable WordPress and real Piwigo homonyms
+        run: bash tests/e2e/editor-security-start.sh
+      - name: Real service account and homonyms - cold and persistent hot cache
         run: |
           set -Eeuo pipefail
-          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
-          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root config set DISABLE_WP_CRON true --raw
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval \
-            'if (!defined("DISABLE_WP_CRON") || true !== DISABLE_WP_CRON) { throw new RuntimeException("Background cron remains enabled"); } echo "WP_CRON_LAB_ISOLATION=PASS\n";'
-
-      - name: S-01 security regression in real WordPress content pipeline
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
-          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
-          test -f tests/e2e/real-caption-shortcode-safety.php
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root \
-            eval-file tests/e2e/real-caption-shortcode-safety.php
-
-      - name: F-02 RED baseline then GREEN across separate WordPress requests
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          LAB="${{ runner.temp }}/piwigo-310-e2e"
-          WP_CLI="$LAB/wp-cli.phar"
-          WP_ROOT="$LAB/wordpress"
-          BASE=ee79a7c5a67f69dd0724a592c4b86be1247775f4
-          git fetch --no-tags --depth=1 origin "$BASE"
-          test "$(git rev-parse FETCH_HEAD)" = "$BASE"
-          mkdir -p "$LAB/f02-baseline"
-          git archive "$BASE" includes | tar -x -C "$LAB/f02-baseline"
-          for mode in public service; do
-            for phase in exhaust recover; do
-              set +e
-              WPD_F02_SOURCE="$LAB/f02-baseline" WPD_F02_VARIANT=baseline \
-                WPD_F02_MODE="$mode" WPD_F02_PHASE="$phase" \
-                php "$WP_CLI" --path="$WP_ROOT" --allow-root --skip-plugins \
-                eval-file tests/e2e/f02-cache-requests.php > "$LAB/reports/f02-red-$mode-$phase.log" 2>&1
-              rc=$?
-              set -e
-              cat "$LAB/reports/f02-red-$mode-$phase.log"
-              test "$rc" = 1
-              grep -q 'WP_F02=FAIL' "$LAB/reports/f02-red-$mode-$phase.log"
-            done
-            for phase in exhaust recover hot upstream upstream-hot; do
-              WPD_F02_SOURCE="$GITHUB_WORKSPACE" WPD_F02_VARIANT=candidate \
-                WPD_F02_MODE="$mode" WPD_F02_PHASE="$phase" \
-                php "$WP_CLI" --path="$WP_ROOT" --allow-root --skip-plugins \
-                eval-file tests/e2e/f02-cache-requests.php | tee "$LAB/reports/f02-green-$mode-$phase.log"
-            done
+          php "$WPD_LAB/wp-cli.phar" --path="$WPD_LAB/wordpress" --allow-root \
+            eval 'WPD_Cache::clear_all();'
+          for phase in cold persistent-hot; do
+            echo "REAL_HOMONYM_CACHE_PHASE=$phase"
+            php "$WPD_LAB/wp-cli.phar" --path="$WPD_LAB/wordpress" --allow-root \
+              eval-file tests/e2e/editor-security-piwigo.php
           done
-
-
-      - name: F-01 real 10001-image Piwigo and service over verified TLS
-        shell: bash
-        run: bash tests/e2e/f01-real-piwigo.sh
-
-      - name: F-03 measure category volumes under real WordPress at 128 MiB
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          LAB="${{ runner.temp }}/piwigo-310-e2e"
-          for mode in public service; do
-            for count in 1000 10000 50000 90000; do
-              set +e
-              WPD_F03_SOURCE="$GITHUB_WORKSPACE" WPD_F03_COUNT="$count" WPD_F03_DEPTH=1 WPD_F03_MODE="$mode" \
-                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root --skip-plugins \
-                eval-file tests/e2e/f03-categories-volume.php > "$LAB/reports/f03-$mode-$count.log" 2>&1
-              rc=$?
-              set -e
-              cat "$LAB/reports/f03-$mode-$count.log"
-              if [ "$rc" != 0 ]; then
-                grep -q 'Allowed memory size' "$LAB/reports/f03-$mode-$count.log"
-                echo "F03_RESOURCE_LIMIT_OBSERVED mode=$mode count=$count rc=$rc"
-              fi
-            done
-          done
-
-          # Mesures complémentaires sans plafond de nombre d'albums.
-          for mode in public service; do
-            for spec in 1000:500:128M 10000:50:128M 90000:1:256M; do
-              IFS=: read -r count depth mem <<< "$spec"
-              WPD_F03_SOURCE="$GITHUB_WORKSPACE" WPD_F03_COUNT="$count" WPD_F03_DEPTH="$depth" \
-                WPD_F03_MEMORY="$mem" WPD_F03_MODE="$mode" \
-                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root --skip-plugins \
-                eval-file tests/e2e/f03-categories-volume.php | tee "$LAB/reports/f03-$mode-$count-$depth-$mem.log"
-            done
-          done
-
-      - name: S-05 shortcode parser and editor encoding under real WordPress
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
-          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
-          test -f tests/e2e/s05-editor-attributes.php
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval-file tests/e2e/s05-editor-attributes.php
-
-      - name: S-09/S-12 real WordPress credential-autoload and admin-validation regression
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
-          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
-          test -f tests/e2e/s09-s12-admin-options.php
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root eval-file tests/e2e/s09-s12-admin-options.php
-
-      - name: Baseline browser gallery and navigation on genuine Piwigo
-        shell: bash
-        run: node tests/e2e/browser.cjs baseline
-
-      - name: F-04 controlled JSON volumes from real Piwigo before OSM
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          LAB="${{ runner.temp }}/piwigo-310-e2e"
-          for mib in 3.9 4.1 7.9; do
-            for kind in clean polluted; do
-              WPD_F04_MIB="$mib" WPD_F04_KIND="$kind" WPD_F04_PHASE=baseline \
-                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root \
-                eval-file tests/e2e/f04-response-volume.php | tee "$LAB/reports/f04-baseline-$mib-$kind.log"
-            done
-          done
-
-      - name: Activate upstream OpenStreetMap plugin on test Piwigo only
-        shell: bash
-        run: bash tests/e2e/enable-osm.sh
-
-      - name: Replay public HTTP 403 POST against real Piwigo and verify safe GET
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
-          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
-          test -f tests/e2e/real-post403-get-recovery.php
-          WPD_TEST_ALBUM="$WPD_ALBUM" php "$WP_CLI" --path="$WP_ROOT" --allow-root \
-            eval-file tests/e2e/real-post403-get-recovery.php
-
-      - name: Browser regressions with real OpenStreetMap enabled
-        shell: bash
-        run: node tests/e2e/browser.cjs osm
-
-      - name: F-04 controlled JSON volumes with real OSM active
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          LAB="${{ runner.temp }}/piwigo-310-e2e"
-          for mib in 3.9 4.1 7.9; do
-            for kind in clean polluted; do
-              WPD_F04_MIB="$mib" WPD_F04_KIND="$kind" WPD_F04_PHASE=osm \
-                php "$LAB/wp-cli.phar" --path="$LAB/wordpress" --allow-root \
-                eval-file tests/e2e/f04-response-volume.php | tee "$LAB/reports/f04-osm-$mib-$kind.log"
-            done
-          done
-
-      - name: Test Gutenberg block registration and admin composer
-        shell: bash
-        run: node tests/e2e/browser.cjs gutenberg
-
-      - name: Install official Classic Editor 1.7.0 on disposable WordPress
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          WP_CLI="${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar"
-          WP_ROOT="${{ runner.temp }}/piwigo-310-e2e/wordpress"
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root plugin install classic-editor --version=1.7.0 --activate
-          php "$WP_CLI" --path="$WP_ROOT" --allow-root option update classic-editor-replace classic
-
-      - name: Test real Classic Editor shortcode builder
-        shell: bash
-        run: node tests/e2e/browser.cjs classic
-
-      - name: Save and reopen special characters through real Classic Editor
-        run: node tests/e2e/editor-roundtrip.cjs classic
-
-      - name: Return disposable editor to Gutenberg
-        run: |
-          php "${{ runner.temp }}/piwigo-310-e2e/wp-cli.phar" \
-            --path="${{ runner.temp }}/piwigo-310-e2e/wordpress" --allow-root plugin deactivate classic-editor
-
-      - name: Convert persisted Classic content and compare Gutenberg frontend styles
-        run: node tests/e2e/editor-roundtrip.cjs gutenberg
-
+      - name: Real Gutenberg DOM, expired nonce and anonymous/private rendering
+        run: node tests/e2e/editor-security-browser.cjs
       - name: Confirm exact source recipe completion
         shell: bash
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          printf 'EXACT_SHA_PIWIGO_OSM=PASS source=%s lab=%s\n' "$SOURCE_SHA" "${{ matrix.lab_id }}"
-
+          printf 'EXACT_SHA_EDITOR_SECURITY=PASS source=%s piwigo=%s\n' "$SOURCE_SHA" "${{ matrix.piwigo }}"
+      - name: Show focused failure diagnostics as text
+        if: failure()
+        run: |
+          LAB="$RUNNER_TEMP/piwigo-editor-security"
+          if [ -f "$LAB/wp-server.log" ]; then tail -n 60 "$LAB/wp-server.log"; fi
+          if [ -f "$LAB/proxy.log" ]; then tail -n 20 "$LAB/proxy.log"; fi
       - name: Tear down disposable services
         if: always()
-        shell: bash
         run: |
           set +e
-          LAB="${{ runner.temp }}/piwigo-310-e2e"
-          if [ -f "$LAB/wp-server.pid" ]; then
-            kill "$(cat "$LAB/wp-server.pid")" 2>/dev/null
-          fi
-          if [ -f "$LAB/f01-proxy.pid" ]; then
-            kill "$(cat "$LAB/f01-proxy.pid")" 2>/dev/null
-          fi
+          LAB="$RUNNER_TEMP/piwigo-editor-security"
+          for name in wp-server proxy; do
+            if [ -f "$LAB/$name.pid" ]; then kill "$(cat "$LAB/$name.pid")" 2>/dev/null; fi
+          done
           docker rm -f wpd-310-piwigo wpd-310-db 2>/dev/null
           docker network rm wpd-310-e2e 2>/dev/null
-          echo 'DISPOSABLE_LAB_STOPPED=YES'
+          echo 'EDITOR_SECURITY_LAB_STOPPED=YES'
