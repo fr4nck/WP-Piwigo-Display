@@ -1,6 +1,14 @@
 # Journal des versions
 
-## 3.0.1 — maintenance (préparation, non publiée)
+## 3.0.2 — maintenance (candidate non publiée)
+
+- Empêche toute sélection implicite d'un homonyme d'album public/privé : renvoie une ambiguïté au lieu de choisir le premier résultat.
+- Refuse les comparaisons Unicode incertaines lorsque les extensions PHP nécessaires sont absentes ; les identifiants numériques explicites restent pris en charge.
+- Renforce le traitement des réponses Piwigo, l'échappement des légendes et la résilience des contrôles d'édition.
+- Conserve les shortcodes et l'ergonomie existante. L'interface de confirmation PRIV-02 est réservée à la lignée 3.1.
+- Recette ciblée sur la mise à jour réelle 3.0.1 vers 3.0.2, sans publication automatique.
+
+## 3.0.1 — maintenance (publiée le 13 novembre 2026)
 
 - Correction du compositeur WordPress : choisir puis valider un album actualise immédiatement le shortcode via les événements DOM natifs.
 - Ajout d’un bouton d’actualisation dans les sélecteurs classique et Gutenberg, pour retrouver les albums ajoutés récemment sans recharger l’éditeur.
@@ -8,7 +16,7 @@
 - Correction du blocage de chargement Gutenberg après fermeture du panneau pendant une actualisation.
 - Sécurisation des albums nommés `#2024` : aucun repli implicite de `#n` sur l’identifiant numérique `n` après renommage ou suppression (prévention d’exposition d’albums privés). Les identifiants numériques doivent être saisis sans `#`.
 - Tests de régression JavaScript et PHP renforcés ; version des scripts incrémentée pour éviter les anciens fichiers conservés en cache.
-- Cette version reste soumise à une recette réelle WordPress/Piwigo avant toute publication.
+- Version publiée sur GitHub le 13 novembre 2026.
 
 ## 3.0.0 — version stable
 

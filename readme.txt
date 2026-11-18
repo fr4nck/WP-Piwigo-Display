@@ -4,7 +4,7 @@ Tags: piwigo, gallery, photos, gutenberg, slider
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -134,7 +134,13 @@ Compatibility is not confirmed yet. A workaround is included for malformed API r
 
 == Changelog ==
 
-= 3.0.1 (maintenance update, pending release) =
+= 3.0.2 (maintenance candidate; not published) =
+
+* Refuse ambiguous public/private album names and fail closed if Unicode comparisons cannot be guaranteed.
+* Harden Piwigo API response handling, cached private album selection, and shortcode caption escaping.
+* Preserve legacy shortcodes and existing editor workflow. Private-album confirmation remains planned for 3.1, not 3.0.2.
+
+= 3.0.1 (maintenance update; published 13 November 2026) =
 
 * Refresh the Piwigo album list directly in the Classic Editor/admin composer and Gutenberg picker.
 * Keep newly created albums selectable and ignore stale asynchronous responses.

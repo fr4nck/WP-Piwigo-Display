@@ -7,8 +7,8 @@ umask 077
 : "${WP_VERSION:?}"
 : "${WP_CLI_PHAR:?}"
 : "${WPQA_PKG_DIR:?}"
-GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.1.zip"
-ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.1-candidate.zip"
+GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.2.zip"
+ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.2-candidate.zip"
 test -f "$GH_ZIP"; test -f "$ORG_ZIP"
 (cd "$WPQA_PKG_DIR" && sha256sum --check SHA256SUMS)
 

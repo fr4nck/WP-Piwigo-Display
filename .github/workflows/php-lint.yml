@@ -145,7 +145,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     # PR artifacts are disposable verification candidates, never public releases.
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/3.x-dev' || github.ref == 'refs/heads/maintenance/3.0.1-s01-base-20261116' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -262,7 +262,7 @@ jobs:
   integration:
     name: WordPress jetable / ${{ matrix.mode }} / PHP ${{ matrix.php }} / WP ${{ matrix.wordpress }}
     needs: package
-    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.release_action == 'publish-3.0.1' && inputs.real_recipe_go == true)
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/maintenance/3.0.1-s01-base-20261116') || (github.event_name == 'workflow_dispatch' && inputs.release_action == 'publish-3.0.1' && inputs.real_recipe_go == true)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -319,7 +319,7 @@ jobs:
             --output "${{ runner.temp }}/wp-cli.phar"
           php "${{ runner.temp }}/wp-cli.phar" --info
 
-      - name: Exercise published 3.0.0 to 3.0.1 migration on actual WordPress
+      - name: Exercise published 3.0.1 to 3.0.2 migration on actual WordPress
         shell: bash
         env:
           WP_VERSION: ${{ matrix.wordpress }}

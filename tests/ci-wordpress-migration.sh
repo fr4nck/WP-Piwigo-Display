@@ -8,21 +8,21 @@ umask 077
 : "${WPQA_PKG_DIR:?Packages required}"
 [[ -f "$WP_CLI_PHAR" && -d "$WPQA_PKG_DIR" ]] || exit 2
 
-GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.1.zip"
-ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.1-candidate.zip"
+GH_ZIP="$WPQA_PKG_DIR/piwigo-display-3.0.2.zip"
+ORG_ZIP="$WPQA_PKG_DIR/display4piwigo-wporg-3.0.2-candidate.zip"
 for f in "$GH_ZIP" "$ORG_ZIP" "$WPQA_PKG_DIR/SHA256SUMS"; do test -f "$f"; done
 (cd "$WPQA_PKG_DIR" && sha256sum --check SHA256SUMS)
 
 WORK="$(mktemp -d "${RUNNER_TEMP%/}/piwigo-wordpress-qa.XXXXXXXX")"
 WP_ROOT="$WORK/wordpress"
 mkdir -p "$WP_ROOT"
-OLD="$WORK/piwigo-display-3.0.0.zip"
+OLD="$WORK/piwigo-display-3.0.1.zip"
 echo "WRITE_ROOT=$WORK"
 echo "WP_VERSION=$WP_VERSION; production data=NONE"
 curl --fail --location --silent --show-error \
-  https://github.com/fr4nck/WP-Piwigo-Display/releases/download/v3.0.0/piwigo-display-3.0.0.zip \
+  https://github.com/fr4nck/WP-Piwigo-Display/releases/download/v3.0.1/piwigo-display-3.0.1.zip \
   -o "$OLD"
-echo "50681266437068e425d6504b8f7c7e4d2517403003673f49c8a30b4df28d08c5  $OLD" | sha256sum --check
+echo "20faab8e598299a7db5d3ace1622f3b8f7c464c27b0ce16778ab93e7c1e59ed4  $OLD" | sha256sum --check
 
 wpqa() { php "$WP_CLI_PHAR" --path="$WP_ROOT" --allow-root "$@"; }
 fail() { echo "WP_MIGRATION_FAIL: $*" >&2; exit 1; }
@@ -45,7 +45,7 @@ wpqa core install --url=http://piwigo-qa.local --title="Piwigo migration QA" \
   --admin_email=ci@example.invalid --skip-email
 
 wpqa plugin install "$OLD" --activate
-[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.0" ]] || fail "Legacy ZIP version"
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.1" ]] || fail "Published baseline ZIP version"
 wpqa eval 'update_option("wp_piwigo_display_options",array("piwigo_url"=>"https://ci.example.invalid/gallery","cache_duration"=>3600));update_option("wp_piwigo_display_service_account",array("enabled"=>false,"username"=>"ci","password"=>"fake-only"));'
 BASE_HASH="$(snapshot)"
 SHORTCODE_CONTENT='[piwigo album="5" type="slider" autoplay="false"]'
@@ -54,14 +54,15 @@ SHORTCODE_POST="$(wpqa post create --post_type=page --post_status=publish --post
 BLOCK_POST="$(wpqa post create --post_type=page --post_status=publish --post_title="Block QA" --post_content="$BLOCK_CONTENT" --porcelain)"
 assert_content "old installation"
 assert_identity "old installation"
+echo "WP_MIGRATION_STAGE=published_3_0_1_pass"
 
-# Mandatory upgrade IN PLACE: never uninstall the unprotected v3.0.0.
+# Mandatory upgrade IN PLACE: preserve the installed published v3.0.1.
 wpqa plugin install "$GH_ZIP" --force
-[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.1" ]] || fail "In-place upgrade version"
+[[ "$(wpqa plugin get wp-piwigo-display --field=version)" == "3.0.2" ]] || fail "In-place upgrade version"
 wpqa plugin is-active wp-piwigo-display || fail "In-place upgrade disabled legacy plugin"
-assert_options "GitHub in-place 3.0.1"
-assert_content "GitHub in-place 3.0.1"
-assert_identity "GitHub in-place 3.0.1"
+assert_options "GitHub in-place 3.0.2"
+assert_content "GitHub in-place 3.0.2"
+assert_identity "GitHub in-place 3.0.2"
 wpqa eval-file tests/e2e/s01-stable-shortcode-safety.php
 echo "WP_STABLE_S01_STAGE=github_in_place_pass"
 echo "WP_MIGRATION_STAGE=github_in_place_pass"
@@ -83,9 +84,9 @@ assert_identity "new candidate active"
 # No options, saved blocks or shortcode content may be modified.
 wpqa plugin deactivate display4piwigo
 wpqa plugin activate wp-piwigo-display
-assert_options "rollback from WordPress.org candidate to GitHub 3.0.1"
-assert_content "rollback to GitHub 3.0.1"
-assert_identity "rollback to GitHub 3.0.1"
+assert_options "rollback from WordPress.org candidate to GitHub 3.0.2"
+assert_content "rollback to GitHub 3.0.2"
+assert_identity "rollback to GitHub 3.0.2"
 echo "WP_MIGRATION_STAGE=rollback_to_github_pass"
 
 wpqa plugin deactivate wp-piwigo-display
