@@ -1,5 +1,8 @@
 # AGENTS.md
 
+**Règle transversale AGT-015 (22/11/2026) — reprise après coupure :** tout jalon qualifié doit conserver ses entrées, artefacts indispensables et preuves dans des emplacements persistants autorisés, sans dépendre exclusivement de `/tmp`, `tmpfs`, `%TEMP%` ou d'une session éphémère. Vérifier la reprise sans opération destructive et consigner `REPRISE=PASS` ou `REPRISE=BLOCKED`. Ne déplacer, copier ou publier aucune donnée privée sans autorisation. [Texte normatif PMSL-Arch](https://github.com/fr4nck/PMSL-Arch/blob/main/docs/GOUVERNANCE_AGENTS_OBJECTIFS.md#agt-015--durabilité-des-jalons-et-reprise-après-coupure).
+
+
 ## Objectif
 
 Développer des logiciels simples, robustes, lisibles et pérennes.
