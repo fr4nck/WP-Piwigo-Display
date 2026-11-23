@@ -1,0 +1,129 @@
+name: Publish verified Piwigo Display v3.0.2 (one shot)
+
+on:
+  push:
+    branches:
+      - release/publish-v3.0.2-once-20261123
+    paths:
+      - .github/workflows/release-v3.0.2-once.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: publish-piwigo-v3.0.2-once
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Publish immutable GitHub v3.0.2 from validated CI artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout isolated publisher branch (read-only source)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Verify exclusive workflow change and approved source
+        shell: bash
+        env:
+          APPROVED_SHA: b668673313e3b344e1ff7a9f9608c8c96dc54b9b
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REF" = 'refs/heads/release/publish-v3.0.2-once-20261123'
+          test "$(git rev-parse HEAD^)" = "$APPROVED_SHA"
+          test "$(git diff --name-only "$APPROVED_SHA" "$GITHUB_SHA")" = '.github/workflows/release-v3.0.2-once.yml'
+          test "$(git show "$APPROVED_SHA":wp-piwigo-display.php | sed -n 's/^ \* Version: //p' | head -n 1)" = '3.0.2'
+          echo "PUBLISH_SOURCE_PIN=PASS $APPROVED_SHA"
+
+      - name: Retrieve already qualified archive from exact successful workflow run
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 44376648300
+          repository: fr4nck/WP-Piwigo-Display
+          github-token: ${{ github.token }}
+          name: piwigo-display-3.0.2-b668673313e3b344e1ff7a9f9608c8c96dc54b9b
+          path: release-input
+
+      - name: Verify original artifact, ZIP and provenance before any GitHub write
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd release-input
+          test -f piwigo-display-3.0.2.zip
+          test -f display4piwigo-wporg-3.0.2-candidate.zip
+          test -f SHA256SUMS
+          test -f PROVENANCE.txt
+          sha256sum --check SHA256SUMS
+          echo 'c23d6c738a13c8d26b57aa59d4210b088221c02ce478787976283475bc7ea170  piwigo-display-3.0.2.zip' | sha256sum --check
+          grep -Fxq 'Checkout commit: b668673313e3b344e1ff7a9f9608c8c96dc54b9b' PROVENANCE.txt
+          grep -Fxq 'Version: 3.0.2' PROVENANCE.txt
+          unzip -tq piwigo-display-3.0.2.zip
+          test "$(unzip -Z1 piwigo-display-3.0.2.zip | cut -d/ -f1 | sort -u)" = 'wp-piwigo-display'
+          unzip -p piwigo-display-3.0.2.zip wp-piwigo-display/wp-piwigo-display.php | grep -Fxq ' * Version: 3.0.2'
+          unzip -p piwigo-display-3.0.2.zip wp-piwigo-display/wp-piwigo-display.php | grep -Fq "define( 'WPD_VERSION', '3.0.2' );"
+          unzip -p piwigo-display-3.0.2.zip wp-piwigo-display/wp-piwigo-display.php | grep -Fq ' * Update URI: https://github.com/fr4nck/WP-Piwigo-Display'
+          unzip -p piwigo-display-3.0.2.zip wp-piwigo-display/blocks/piwigo/block.json | grep -Fq '"version": "3.0.2"'
+          unzip -p piwigo-display-3.0.2.zip wp-piwigo-display/readme.txt | grep -Fq 'Stable tag: 3.0.2'
+          if unzip -Z1 piwigo-display-3.0.2.zip | grep -Eq '^wp-piwigo-display/(\.github|tests|vendor|node_modules)/|(^|/)\.git/|\.zip$'; then
+            echo 'Unwanted content in release ZIP' >&2
+            exit 1
+          fi
+          awk '$2 == "piwigo-display-3.0.2.zip" {print; n++} END {if (n != 1) exit 1}' SHA256SUMS > RELEASE-SHA256SUMS
+          sha256sum --check RELEASE-SHA256SUMS
+          echo 'RELEASE_ARTIFACT_VERIFY=PASS'
+          echo 'RELEASE_SHA256=c23d6c738a13c8d26b57aa59d4210b088221c02ce478787976283475bc7ea170'
+
+      - name: Verify all previously passed CI checks and no existing release or tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          for run_id in 44376648300 44376648406; do
+            test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq .head_sha)" = 'b668673313e3b344e1ff7a9f9608c8c96dc54b9b'
+            test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq .conclusion)" = 'success'
+          done
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v3.0.2" >/dev/null 2>&1; then
+            echo 'Tag v3.0.2 exists: refusing overwrite' >&2
+            exit 1
+          fi
+          if gh release view v3.0.2 >/dev/null 2>&1; then
+            echo 'Release v3.0.2 exists: refusing overwrite' >&2
+            exit 1
+          fi
+          echo 'RELEASE_PRECHECK=PASS'
+
+      - name: Create new annotated tag and publish exactly verified ZIP
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: b668673313e3b344e1ff7a9f9608c8c96dc54b9b
+        run: |
+          set -Eeuo pipefail
+          cat > release-input/RELEASE-NOTES.md <<'NOTES'
+          ## Piwigo Display 3.0.2
+
+          Mise à jour de maintenance de la version 3.0.1.
+
+          - Refus des correspondances ambiguës entre albums publics et privés.
+          - Comportement de sécurité conservateur lorsque la comparaison Unicode n'est pas fiable.
+          - Renforcement du traitement des réponses Piwigo et de l'échappement des légendes.
+          - Conservation des shortcodes, de Gutenberg et du fonctionnement existant du compte de service.
+
+          **Contrôles :** qualité PHP, ZIP et Plugin Check validés ; migration WordPress 4/4 ; Piwigo 16.2/16.4 2/2.
+
+          La confirmation visuelle des albums privés (PRIV-02) n'est **pas** incluse dans cette maintenance ; elle reste réservée à la future série 3.1.
+
+          Cette release distribue uniquement le ZIP GitHub. Le paquet de vérification WordPress.org n'est pas publié.
+          NOTES
+          tag_object="$(gh api -X POST "repos/$GITHUB_REPOSITORY/git/tags"             -f tag=v3.0.2             -f message="Piwigo Display 3.0.2 - verified $SOURCE_SHA"             -f object="$SOURCE_SHA" -f type=commit --jq .sha)"
+          [[ "$tag_object" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs"             -f ref=refs/tags/v3.0.2 -f sha="$tag_object" >/dev/null
+          gh release create v3.0.2             release-input/piwigo-display-3.0.2.zip             release-input/RELEASE-SHA256SUMS             release-input/PROVENANCE.txt             --verify-tag             --title 'Piwigo Display 3.0.2'             --notes-file release-input/RELEASE-NOTES.md
+          test "$(gh release view v3.0.2 --json isDraft --jq .isDraft)" = 'false'
+          echo 'RELEASE_V302_PUBLISHED=PASS'
+          gh release view v3.0.2 --json url,tagName,isDraft,assets
